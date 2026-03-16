@@ -16,10 +16,107 @@ import {
   Share2,
   Copy,
   Check,
-  Edit3
+  Edit3,
+  Zap,
+  TrendingUp,
+  Star,
+  Crown,
+  ChevronRight,
+  CheckCircle,
+  X
 } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { formatCurrency } from "@/lib/utils";
+import Link from "next/link";
+
+const tiers = [
+  {
+    id: "bronze",
+    name: "Bronze",
+    color: "from-orange-700 to-orange-900",
+    accentColor: "text-orange-400",
+    borderColor: "border-orange-500/30",
+    icon: Award,
+    commission: "5%",
+    subscription: "Free",
+    requirements: ["Sign up"],
+    features: [
+      { name: "Access to dashboard", included: true },
+      { name: "Basic training modules", included: true },
+      { name: "Deal management (10 active)", included: true },
+      { name: "Basic resources", included: true },
+      { name: "Commission payouts", included: true },
+      { name: "Lead access", included: false },
+      { name: "Priority support", included: false },
+      { name: "Advanced training", included: false },
+    ],
+  },
+  {
+    id: "silver",
+    name: "Silver",
+    color: "from-gray-400 to-gray-600",
+    accentColor: "text-gray-300",
+    borderColor: "border-gray-400/30",
+    icon: Star,
+    commission: "10%",
+    subscription: "Free",
+    requirements: ["First sale"],
+    features: [
+      { name: "Access to dashboard", included: true },
+      { name: "Basic training modules", included: true },
+      { name: "Deal management (unlimited)", included: true },
+      { name: "Full resource access", included: true },
+      { name: "Commission payouts", included: true },
+      { name: "Lead access", included: false },
+      { name: "Priority support", included: false },
+      { name: "Advanced training", included: true },
+    ],
+  },
+  {
+    id: "gold",
+    name: "Gold",
+    color: "from-yellow-500 to-amber-600",
+    accentColor: "text-yellow-400",
+    borderColor: "border-yellow-500/30",
+    icon: TrendingUp,
+    commission: "15%",
+    subscription: "Free",
+    requirements: ["R150,000 in sales"],
+    features: [
+      { name: "Access to dashboard", included: true },
+      { name: "Basic + Premium training", included: true },
+      { name: "Deal management (unlimited)", included: true },
+      { name: "Full resource access", included: true },
+      { name: "Commission payouts", included: true },
+      { name: "Lead access", included: false },
+      { name: "Priority support", included: true },
+      { name: "Advanced training", included: true },
+    ],
+  },
+  {
+    id: "platinum",
+    name: "Platinum",
+    color: "from-violet-600 to-purple-800",
+    accentColor: "text-violet-400",
+    borderColor: "border-violet-500/30",
+    icon: Crown,
+    commission: "15-25%",
+    subscription: "R899.69/mo",
+    requirements: ["Pay R899.69/month"],
+    features: [
+      { name: "Access to dashboard", included: true },
+      { name: "All training modules", included: true },
+      { name: "Deal management (unlimited)", included: true },
+      { name: "Exclusive resources", included: true },
+      { name: "Commission payouts", included: true },
+      { name: "Lead pool access", included: true },
+      { name: "Priority support", included: true },
+      { name: "Advanced training", included: true },
+      { name: "25% solar commission", included: true },
+    ],
+  },
+];
 
 export default function ProfilePage() {
   const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate);
@@ -28,16 +125,17 @@ export default function ProfilePage() {
   const [copied, setCopied] = useState(false);
 
   const tierColors: Record<string, string> = {
-    bronze: "from-amber-600 to-amber-700",
-    silver: "from-gray-400 to-gray-500",
-    gold: "from-yellow-400 to-amber-500",
-    platinum: "from-indigo-500 to-purple-600",
+    bronze: "from-amber-700 to-amber-900",
+    silver: "from-gray-400 to-gray-600",
+    gold: "from-yellow-500 to-amber-600",
+    platinum: "from-violet-600 to-purple-800",
   };
 
   const tabs = [
-    { id: "personal", label: "Personal Info", icon: User },
+    { id: "personal", label: "Personal", icon: User },
     { id: "banking", label: "Banking", icon: CreditCard },
     { id: "account", label: "Account", icon: Lock },
+    { id: "tier", label: "Tier & Benefits", icon: Award },
   ];
 
   const copyToClipboard = (text: string) => {
@@ -318,6 +416,128 @@ export default function ProfilePage() {
                 <p className="text-emerald-400 font-medium">R{currentAffiliate.totalCommissionEarned?.toLocaleString() || 0}</p>
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === "tier" && (
+          <div className="space-y-6">
+            {/* Current Tier Card */}
+            {(() => {
+              const currentTier = tiers.find(t => t.id === currentAffiliate.tier) || tiers[0];
+              const tierIndex = tiers.findIndex(t => t.id === currentAffiliate.tier);
+              const nextTier = tiers[tierIndex + 1];
+              const Icon = currentTier.icon;
+              
+              return (
+                <div className="relative overflow-hidden bg-gradient-to-br from-[#0a0a0b] to-[#141417] rounded-2xl p-6 border border-white/10">
+                  <div className={`absolute inset-0 bg-gradient-to-br ${currentTier.color} opacity-10`} />
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${currentTier.color} flex items-center justify-center`}>
+                          <Icon className="w-8 h-8 text-white" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className={`text-2xl font-bold ${currentTier.accentColor}`}>{currentTier.name} Tier</h3>
+                            {currentAffiliate.tier === "platinum" && <Crown className="w-5 h-5 text-violet-400" />}
+                          </div>
+                          <p className="text-gray-400">{currentTier.commission} commission rate</p>
+                        </div>
+                      </div>
+                      {nextTier && (
+                        <div className="text-right">
+                          <p className="text-sm text-gray-500">Next tier</p>
+                          <p className="text-white font-medium">{nextTier.name}</p>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Progress to next tier */}
+                    {nextTier && (
+                      <div className="mt-6">
+                        <div className="flex items-center justify-between text-sm mb-2">
+                          <span className="text-gray-400">Progress to {nextTier.name}</span>
+                          <span className="text-white font-medium">
+                            R{currentAffiliate.totalSales?.toLocaleString() || 0} / R{nextTier.id === "gold" ? "150,000" : "500,000"}
+                          </span>
+                        </div>
+                        <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${Math.min(100, (currentAffiliate.totalSales || 0) / (nextTier.id === "gold" ? 150000 : 500000) * 100)}%` }}
+                            className={`h-full bg-gradient-to-r ${nextTier.color}`} 
+                          />
+                        </div>
+                        {nextTier.id === "gold" && (
+                          <p className="text-xs text-gray-500 mt-2">R{Math.max(0, 150000 - (currentAffiliate.totalSales || 0)).toLocaleString()} more to unlock Gold tier</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Tier Comparison */}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4">Tier Benefits</h3>
+              <div className="grid md:grid-cols-4 gap-4">
+                {tiers.map((tier) => {
+                  const isCurrentTier = tier.id === currentAffiliate.tier;
+                  const Icon = tier.icon;
+                  return (
+                    <div 
+                      key={tier.id}
+                      className={`relative overflow-hidden bg-[#0a0a0b] rounded-xl p-4 border ${isCurrentTier ? `border-white/20 ${tier.borderColor}` : "border-white/5"}`}
+                    >
+                      {isCurrentTier && (
+                        <div className="absolute top-2 right-2">
+                          <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded-full">Current</span>
+                        </div>
+                      )}
+                      <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${tier.color} flex items-center justify-center mb-3`}>
+                        <Icon className="w-5 h-5 text-white" />
+                      </div>
+                      <h4 className={`font-semibold ${tier.accentColor}`}>{tier.name}</h4>
+                      <p className="text-2xl font-bold text-white mt-1">{tier.commission}</p>
+                      <p className="text-xs text-gray-500 mt-1">{tier.subscription}</p>
+                      
+                      <div className="mt-4 space-y-2">
+                        {tier.features.slice(0, 4).map((feature) => (
+                          <div key={feature.name} className="flex items-center gap-2">
+                            {feature.included ? (
+                              <CheckCircle className="w-3 h-3 text-emerald-400" />
+                            ) : (
+                              <X className="w-3 h-3 text-gray-600" />
+                            )}
+                            <span className={`text-xs ${feature.included ? "text-gray-300" : "text-gray-600"}`}>
+                              {feature.name}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Upgrade CTA for non-Platinum */}
+            {currentAffiliate.tier !== "platinum" && (
+              <div className="bg-gradient-to-r from-violet-900/30 to-purple-900/30 rounded-2xl p-6 border border-violet-500/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xl font-bold text-white">Go Platinum</h3>
+                    <p className="text-gray-400 mt-1">Unlock 25% commission on solar + exclusive leads</p>
+                  </div>
+                  <button className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold rounded-xl hover:from-violet-700 hover:to-purple-700 transition-all">
+                    <Zap className="w-5 h-5" />
+                    Upgrade - R899.69/mo
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

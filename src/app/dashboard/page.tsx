@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
   TrendingUp, 
@@ -12,18 +13,40 @@ import {
   Award,
   Clock,
   ChevronRight,
-  Play
+  Play,
+  Zap,
+  Calendar,
+  Eye,
+  MousePointer
 } from "lucide-react";
 import Link from "next/link";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { formatCurrency } from "@/lib/utils";
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  Legend
+} from "recharts";
+
+const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#ef4444'];
 
 export default function DashboardPage() {
   const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate);
   const deals = useQuery(api.deals.getAllDeals);
   const modules = useQuery(api.training.getTrainingModules);
   const payouts = useQuery(api.commissions.getAllPayouts);
+  const [timeRange, setTimeRange] = useState("month");
   
   // Loading state
   if (currentAffiliate === null || deals === null || modules === null || payouts === null) {
@@ -49,64 +72,82 @@ export default function DashboardPage() {
   const userPayouts = (payouts || []).filter(p => p.affiliateId === currentAffiliate._id);
   
   const totalPaid = userPayouts.filter(p => p.status === "paid").reduce((sum, p) => sum + p.amount, 0);
-  const totalPending = userPayouts.filter(p => p.status === "pending").reduce((sum, p) => sum + p.amount, 0);
+  const totalPending = currentAffiliate.pendingCommission || 0;
   
   const activeDeals = userDeals.filter(d => !["closed_won", "closed_lost"].includes(d.status));
-  const closedWon = userDeals.filter(d => d.status === "closed_won").length;
-  const conversionRate = userDeals.length > 0 ? Math.round((closedWon / userDeals.length) * 100) : 0;
+  const closedWon = userDeals.filter(d => d.status === "closed_won");
+  const conversionRate = userDeals.length > 0 ? Math.round((closedWon.length / userDeals.length) * 100) : 0;
 
-  const stats = [
-    {
-      label: "Total Earnings",
-      value: formatCurrency(currentAffiliate.totalCommissionEarned),
-      change: "+12.5%",
-      changeType: "positive",
-      icon: DollarSign,
-      color: "from-emerald-500 to-teal-600",
-      bgColor: "bg-emerald-500/10",
-      iconColor: "text-emerald-400"
-    },
-    {
-      label: "Total Sales",
-      value: formatCurrency(currentAffiliate.totalSales),
-      change: "+8.2%",
-      changeType: "positive",
-      icon: TrendingUp,
-      color: "from-blue-500 to-indigo-600",
-      bgColor: "bg-blue-500/10",
-      iconColor: "text-blue-400"
-    },
-    {
-      label: "Active Deals",
-      value: activeDeals.length.toString(),
-      change: "-2",
-      changeType: "neutral",
-      icon: Target,
-      color: "from-purple-500 to-pink-600",
-      bgColor: "bg-purple-500/10",
-      iconColor: "text-purple-400"
-    },
-    {
-      label: "Conversion Rate",
-      value: `${conversionRate}%`,
-      change: "+3.1%",
-      changeType: "positive",
-      icon: Award,
-      color: "from-amber-500 to-orange-600",
-      bgColor: "bg-amber-500/10",
-      iconColor: "text-amber-400"
+  // Calculate pipeline value
+  const pipelineValue = activeDeals.reduce((sum, d) => sum + d.dealValue, 0);
+  const weightedPipeline = activeDeals.reduce((sum, d) => {
+    const stageWeight = d.status === "prospect" ? 0.1 : 
+                       d.status === "qualified" ? 0.3 : 
+                       d.status === "proposal_sent" ? 0.5 : 
+                       d.status === "negotiation" ? 0.75 : 0;
+    return sum + (d.dealValue * stageWeight);
+  }, 0);
+
+  // Generate monthly data for chart
+  const monthlyData = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthName = month.toLocaleDateString('en-US', { month: 'short' });
+    const monthDeals = userDeals.filter(d => {
+      const dealDate = new Date(d.createdAt);
+      return dealDate.getMonth() === month.getMonth() && dealDate.getFullYear() === month.getFullYear();
+    });
+    const closedThisMonth = monthDeals.filter(d => d.status === "closed_won");
+    monthlyData.push({
+      month: monthName,
+      revenue: closedThisMonth.reduce((sum, d) => sum + d.dealValue, 0),
+      commission: closedThisMonth.reduce((sum, d) => sum + d.commissionAmount, 0),
+      deals: monthDeals.length,
+    });
+  }
+
+  // Pie chart data for deal stages
+  const stageData = [
+    { name: 'Prospect', value: userDeals.filter(d => d.status === "prospect").length },
+    { name: 'Qualified', value: userDeals.filter(d => d.status === "qualified").length },
+    { name: 'Proposal', value: userDeals.filter(d => d.status === "proposal_sent").length },
+    { name: 'Negotiation', value: userDeals.filter(d => d.status === "negotiation").length },
+    { name: 'Closed Won', value: userDeals.filter(d => d.status === "closed_won").length },
+    { name: 'Closed Lost', value: userDeals.filter(d => d.status === "closed_lost").length },
+  ].filter(d => d.value > 0);
+
+  // Forecast calculation
+  const avgDealSize = closedWon.length > 0 
+    ? closedWon.reduce((sum, d) => sum + d.dealValue, 0) / closedWon.length 
+    : 0;
+  const avgCloseRate = userDeals.length > 0 ? closedWon.length / userDeals.length : 0;
+  const forecast3Month = weightedPipeline * avgCloseRate * 3;
+  const forecast12Month = weightedPipeline * avgCloseRate * 12;
+
+  // Tier progress
+  const tierProgress = {
+    bronze: { current: 0, target: 1, color: '#ea580c' },
+    silver: { current: 0, target: 1, color: '#94a3b8' },
+    gold: { current: currentAffiliate.totalSales, target: 150000, color: '#eab308' },
+    platinum: { current: currentAffiliate.totalSales, target: 500000, color: '#a855f7' },
+  };
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-[#1a1a1d] border border-white/10 rounded-xl p-3 shadow-xl">
+          <p className="text-gray-400 text-sm mb-1">{label}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} className="text-white font-medium" style={{ color: entry.color }}>
+              {entry.name}: {formatCurrency(entry.value)}
+            </p>
+          ))}
+        </div>
+      );
     }
-  ];
-
-  const pipelineStages = [
-    { status: "prospect", label: "Prospect", color: "bg-slate-600", count: userDeals.filter(d => d.status === "prospect").length },
-    { status: "qualified", label: "Qualified", color: "bg-blue-600", count: userDeals.filter(d => d.status === "qualified").length },
-    { status: "proposal_sent", label: "Proposal", color: "bg-amber-600", count: userDeals.filter(d => d.status === "proposal_sent").length },
-    { status: "negotiation", label: "Negotiation", color: "bg-orange-600", count: userDeals.filter(d => d.status === "negotiation").length },
-    { status: "closed_won", label: "Closed Won", color: "bg-emerald-600", count: userDeals.filter(d => d.status === "closed_won").length },
-  ];
-
-  const recentDeals = userDeals.slice(0, 5);
+    return null;
+  };
 
   return (
     <div className="space-y-6">
@@ -139,47 +180,126 @@ export default function DashboardPage() {
         </div>
       </motion.div>
 
-      {/* Stats Grid */}
+      {/* Stats Grid - Enhanced */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, index) => {
+        {[
+          {
+            label: "Total Earnings",
+            value: currentAffiliate.totalCommissionEarned,
+            change: currentAffiliate.totalCommissionEarned - (currentAffiliate.totalCommissionPaid + currentAffiliate.pendingCommission),
+            changeLabel: "This month",
+            icon: DollarSign,
+            color: "from-emerald-500 to-teal-600",
+            bgColor: "bg-emerald-500/10",
+            iconColor: "text-emerald-400",
+            link: "/dashboard/commissions"
+          },
+          {
+            label: "Total Sales",
+            value: currentAffiliate.totalSales,
+            change: closedWon.length > 0 ? closedWon.reduce((sum, d) => sum + d.dealValue, 0) : 0,
+            changeLabel: "Closed deals",
+            icon: TrendingUp,
+            color: "from-blue-500 to-indigo-600",
+            bgColor: "bg-blue-500/10",
+            iconColor: "text-blue-400",
+            link: "/dashboard/deals"
+          },
+          {
+            label: "Pipeline Value",
+            value: pipelineValue,
+            change: weightedPipeline,
+            changeLabel: "Weighted value",
+            icon: Target,
+            color: "from-purple-500 to-pink-600",
+            bgColor: "bg-purple-500/10",
+            iconColor: "text-purple-400",
+            link: "/dashboard/deals"
+          },
+          {
+            label: "Avg Deal Size",
+            value: avgDealSize || 0,
+            change: avgCloseRate * 100,
+            changeLabel: "Win rate",
+            suffix: "%",
+            icon: Award,
+            color: "from-amber-500 to-orange-600",
+            bgColor: "bg-amber-500/10",
+            iconColor: "text-amber-400",
+            link: "/dashboard/deals"
+          }
+        ].map((stat, index) => {
           const Icon = stat.icon;
+          const isPositive = stat.change > 0;
+          const changePercent = typeof stat.change === 'number' && stat.value > 0 
+            ? Math.abs(Math.round((stat.change / stat.value) * 100)) 
+            : 0;
+          
           return (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="group relative overflow-hidden bg-[#141417] rounded-2xl border border-white/5 p-6 hover:border-white/10 transition-all"
-            >
-              <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${stat.color} opacity-5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2`} />
-              <div className="flex items-start justify-between relative">
-                <div className={`w-12 h-12 ${stat.bgColor} rounded-xl flex items-center justify-center`}>
-                  <Icon className={`w-6 h-6 ${stat.iconColor}`} />
+            <Link href={stat.link} key={stat.label}>
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ scale: 1.02, y: -2 }}
+                className="group relative overflow-hidden bg-[#141417] rounded-2xl border border-white/5 p-6 hover:border-white/10 transition-all cursor-pointer"
+              >
+                <div className={`absolute top-0 right-0 w-40 h-40 bg-gradient-to-br ${stat.color} opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2`} />
+                
+                {/* Header */}
+                <div className="flex items-center justify-between relative">
+                  <div className={`w-14 h-14 ${stat.bgColor} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                    <Icon className={`w-7 h-7 ${stat.iconColor}`} />
+                  </div>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 rounded-full">
+                    {typeof stat.change === 'number' && stat.change !== 0 ? (
+                      <>
+                        {isPositive ? (
+                          <ArrowUpRight className="w-3 h-3 text-emerald-400" />
+                        ) : (
+                          <ArrowDownRight className="w-3 h-3 text-red-400" />
+                        )}
+                        <span className={`text-xs font-medium ${isPositive ? "text-emerald-400" : "text-red-400"}`}>
+                          {stat.suffix ? `${changePercent}${stat.suffix}` : `${changePercent}%`}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-xs text-gray-500">--</span>
+                    )}
+                  </div>
                 </div>
-                <div className={`flex items-center gap-1 text-xs font-medium ${
-                  stat.changeType === "positive" ? "text-emerald-400" : 
-                  stat.changeType === "negative" ? "text-red-400" : "text-gray-400"
-                }`}>
-                  {stat.changeType === "positive" ? (
-                    <ArrowUpRight className="w-3 h-3" />
-                  ) : stat.changeType === "negative" ? (
-                    <ArrowDownRight className="w-3 h-3" />
-                  ) : null}
-                  {stat.change}
+
+                {/* Value */}
+                <div className="mt-5">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-bold text-white">{typeof stat.value === 'number' ? formatCurrency(stat.value) : stat.value}</span>
+                  </div>
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="text-sm font-medium text-gray-300">{stat.label}</span>
+                  </div>
                 </div>
-              </div>
-              <div className="mt-4">
-                <div className="text-2xl font-semibold text-white">{stat.value}</div>
-                <div className="text-sm text-gray-500 mt-1">{stat.label}</div>
-              </div>
-            </motion.div>
+
+                {/* Footer */}
+                <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
+                  <span className="text-xs text-gray-500">{stat.changeLabel}</span>
+                  <div className="flex items-center gap-1 text-xs text-gray-400 group-hover:text-white transition-colors">
+                    <span>View</span>
+                    <ChevronRight className="w-3 h-3" />
+                  </div>
+                </div>
+
+                {/* Progress line at bottom */}
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              </motion.div>
+            </Link>
           );
         })}
       </div>
 
-      {/* Main Content Grid */}
+      {/* Charts Row */}
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Pipeline - Takes 2 columns */}
+        {/* Revenue Chart */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -187,183 +307,369 @@ export default function DashboardPage() {
           className="lg:col-span-2 bg-[#141417] rounded-2xl border border-white/5 p-6"
         >
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-white">Deal Pipeline</h2>
-            <Link
-              href="/dashboard/deals"
-              className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1"
-            >
-              View all <ChevronRight className="w-4 h-4" />
-            </Link>
+            <div>
+              <h2 className="text-lg font-semibold text-white">Revenue Overview</h2>
+              <p className="text-sm text-gray-500 mt-1">Monthly revenue and commission trends</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {['week', 'month', 'year'].map((range) => (
+                <button
+                  key={range}
+                  onClick={() => setTimeRange(range)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    timeRange === range 
+                      ? "bg-blue-600 text-white" 
+                      : "text-gray-400 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  {range.charAt(0).toUpperCase() + range.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="space-y-3">
-            {pipelineStages.map((stage) => (
-              <div key={stage.status} className="flex items-center justify-between p-3 bg-[#0a0a0b] rounded-xl hover:bg-white/5 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className={`w-3 h-3 rounded-full ${stage.color}`} />
-                  <span className="text-gray-300">{stage.label}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-24 h-2 bg-white/10 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full ${stage.color} rounded-full`} 
-                      style={{ width: `${userDeals.length > 0 ? (stage.count / userDeals.length) * 100 : 0}%` }}
-                    />
-                  </div>
-                  <span className="text-white font-medium w-8 text-right">{stage.count}</span>
-                </div>
-              </div>
-            ))}
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={monthlyData}>
+                <defs>
+                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorCommission" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                <XAxis dataKey="month" stroke="#666" fontSize={12} tickLine={false} />
+                <YAxis stroke="#666" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => formatCurrency(value)} />
+                <Tooltip content={<CustomTooltip />} />
+                <Area 
+                  type="monotone" 
+                  dataKey="revenue" 
+                  stroke="#3b82f6" 
+                  strokeWidth={2}
+                  fillOpacity={1} 
+                  fill="url(#colorRevenue)" 
+                  name="Revenue"
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="commission" 
+                  stroke="#10b981" 
+                  strokeWidth={2}
+                  fillOpacity={1} 
+                  fill="url(#colorCommission)" 
+                  name="Commission"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
         </motion.div>
 
-        {/* Quick Stats / Pending */}
+        {/* Deal Stages Pie Chart */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
           className="bg-[#141417] rounded-2xl border border-white/5 p-6"
         >
-          <h2 className="text-lg font-semibold text-white mb-6">Pending Payments</h2>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-[#0a0a0b] rounded-xl">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-amber-500/10 rounded-lg flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-amber-400" />
-                </div>
-                <div>
-                  <div className="text-white font-medium">Pending</div>
-                  <div className="text-xs text-gray-500">Awaiting payment</div>
-                </div>
-              </div>
-              <div className="text-amber-400 font-semibold">{formatCurrency(totalPending)}</div>
-            </div>
-            <div className="flex items-center justify-between p-4 bg-[#0a0a0b] rounded-xl">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center">
-                  <DollarSign className="w-5 h-5 text-emerald-400" />
-                </div>
-                <div>
-                  <div className="text-white font-medium">Paid</div>
-                  <div className="text-xs text-gray-500">This month</div>
-                </div>
-              </div>
-              <div className="text-emerald-400 font-semibold">{formatCurrency(totalPaid)}</div>
-            </div>
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold text-white">Deal Stages</h2>
+            <p className="text-sm text-gray-500 mt-1">Distribution of your deals</p>
           </div>
-          <Link
-            href="/dashboard/commissions"
-            className="mt-6 w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#0a0a0b] hover:bg-white/5 text-gray-300 rounded-xl text-sm font-medium transition-colors"
-          >
-            View Commissions <ChevronRight className="w-4 h-4" />
-          </Link>
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={stageData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={70}
+                  paddingAngle={2}
+                  dataKey="value"
+                >
+                  {stageData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="grid grid-cols-2 gap-2 mt-4">
+            {stageData.map((entry, index) => (
+              <div key={entry.name} className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                <span className="text-xs text-gray-400">{entry.name}</span>
+                <span className="text-xs text-white ml-auto">{entry.value}</span>
+              </div>
+            ))}
+          </div>
         </motion.div>
       </div>
 
-      {/* Recent Deals Table */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        className="bg-[#141417] rounded-2xl border border-white/5 overflow-hidden"
-      >
-        <div className="flex items-center justify-between p-6 border-b border-white/5">
-          <h2 className="text-lg font-semibold text-white">Recent Deals</h2>
-          <Link
-            href="/dashboard/deals"
-            className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1"
-          >
-            View all <ChevronRight className="w-4 h-4" />
-          </Link>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-[#0a0a0b]">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Commission</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {recentDeals.map((deal) => (
-                <tr key={deal._id} className="hover:bg-white/5 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-medium">
-                        {deal.clientName.charAt(0)}
-                      </div>
-                      <div>
-                        <div className="text-white font-medium">{deal.clientName}</div>
-                        <div className="text-sm text-gray-500">{deal.clientCompany || "No company"}</div>
-                      </div>
+      {/* Forecast & Pipeline */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Forecast */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-2xl border border-blue-500/20 p-6"
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-blue-400" />
+            </div>
+            <div>
+              <h3 className="text-white font-semibold">Forecast</h3>
+              <p className="text-xs text-gray-400">Based on current pipeline</p>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div className="p-4 bg-[#0a0a0b] rounded-xl">
+              <p className="text-gray-400 text-sm">Next 3 Months</p>
+              <p className="text-2xl font-bold text-white mt-1">{formatCurrency(forecast3Month)}</p>
+              <p className="text-xs text-gray-500 mt-1">Estimated commission</p>
+            </div>
+            <div className="p-4 bg-[#0a0a0b] rounded-xl">
+              <p className="text-gray-400 text-sm">Next 12 Months</p>
+              <p className="text-2xl font-bold text-white mt-1">{formatCurrency(forecast12Month)}</p>
+              <p className="text-xs text-gray-500 mt-1">Estimated commission</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Quick Stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          className="bg-[#141417] rounded-2xl border border-white/5 p-6"
+        >
+          <h3 className="text-white font-semibold mb-4">Quick Stats</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-3 bg-[#0a0a0b] rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                  <Target className="w-4 h-4 text-purple-400" />
+                </div>
+                <span className="text-gray-400 text-sm">Active Deals</span>
+              </div>
+              <span className="text-white font-semibold">{activeDeals.length}</span>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-[#0a0a0b] rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+                  <Award className="w-4 h-4 text-emerald-400" />
+                </div>
+                <span className="text-gray-400 text-sm">Closed Won</span>
+              </div>
+              <span className="text-white font-semibold">{closedWon.length}</span>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-[#0a0a0b] rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-amber-500/10 rounded-lg flex items-center justify-center">
+                  <Clock className="w-4 h-4 text-amber-400" />
+                </div>
+                <span className="text-gray-400 text-sm">Pending</span>
+              </div>
+              <span className="text-white font-semibold">{formatCurrency(totalPending)}</span>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-[#0a0a0b] rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                  <Zap className="w-4 h-4 text-blue-400" />
+                </div>
+                <span className="text-gray-400 text-sm">Conversion</span>
+              </div>
+              <span className="text-white font-semibold">{conversionRate}%</span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Tier Progress */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          className="bg-[#141417] rounded-2xl border border-white/5 p-6"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-white font-semibold">Tier Progress</h3>
+            <span className="px-2 py-1 bg-amber-500/20 text-amber-400 text-xs rounded-full font-medium">{currentAffiliate.tier.toUpperCase()}</span>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <div className="flex items-center justify-between text-sm mb-2">
+                <span className="text-gray-400">Gold Progress</span>
+                <span className="text-white">{Math.min(100, Math.round((currentAffiliate.totalSales / 150000) * 100))}%</span>
+              </div>
+              <div className="h-2 bg-[#0a0a0b] rounded-full overflow-hidden">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min(100, (currentAffiliate.totalSales / 150000) * 100)}%` }}
+                  transition={{ duration: 1, delay: 0.5 }}
+                  className="h-full bg-gradient-to-r from-yellow-500 to-amber-400 rounded-full" 
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">{formatCurrency(currentAffiliate.totalSales)} / R150,000</p>
+            </div>
+            <div className="p-3 bg-gradient-to-r from-amber-900/30 to-yellow-900/30 rounded-xl border border-amber-500/20">
+              <p className="text-amber-400 text-sm font-medium">R150,000 to Gold</p>
+              <p className="text-gray-400 text-xs mt-1">Unlock 15% commission rate</p>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Recent Deals & Actions */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Recent Deals */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.9 }}
+          className="bg-[#141417] rounded-2xl border border-white/5 overflow-hidden"
+        >
+          <div className="flex items-center justify-between p-6 border-b border-white/5">
+            <h2 className="text-lg font-semibold text-white">Recent Deals</h2>
+            <Link href="/dashboard/deals" className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1">
+              View all <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="divide-y divide-white/5">
+            {userDeals.slice(0, 5).map((deal) => (
+              <div key={deal._id} className="p-4 hover:bg-white/5 transition-colors cursor-pointer">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-medium">
+                      {deal.clientName.charAt(0)}
                     </div>
-                  </td>
-                  <td className="px-6 py-4 text-white font-medium">{formatCurrency(deal.dealValue)}</td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                    <div>
+                      <p className="text-white font-medium">{deal.clientName}</p>
+                      <p className="text-sm text-gray-500">{deal.clientCompany || "No company"}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-white font-semibold">{formatCurrency(deal.dealValue)}</p>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${
                       deal.status === "closed_won" ? "bg-emerald-500/10 text-emerald-400" :
                       deal.status === "closed_lost" ? "bg-red-500/10 text-red-400" :
                       deal.status === "negotiation" ? "bg-orange-500/10 text-orange-400" :
-                      deal.status === "proposal_sent" ? "bg-amber-500/10 text-amber-400" :
-                      deal.status === "qualified" ? "bg-blue-500/10 text-blue-400" :
-                      "bg-slate-500/10 text-slate-400"
+                      "bg-blue-500/10 text-blue-400"
                     }`}>
                       {deal.status.replace("_", " ")}
                     </span>
-                  </td>
-                  <td className="px-6 py-4 text-gray-300">{formatCurrency(deal.commissionAmount)}</td>
-                </tr>
-              ))}
-              {recentDeals.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
-                    No deals yet. <Link href="/dashboard/deals" className="text-blue-400 hover:text-blue-300">Create your first deal</Link>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </motion.div>
-
-      {/* Training Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
-        className="bg-[#141417] rounded-2xl border border-white/5 p-6"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-lg font-semibold text-white">Continue Learning</h2>
-            <p className="text-sm text-gray-500 mt-1">Complete training modules to increase your commission tier</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {userDeals.length === 0 && (
+              <div className="p-8 text-center text-gray-500">
+                No deals yet. <Link href="/dashboard/deals" className="text-blue-400">Create your first deal</Link>
+              </div>
+            )}
           </div>
-          <Link
-            href="/dashboard/training"
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-medium transition-colors"
-          >
-            <Play className="w-4 h-4" />
-            View Training
-          </Link>
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {(modules || []).slice(0, 3).map((module) => (
-            <div key={module._id} className="flex items-start gap-4 p-4 bg-[#0a0a0b] rounded-xl hover:bg-white/5 transition-colors cursor-pointer">
-              <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Play className="w-5 h-5 text-blue-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-white font-medium truncate">{module.title}</div>
-                <div className="text-sm text-gray-500 mt-1">{module.estimatedMinutes} min</div>
-              </div>
-              {module.isRequired && (
-                <span className="px-2 py-1 bg-red-500/10 text-red-400 text-xs rounded-full">Required</span>
-              )}
+        </motion.div>
+
+        {/* Quick Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.0 }}
+          className="space-y-4"
+        >
+          {/* Resources */}
+          <div className="bg-[#141417] rounded-2xl border border-white/5 p-6">
+            <h3 className="text-white font-semibold mb-4">Quick Actions</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <Link href="/dashboard/deals" className="flex items-center gap-3 p-4 bg-[#0a0a0b] rounded-xl hover:bg-white/5 transition-colors">
+                <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                  <Briefcase className="w-5 h-5 text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-white text-sm font-medium">New Deal</p>
+                  <p className="text-gray-500 text-xs">Create opportunity</p>
+                </div>
+              </Link>
+              <Link href="/dashboard/resources" className="flex items-center gap-3 p-4 bg-[#0a0a0b] rounded-xl hover:bg-white/5 transition-colors">
+                <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                  <Users className="w-5 h-5 text-purple-400" />
+                </div>
+                <div>
+                  <p className="text-white text-sm font-medium">Resources</p>
+                  <p className="text-gray-500 text-xs">View materials</p>
+                </div>
+              </Link>
+              <Link href="/dashboard/marketing" className="flex items-center gap-3 p-4 bg-[#0a0a0b] rounded-xl hover:bg-white/5 transition-colors">
+                <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+                  <MousePointer className="w-5 h-5 text-emerald-400" />
+                </div>
+                <div>
+                  <p className="text-white text-sm font-medium">Marketing</p>
+                  <p className="text-gray-500 text-xs">Get links</p>
+                </div>
+              </Link>
+              <Link href="/dashboard/training" className="flex items-center gap-3 p-4 bg-[#0a0a0b] rounded-xl hover:bg-white/5 transition-colors">
+                <div className="w-10 h-10 bg-amber-500/10 rounded-lg flex items-center justify-center">
+                  <Play className="w-5 h-5 text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-white text-sm font-medium">Training</p>
+                  <p className="text-gray-500 text-xs">Learn more</p>
+                </div>
+              </Link>
             </div>
-          ))}
-        </div>
-      </motion.div>
+          </div>
+
+          {/* Performance This Month */}
+          <div className="bg-[#141417] rounded-2xl border border-white/5 p-6">
+            <h3 className="text-white font-semibold mb-4">This Month</h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 bg-[#0a0a0b] rounded-xl">
+                <div className="flex items-center gap-3">
+                  <DollarSign className="w-4 h-4 text-emerald-400" />
+                  <span className="text-gray-400 text-sm">Commission Earned</span>
+                </div>
+                <span className="text-white font-semibold">
+                  {formatCurrency(closedWon.filter(d => {
+                    const closed = new Date(d.actualCloseDate || d.createdAt);
+                    const now = new Date();
+                    return closed.getMonth() === now.getMonth() && closed.getFullYear() === now.getFullYear();
+                  }).reduce((sum, d) => sum + d.commissionAmount, 0))}
+                </span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-[#0a0a0b] rounded-xl">
+                <div className="flex items-center gap-3">
+                  <Briefcase className="w-4 h-4 text-blue-400" />
+                  <span className="text-gray-400 text-sm">Deals Created</span>
+                </div>
+                <span className="text-white font-semibold">
+                  {userDeals.filter(d => {
+                    const created = new Date(d.createdAt);
+                    const now = new Date();
+                    return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+                  }).length}
+                </span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-[#0a0a0b] rounded-xl">
+                <div className="flex items-center gap-3">
+                  <Target className="w-4 h-4 text-purple-400" />
+                  <span className="text-gray-400 text-sm">Win Rate</span>
+                </div>
+                <span className="text-white font-semibold">
+                  {userDeals.length > 0 
+                    ? Math.round((closedWon.length / userDeals.length) * 100) 
+                    : 0}%
+                </span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 }

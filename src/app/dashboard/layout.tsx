@@ -15,7 +15,6 @@ import {
   Bell,
   Target,
   Megaphone,
-  Award,
   HelpCircle,
   Zap,
 } from "lucide-react";
@@ -32,7 +31,6 @@ const navItems = [
   { href: "/dashboard/commissions", label: "Commissions", icon: DollarSign, section: "work" },
   // Personal items
   { href: "/dashboard/profile", label: "Profile", icon: User, section: "personal" },
-  { href: "/dashboard/tier", label: "Tier", icon: Award, section: "personal" },
   { href: "/dashboard/training", label: "Training", icon: GraduationCap, section: "personal" },
   { href: "/dashboard/support", label: "Support", icon: HelpCircle, section: "personal" },
   // Platinum only
