@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight } from "lucide-react";
+import { SignIn } from "@clerk/nextjs";
 
 export default function LoginPage() {
   return (
@@ -27,36 +27,28 @@ export default function LoginPage() {
             <p className="text-gray-400">Sign in to your affiliate dashboard</p>
           </div>
           
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-8 text-center">
-            <div className="mb-6">
-              <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl text-gray-400">🔐</span>
-              </div>
-              <p className="text-gray-400 mb-6">
-                Demo mode - No authentication required
-              </p>
-            </div>
-            
-            <div className="space-y-3">
-              <Link
-                href="/dashboard"
-                className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 transition-colors"
-              >
-                Go to Dashboard
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-              
-              <Link
-                href="/admin"
-                className="flex items-center justify-center gap-2 w-full px-6 py-3 border border-white/20 text-white rounded-xl font-medium hover:bg-white/10 transition-colors"
-              >
-                Go to Admin Panel
-              </Link>
-            </div>
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
+            <SignIn
+              fallbackRedirectUrl="/dashboard"
+              appearance={{
+                elements: {
+                  rootBox: "w-full",
+                  card: "bg-transparent shadow-none",
+                  headerTitle: "text-white",
+                  headerSubtitle: "text-gray-400",
+                  socialButtonsBlockButton: "bg-white/10 border-white/20 text-white hover:bg-white/20",
+                  formFieldLabel: "text-gray-300",
+                  formFieldInput: "bg-white/10 border-white/20 text-white",
+                  formButtonPrimary: "bg-blue-500 hover:bg-blue-600 text-white",
+                  footerActionLink: "text-blue-400 hover:text-blue-300",
+                }
+              }}
+              routing="hash"
+            />
           </div>
 
           <p className="text-center text-gray-500 text-sm mt-6">
-            Don't have an account? <Link href="/apply" className="text-blue-400 hover:underline">Apply now</Link>
+            Don&apos;t have an account? <Link href="/apply" className="text-blue-400 hover:underline">Apply now</Link>
           </p>
         </div>
       </div>

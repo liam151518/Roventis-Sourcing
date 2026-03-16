@@ -15,16 +15,14 @@ import {
   Award,
   Share2
 } from "lucide-react";
-import { useDemoData } from "@/lib/demo-data";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { formatCurrency } from "@/lib/utils";
 
 export default function ProfilePage() {
-  const { affiliates } = useDemoData();
+  const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate);
   const [activeTab, setActiveTab] = useState("personal");
   const [isEditing, setIsEditing] = useState(false);
-  
-  // Using first affiliate as demo user
-  const currentUser = affiliates[0];
 
   const tierColors: Record<string, string> = {
     bronze: "bg-amber-700",
@@ -39,237 +37,233 @@ export default function ProfilePage() {
     { id: "account", label: "Account", icon: Lock },
   ];
 
+  if (!currentAffiliate) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-primary">Profile Settings</h1>
-          <p className="text-gray-500">Manage your account information</p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold text-white">Profile</h1>
+        <p className="text-gray-400">Manage your affiliate profile</p>
       </div>
 
-      {/* Profile Card */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-        <div className="flex flex-col sm:flex-row items-center gap-6">
-          <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center text-white text-3xl font-bold">
-            {currentUser.firstName[0]}{currentUser.lastName[0]}
+      <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+        <div className="flex items-center gap-6">
+          <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-3xl font-bold text-white">
+            {currentAffiliate.firstName?.[0]}{currentAffiliate.lastName?.[0]}
           </div>
-          <div className="flex-1 text-center sm:text-left">
-            <h2 className="text-2xl font-bold text-primary">
-              {currentUser.firstName} {currentUser.lastName}
-            </h2>
-            <p className="text-gray-500">{currentUser.email}</p>
-            <div className="flex items-center justify-center sm:justify-start gap-3 mt-3">
-              <span className={`px-3 py-1 rounded-full text-white text-sm font-medium capitalize ${tierColors[currentUser.tier]}`}>
-                {currentUser.tier} Tier
+          <div className="flex-1">
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl font-semibold text-white">
+                {currentAffiliate.firstName} {currentAffiliate.lastName}
+              </h2>
+              <span className={`text-xs px-3 py-1 rounded capitalize text-white ${tierColors[currentAffiliate.tier] || "bg-gray-600"}`}>
+                {currentAffiliate.tier} Tier
+              </span>
+            </div>
+            <p className="text-gray-400">{currentAffiliate.email}</p>
+            <div className="flex items-center gap-4 mt-2">
+              <span className="text-xs px-3 py-1 bg-green-500/20 text-green-400 rounded capitalize">
+                {currentAffiliate.status}
               </span>
               <span className="text-sm text-gray-500">
-                Code: <code className="bg-gray-100 px-2 py-0.5 rounded">{currentUser.affiliateCode}</code>
+                Code: <span className="font-mono text-gray-300">{currentAffiliate.affiliateCode}</span>
               </span>
             </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <button className="flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-400 transition-colors">
-              <Share2 className="w-4 h-4" />
-              Copy Referral Link
+          <button
+            onClick={() => setIsEditing(!isEditing)}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            {isEditing ? "Cancel" : "Edit Profile"}
+          </button>
+        </div>
+      </div>
+
+      <div className="flex gap-2 border-b border-white/10">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors relative ${
+                activeTab === tab.id ? "text-blue-400" : "text-gray-400 hover:text-white"
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {tab.label}
+              {activeTab === tab.id && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500"
+                />
+              )}
             </button>
-          </div>
-        </div>
+          );
+        })}
       </div>
 
-      {/* Stats */}
-      <div className="grid sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-          <div className="text-sm text-gray-500 mb-1">Total Sales</div>
-          <div className="text-2xl font-bold text-primary">{formatCurrency(currentUser.totalSales)}</div>
-        </div>
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-          <div className="text-sm text-gray-500 mb-1">Commission Earned</div>
-          <div className="text-2xl font-bold text-primary">{formatCurrency(currentUser.totalCommissionEarned)}</div>
-        </div>
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-          <div className="text-sm text-gray-500 mb-1">Commission Paid</div>
-          <div className="text-2xl font-bold text-green-600">{formatCurrency(currentUser.totalCommissionPaid)}</div>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="border-b">
-          <div className="flex">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors ${
-                  activeTab === tab.id
-                    ? "text-amber-600 border-b-2 border-amber-500"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                <tab.icon className="w-5 h-5" />
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="p-6">
-          {activeTab === "personal" && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="space-y-6"
-            >
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-                  <input
-                    type="text"
-                    defaultValue={currentUser.firstName}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-                  <input
-                    type="text"
-                    defaultValue={currentUser.lastName}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500"
-                  />
-                </div>
-              </div>
-              
+      <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+        {activeTab === "personal" && (
+          <div className="space-y-4">
+            <h3 className="font-semibold text-white mb-4">Personal Information</h3>
+            <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-                <input
-                  type="email"
-                  defaultValue={currentUser.email}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500"
-                />
-              </div>
-              
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                  <input
-                    type="tel"
-                    defaultValue={currentUser.phone || ""}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
-                  <input
-                    type="text"
-                    defaultValue={currentUser.city || ""}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">LinkedIn Profile</label>
-                <input
-                  type="url"
-                  defaultValue={currentUser.linkedinUrl || ""}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500"
-                />
-              </div>
-            </motion.div>
-          )}
-
-          {activeTab === "banking" && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="space-y-6"
-            >
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                <p className="text-sm text-amber-800">
-                  Banking details are used for commission payouts. Updates require admin approval.
-                </p>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Bank Name</label>
+                <label className="block text-sm text-gray-400 mb-1">First Name</label>
                 <input
                   type="text"
-                  defaultValue={currentUser.bankName || ""}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500"
+                  defaultValue={currentAffiliate.firstName}
+                  disabled={!isEditing}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white disabled:opacity-50"
                 />
               </div>
-              
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Account Number</label>
-                  <input
-                    type="text"
-                    defaultValue={currentUser.accountNumber || ""}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Account Type</label>
-                  <select
-                    defaultValue={currentUser.accountType || ""}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500"
-                  >
-                    <option value="">Select account type</option>
-                    <option value="personal">Personal</option>
-                    <option value="business">Business</option>
-                  </select>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {activeTab === "account" && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="space-y-6"
-            >
               <div>
-                <h3 className="text-lg font-semibold text-primary mb-4">Change Password</h3>
-                <div className="space-y-4 max-w-md">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
-                    <input
-                      type="password"
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
-                    <input
-                      type="password"
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
-                    <input
-                      type="password"
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500"
-                    />
-                  </div>
-                  <button className="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-light">
-                    Update Password
+                <label className="block text-sm text-gray-400 mb-1">Last Name</label>
+                <input
+                  type="text"
+                  defaultValue={currentAffiliate.lastName}
+                  disabled={!isEditing}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white disabled:opacity-50"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Email</label>
+                <input
+                  type="email"
+                  defaultValue={currentAffiliate.email}
+                  disabled={!isEditing}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white disabled:opacity-50"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Phone</label>
+                <input
+                  type="tel"
+                  defaultValue={currentAffiliate.phone || ""}
+                  disabled={!isEditing}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white disabled:opacity-50"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">City</label>
+                <input
+                  type="text"
+                  defaultValue={currentAffiliate.city || ""}
+                  disabled={!isEditing}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white disabled:opacity-50"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">LinkedIn URL</label>
+                <input
+                  type="url"
+                  defaultValue={currentAffiliate.linkedinUrl || ""}
+                  disabled={!isEditing}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white disabled:opacity-50"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "banking" && (
+          <div className="space-y-4">
+            <h3 className="font-semibold text-white mb-4">Banking Information</h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Bank Name</label>
+                <input
+                  type="text"
+                  defaultValue={currentAffiliate.bankName || ""}
+                  disabled={!isEditing}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white disabled:opacity-50"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Account Number</label>
+                <input
+                  type="text"
+                  defaultValue={currentAffiliate.accountNumber || ""}
+                  disabled={!isEditing}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white disabled:opacity-50"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Account Type</label>
+                <select
+                  defaultValue={currentAffiliate.accountType || "savings"}
+                  disabled={!isEditing}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white disabled:opacity-50"
+                >
+                  <option value="savings">Savings</option>
+                  <option value="checking">Checking</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Branch Code</label>
+                <input
+                  type="text"
+                  defaultValue={currentAffiliate.branchCode || ""}
+                  disabled={!isEditing}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white disabled:opacity-50"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "account" && (
+          <div className="space-y-4">
+            <h3 className="font-semibold text-white mb-4">Account Settings</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                <div>
+                  <p className="text-white font-medium">Affiliate Code</p>
+                  <p className="text-sm text-gray-400">Share this code to earn commissions</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <code className="bg-black/30 px-3 py-1 rounded text-blue-400 font-mono">
+                    {currentAffiliate.affiliateCode}
+                  </code>
+                  <button className="p-2 text-gray-400 hover:text-white">
+                    <Share2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
-            </motion.div>
-          )}
+              <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                <div>
+                  <p className="text-white font-medium">Experience Level</p>
+                  <p className="text-sm text-gray-400">Your current experience level</p>
+                </div>
+                <span className="text-white capitalize">{currentAffiliate.experienceLevel || "beginner"}</span>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                <div>
+                  <p className="text-white font-medium">Commission Tier</p>
+                  <p className="text-sm text-gray-400">Your current commission tier</p>
+                </div>
+                <span className={`text-white capitalize px-3 py-1 rounded ${tierColors[currentAffiliate.tier] || "bg-gray-600"}`}>
+                  {currentAffiliate.tier}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
-          <div className="mt-8 pt-6 border-t flex justify-end">
-            <button className="flex items-center gap-2 px-6 py-2 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-400 transition-colors">
-              <Save className="w-5 h-5" />
+        {isEditing && (
+          <div className="mt-6 flex justify-end">
+            <button className="flex items-center gap-2 px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+              <Save className="w-4 h-4" />
               Save Changes
             </button>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

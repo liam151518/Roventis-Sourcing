@@ -221,6 +221,211 @@ body {
   pointer-events: none;
 }
 
+/* ===========================================
+   ANIMATED BACKGROUND - Floating Orbs & Particles
+   =========================================== */
+.animated-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+.animated-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(120, 119, 198, 0.3), transparent),
+    radial-gradient(ellipse 60% 40% at 90% 0%, rgba(99, 102, 241, 0.15), transparent),
+    radial-gradient(ellipse 50% 30% at 0% 50%, rgba(168, 85, 247, 0.1), transparent);
+  pointer-events: none;
+}
+
+/* Floating orbs */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  animation: float-orb 20s ease-in-out infinite;
+}
+
+.orb-1 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, transparent 70%);
+  top: -200px;
+  right: -100px;
+  animation-delay: 0s;
+  animation-duration: 25s;
+}
+
+.orb-2 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.35) 0%, transparent 70%);
+  bottom: -150px;
+  left: -100px;
+  animation-delay: -5s;
+  animation-duration: 30s;
+}
+
+.orb-3 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, transparent 70%);
+  top: 40%;
+  left: 60%;
+  animation-delay: -10s;
+  animation-duration: 22s;
+}
+
+.orb-4 {
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.25) 0%, transparent 70%);
+  top: 60%;
+  right: 20%;
+  animation-delay: -15s;
+  animation-duration: 28s;
+}
+
+@keyframes float-orb {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(30px, -30px) scale(1.05);
+  }
+  50% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
+  75% {
+    transform: translate(20px, 30px) scale(1.02);
+  }
+}
+
+/* Particle grid */
+.particle-grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 20%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 20%, transparent 70%);
+}
+
+/* Animated gradient mesh */
+.gradient-mesh {
+  position: absolute;
+  inset: 0;
+  background: 
+    conic-gradient(from 180deg at 50% 50%, 
+      rgba(59, 130, 246, 0.1) 0deg,
+      rgba(168, 85, 247, 0.08) 120deg,
+      rgba(6, 182, 212, 0.1) 240deg,
+      rgba(59, 130, 246, 0.1) 360deg);
+  animation: mesh-rotate 30s linear infinite;
+  opacity: 0.6;
+}
+
+@keyframes mesh-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Floating particles */
+.particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  animation: particle-float 15s ease-in-out infinite;
+}
+
+.particle:nth-child(1) { left: 10%; top: 20%; animation-delay: 0s; animation-duration: 20s; }
+.particle:nth-child(2) { left: 20%; top: 80%; animation-delay: -2s; animation-duration: 18s; }
+.particle:nth-child(3) { left: 30%; top: 40%; animation-delay: -4s; animation-duration: 22s; }
+.particle:nth-child(4) { left: 40%; top: 60%; animation-delay: -6s; animation-duration: 16s; }
+.particle:nth-child(5) { left: 50%; top: 30%; animation-delay: -8s; animation-duration: 24s; }
+.particle:nth-child(6) { left: 60%; top: 70%; animation-delay: -10s; animation-duration: 19s; }
+.particle:nth-child(7) { left: 70%; top: 50%; animation-delay: -12s; animation-duration: 21s; }
+.particle:nth-child(8) { left: 80%; top: 25%; animation-delay: -14s; animation-duration: 17s; }
+.particle:nth-child(9) { left: 90%; top: 85%; animation-delay: -16s; animation-duration: 23s; }
+.particle:nth-child(10) { left: 15%; top: 55%; animation-delay: -18s; animation-duration: 25s; }
+
+@keyframes particle-float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.4;
+  }
+  25% {
+    transform: translate(20px, -30px) scale(1.2);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translate(-10px, -50px) scale(0.8);
+    opacity: 0.3;
+  }
+  75% {
+    transform: translate(30px, -20px) scale(1.1);
+    opacity: 0.5;
+  }
+}
+
+/* Glow spot */
+.glow-spot {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 60%);
+  border-radius: 50%;
+  animation: glow-pulse 8s ease-in-out infinite;
+}
+
+.glow-spot-1 {
+  top: 10%;
+  left: 20%;
+  animation-delay: 0s;
+}
+
+.glow-spot-2 {
+  bottom: 20%;
+  right: 15%;
+  animation-delay: -4s;
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+/* Noise overlay */
+.bg-noise {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.04;
+  pointer-events: none;
+}
+
 /* Apple-style buttons – pill, refined */
 .btn-primary {
   background: linear-gradient(135deg, #2997ff 0%, #0a84ff 100%);

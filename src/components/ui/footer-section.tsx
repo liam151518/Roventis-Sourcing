@@ -59,7 +59,8 @@ const footerLinks: FooterSection[] = [
 
 export function Footer() {
 	return (
-		<footer className="relative w-full max-w-5xl mx-auto flex flex-col items-center justify-center rounded-t-[2rem] border-t border-white/[0.08] bg-[radial-gradient(40%_120px_at_50%_0%,rgba(255,255,255,0.06),transparent)] px-6 py-14 lg:py-16">
+		<footer className="relative w-full border-t border-white/[0.08] bg-black px-6 py-14 lg:py-16">
+			<div className="w-full px-6 lg:px-12 xl:px-20 flex flex-col items-center justify-center">
 			<div className="absolute top-0 right-1/2 left-1/2 h-px w-1/3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/10 blur-sm" />
 
 			<div className="grid w-full gap-8 xl:grid-cols-3 xl:gap-8">
@@ -116,6 +117,7 @@ export function Footer() {
 			<p className="mt-14 text-[12px] text-gray-600">
 				© {new Date().getFullYear()} Roventis Sourcing. All rights reserved.
 			</p>
+			</div>
 		</footer>
 	);
 }

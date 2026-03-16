@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -18,7 +18,9 @@ import {
   LogOut,
   ChevronRight,
 } from "lucide-react";
-import { DemoDataProvider, Affiliate } from "@/lib/demo-data";
+import { useQuery, useMutation } from "convex/react";
+import { useAuth, useUser, UserButton } from "@clerk/nextjs";
+import { api } from "@/convex/_generated/api";
 
 const navItems = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
@@ -36,28 +38,38 @@ const tierColors: Record<string, string> = {
   platinum: "bg-blue-500",
 };
 
-// Demo user for display
-const demoUser: Affiliate = {
-  id: "aff-001",
-  firstName: "John",
-  lastName: "Smith",
-  email: "john.smith@email.com",
-  affiliateCode: "ROV-JSMITH-001",
-  referralLink: "https://roventis.co.za/?ref=ROV-JSMITH-001",
-  tier: "gold",
-  status: "approved",
-  trainingCompleted: true,
-  trainingScore: 92,
-  totalSales: 450000,
-  totalCommissionEarned: 45000,
-  totalCommissionPaid: 35000,
-  createdAt: new Date(),
-};
-
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
-  const currentUser = demoUser;
+  const { userId, isLoaded } = useAuth();
+  const { user } = useUser();
+  const registerAffiliate = useMutation(api.affiliates.registerAffiliate);
+  const seedDemoData = useMutation(api.affiliates.seedDemoData);
+  const seedAllData = useMutation(api.affiliates.seedAllData);
+  
+  // Get current affiliate - pass clerk user ID if available
+  const currentAffiliate = useQuery(
+    api.affiliates.getCurrentAffiliate,
+    userId ? { clerkUserId: userId } : {}
+  );
+
+  // Auto-register new Clerk users and seed data on first load
+  useEffect(() => {
+    console.log("useEffect:", { isLoaded, userId, currentAffiliate });
+    if (isLoaded && userId && currentAffiliate === null) {
+      console.log("Calling seedDemoData for:", userId);
+      // User is logged in but no affiliate found - register them
+      seedDemoData({ 
+        clerkUserId: userId,
+        firstName: user?.firstName || "Demo",
+        lastName: user?.lastName || "User", 
+        email: user?.primaryEmailAddress?.emailAddress || "demo@roventis.co.za"
+      }).then((result) => {
+        console.log("seedDemoData result:", result);
+        seedAllData();
+      });
+    }
+  }, [isLoaded, userId, currentAffiliate, user]);
 
   return (
     <div className="min-h-screen bg-black flex">
@@ -102,21 +114,25 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
           {/* User Info */}
           <div className="p-6 border-b border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                {currentUser.firstName[0]}{currentUser.lastName[0]}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold truncate">
-                  {currentUser.firstName} {currentUser.lastName}
+            {currentAffiliate ? (
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                  {(currentAffiliate.firstName === "Demo" && user) ? `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}` : `${currentAffiliate.firstName[0]}${currentAffiliate.lastName[0]}`}
                 </div>
-                <div className="flex items-center gap-1">
-                  <span className={`px-2 py-0.5 rounded text-xs text-black font-medium capitalize ${tierColors[currentUser.tier]}`}>
-                    {currentUser.tier}
-                  </span>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold truncate">
+                    {(currentAffiliate.firstName === "Demo" && user) ? `${user.firstName} ${user.lastName}` : `${currentAffiliate.firstName} ${currentAffiliate.lastName}`}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className={`px-2 py-0.5 rounded text-xs text-black font-medium capitalize ${tierColors[currentAffiliate.tier]}`}>
+                      {currentAffiliate.tier}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="text-gray-500 text-sm">Loading...</div>
+            )}
           </div>
 
           {/* Navigation */}
@@ -185,6 +201,8 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
               >
                 Admin Panel
               </Link>
+              
+              <UserButton afterSignOutUrl="/" />
             </div>
           </div>
         </header>
@@ -203,9 +221,5 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <DemoDataProvider>
-      <DashboardContent>{children}</DashboardContent>
-    </DemoDataProvider>
-  );
+  return <DashboardContent>{children}</DashboardContent>;
 }

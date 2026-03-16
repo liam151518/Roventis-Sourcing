@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Inter } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
-import { DemoDataProvider } from "@/lib/demo-data";
+import ConvexClientProvider from "@/lib/convex/provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,12 +26,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth">
-      <body className={`${geistSans.variable} ${inter.variable} antialiased`}>
-        <DemoDataProvider>
-          {children}
-        </DemoDataProvider>
-      </body>
-    </html>
+    <ClerkProvider
+      signInFallbackRedirectUrl="/dashboard"
+      signUpFallbackRedirectUrl="/dashboard"
+      signInUrl="/login"
+      signUpUrl="/apply"
+    >
+      <html lang="en" className="scroll-smooth">
+        <body className={`${geistSans.variable} ${inter.variable} antialiased`}>
+          <ConvexClientProvider>
+            {children}
+          </ConvexClientProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

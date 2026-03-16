@@ -15,7 +15,8 @@ import {
   Search,
   ChevronRight
 } from "lucide-react";
-import { useDemoData } from "@/lib/demo-data";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { formatCurrency, formatDate, dealStatuses } from "@/lib/utils";
 
 const columns = [
@@ -28,14 +29,16 @@ const columns = [
 ];
 
 export default function DealsPage() {
-  const { deals } = useDemoData();
+  const deals = useQuery(api.deals.getAllDeals);
+  const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate);
+  const createDeal = useMutation(api.deals.createDeal);
   const [showModal, setShowModal] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<typeof deals[0] | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   
   // Using first affiliate as demo user
-  const affiliateId = "aff-001";
-  const userDeals = deals.filter(d => d.affiliateId === affiliateId);
+  const affiliateId = currentAffiliate?._id || "";
+  const userDeals = currentAffiliate ? (deals || []).filter(d => d.affiliateId === currentAffiliate._id) : [];
   
   const filteredDeals = userDeals.filter(d => 
     d.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -49,6 +52,14 @@ export default function DealsPage() {
     const statusObj = dealStatuses.find(s => s.value === status);
     return statusObj?.color || "bg-gray-100 text-gray-700";
   };
+
+  if (!deals || !currentAffiliate) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -116,7 +127,7 @@ export default function DealsPage() {
                 <div className="space-y-3 max-h-[calc(100vh-350px)] overflow-y-auto">
                   {columnDeals.map((deal) => (
                     <motion.div
-                      key={deal.id}
+                      key={deal._id}
                       layout
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}

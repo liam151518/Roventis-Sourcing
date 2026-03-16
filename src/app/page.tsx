@@ -5,6 +5,7 @@ import { motion, useInView, useScroll, useTransform, AnimatePresence } from "fra
 import { ArrowRight, Check, ChevronDown, Play, TrendingUp, Users, DollarSign, Award, Briefcase, Zap, MessageCircle, Mail, MapPin } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import { formatCurrency } from "@/lib/utils";
 import { Footer } from "@/components/ui/footer-section";
 
@@ -39,24 +40,42 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
+      {/* Animated Background */}
+      <div className="animated-bg">
+        <div className="aurora-wave aurora-wave-1" />
+        <div className="aurora-wave aurora-wave-2" />
+        <div className="aurora-wave aurora-wave-3" />
+        <div className="floating-orb floating-orb-1" />
+        <div className="light-beam light-beam-1" />
+        <div className="light-beam light-beam-2" />
+        <div className="ambient-dots">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="ambient-dot" />
+          ))}
+        </div>
+        <div className="floating-orb floating-orb-3" />
+        <div className="bg-noise" />
+      </div>
+
       {/* Navigation – Apple-style minimal */}
       <nav className="fixed top-0 left-0 right-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 lg:px-8 py-5">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-transparent pointer-events-none" />
+        <div className="relative w-full px-6 lg:px-12 xl:px-20 py-5">
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2.5">
+            <Link href="/" className="flex items-center gap-2.5 group">
               <div className="relative h-8 w-auto min-w-[32px]">
                 <Image
                   src="/roventis-logo.png"
                   alt="Roventis"
                   width={140}
                   height={32}
-                  className="h-8 w-auto object-contain object-left"
+                  className="h-8 w-auto object-contain object-left transition-transform duration-300 group-hover:scale-105"
                   priority
                 />
               </div>
             </Link>
 
-            <ul className="hidden md:flex items-center gap-8">
+            <ul className="hidden lg:flex items-center gap-1">
               {[
                 { label: "Home", href: "/" },
                 { label: "How It Works", href: "#how-it-works" },
@@ -67,44 +86,43 @@ export default function LandingPage() {
                 <li key={item.label}>
                   <a
                     href={item.href}
-                    className="text-[13px] text-gray-400 hover:text-white transition-colors duration-200"
+                    className="relative text-[13px] text-gray-400 hover:text-white px-4 py-2 transition-all duration-300 group"
                   >
-                    {item.label}
+                    <span className="relative z-10">{item.label}</span>
+                    <span className="absolute inset-0 bg-white/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-blue-500 group-hover:w-[calc(100%-16px)] transition-all duration-300" />
                   </a>
                 </li>
               ))}
             </ul>
 
-            <div className="flex items-center gap-4">
-              <Link href="/login" className="text-[13px] text-gray-400 hover:text-white transition-colors">
-                Sign In
-              </Link>
-              <Link href="/apply" className="btn-primary text-[13px] px-5 py-2.5">
-                Apply Now
-              </Link>
+            <div className="flex items-center gap-3">
+              <Show when="signed-out">
+                <Link href="/login" className="text-[13px] text-gray-400 hover:text-white transition-colors hidden sm:block relative group">
+                  Sign In
+                  <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-white group-hover:w-full transition-all duration-300" />
+                </Link>
+                <Link href="/apply" className="btn-primary text-[13px] px-5 py-2.5 relative overflow-hidden group">
+                  <span className="relative z-10">Apply Now</span>
+                  <span className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </Link>
+              </Show>
+              <Show when="signed-in">
+                <Link href="/dashboard" className="btn-primary text-[13px] px-5 py-2.5">
+                  Dashboard
+                </Link>
+                <UserButton afterSignOutUrl="/" />
+              </Show>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Hero – Educate/Apple: bold statement + generous space */}
+      {/* Hero – Edge to edge with animated background */}
       <section ref={heroRef} className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-black" />
-        <div className="absolute inset-0 grid-bg opacity-20" />
-        <motion.div
-          animate={{ scale: [1, 1.15, 1], opacity: [0.06, 0.12, 0.06] }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/4 -right-32 w-[28rem] h-[28rem] bg-blue-500 rounded-full blur-[140px]"
-        />
-        <motion.div
-          animate={{ scale: [1.1, 1, 1.1], opacity: [0.08, 0.14, 0.08] }}
-          transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-1/3 -left-32 w-[24rem] h-[24rem] bg-purple-500 rounded-full blur-[120px]"
-        />
-
         <motion.div
           style={{ opacity: heroOpacity, scale: heroScale }}
-          className="relative z-10 max-w-4xl mx-auto px-6 pt-28 pb-24 text-center"
+          className="relative z-10 w-full px-6 lg:px-12 xl:px-20 pt-28 pb-24 text-center"
         >
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -118,7 +136,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 24 }}
             animate={heroInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.08 }}
-            className="text-5xl sm:text-6xl md:text-7xl lg:text-[4.25rem] font-semibold tracking-tight leading-[1.05] mb-8"
+            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-semibold tracking-tight leading-[1.05] mb-8"
           >
             Turn Your Network{" "}
             <span className="gradient-text">Into Income</span>
@@ -127,9 +145,9 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 24 }}
             animate={heroInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.15 }}
-            className="text-lg md:text-xl text-gray-400 max-w-xl mx-auto mb-14 leading-relaxed"
+            className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-14 leading-relaxed"
           >
-            Practical earning that gives you the tools to thrive. Join South Africa’s product sourcing affiliate program—uncapped commissions, training, and support.
+            Join South Africa’s fastest-growing product sourcing affiliate program.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -137,11 +155,11 @@ export default function LandingPage() {
             transition={{ duration: 0.6, delay: 0.25 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <Link href="/apply" className="btn-primary text-[15px] px-8 py-3.5 flex items-center gap-2">
+            <Link href="/apply" className="btn-primary text-[15px] px-10 py-4 flex items-center gap-2">
               Start Earning
               <ArrowRight className="w-4 h-4" />
             </Link>
-            <Link href="/login" className="btn-secondary text-[15px] px-8 py-3.5 flex items-center gap-2">
+            <Link href="/login" className="btn-secondary text-[15px] px-10 py-4 flex items-center gap-2">
               <Play className="w-4 h-4" />
               Affiliate Login
             </Link>
@@ -151,7 +169,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={heroInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-24 grid grid-cols-3 gap-12 max-w-lg mx-auto"
+            className="mt-28 grid grid-cols-3 gap-8 lg:gap-16 max-w-2xl mx-auto"
           >
             {[
               { value: "50+", label: "Active Affiliates" },
@@ -159,8 +177,8 @@ export default function LandingPage() {
               { value: "R500K+", label: "Commissions Paid" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
-                <div className="text-2xl md:text-3xl font-semibold tracking-tight gradient-text">{stat.value}</div>
-                <div className="text-gray-500 text-[13px] mt-1">{stat.label}</div>
+                <div className="text-3xl md:text-4xl font-semibold tracking-tight gradient-text">{stat.value}</div>
+                <div className="text-gray-500 text-[13px] mt-2">{stat.label}</div>
               </div>
             ))}
           </motion.div>
@@ -176,8 +194,9 @@ export default function LandingPage() {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" ref={howItWorksRef} className="py-28 md:py-36 bg-black">
-        <div className="max-w-6xl mx-auto px-6 lg:px-8">
+      <section id="how-it-works" ref={howItWorksRef} className="py-28 md:py-44 bg-black relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-950/10 via-transparent to-purple-950/10 pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -185,13 +204,13 @@ export default function LandingPage() {
             className="text-center mb-20"
           >
             <p className="section-overline mb-3">How it works</p>
-            <h2 className="text-4xl md:text-5xl lg:text-[3.25rem] font-semibold tracking-tight text-white mb-4">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-white mb-4">
               Start earning in four simple steps
             </h2>
             <p className="text-gray-400 text-lg max-w-xl mx-auto">Apply, train, access materials, and earn.</p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
             {[
               { step: 1, title: "Apply & Get Approved", desc: "Complete your application and get verified", icon: Users },
               { step: 2, title: "Complete Training", desc: "Watch video modules and pass the quiz", icon: Award },
@@ -226,8 +245,9 @@ export default function LandingPage() {
       </section>
 
       {/* Earnings Calculator */}
-      <section id="calculator" className="py-28 md:py-36 bg-black">
-        <div className="max-w-6xl mx-auto px-6 lg:px-8">
+      <section id="calculator" className="py-28 md:py-44 bg-black relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-950/10 via-transparent to-blue-950/10 pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -235,10 +255,10 @@ export default function LandingPage() {
             className="text-center mb-20"
           >
             <p className="section-overline mb-3">Earnings</p>
-            <h2 className="text-4xl md:text-5xl lg:text-[3.25rem] font-semibold tracking-tight text-white mb-4">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-white mb-4">
               Calculate your earnings
             </h2>
-            <p className="text-gray-400 text-lg max-w-xl mx-auto">
+            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
               See how much you could earn based on your effort
             </p>
           </motion.div>
@@ -340,8 +360,9 @@ export default function LandingPage() {
       </section>
 
       {/* Benefits */}
-      <section id="benefits" className="py-28 md:py-36 bg-black">
-        <div className="max-w-6xl mx-auto px-6 lg:px-8">
+      <section id="benefits" className="py-28 md:py-44 bg-black relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-950/10 via-transparent to-purple-950/10 pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -349,10 +370,10 @@ export default function LandingPage() {
             className="text-center mb-20"
           >
             <p className="section-overline mb-3">What you get</p>
-            <h2 className="text-4xl md:text-5xl lg:text-[3.25rem] font-semibold tracking-tight text-white mb-4">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-white mb-4">
               Everything you need to succeed
             </h2>
-            <p className="text-gray-400 text-lg max-w-xl mx-auto">Tools, catalogs, support, and growth.</p>
+            <p className="text-gray-400 text-lg max-w-2xl mx-auto">Tools, catalogs, support, and growth.</p>
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -384,8 +405,9 @@ export default function LandingPage() {
       </section>
 
       {/* Who This Is For */}
-      <section className="py-28 md:py-36 bg-black">
-        <div className="max-w-5xl mx-auto px-6 lg:px-8">
+      <section className="py-28 md:py-44 bg-black relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-950/10 via-transparent to-blue-950/10 pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -393,7 +415,7 @@ export default function LandingPage() {
             className="text-center mb-16"
           >
             <p className="section-overline mb-3">Who it’s for</p>
-            <h2 className="text-4xl md:text-5xl font-semibold tracking-tight text-white mb-4">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-white mb-4">
               Our affiliate program is perfect for
             </h2>
           </motion.div>
@@ -427,8 +449,9 @@ export default function LandingPage() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="py-28 md:py-36 bg-black">
-        <div className="max-w-3xl mx-auto px-6 lg:px-8">
+      <section id="faq" className="py-28 md:py-44 bg-black relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-950/10 via-transparent to-purple-950/10 pointer-events-none" />
+        <div className="max-w-4xl mx-auto px-6 lg:px-12 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
