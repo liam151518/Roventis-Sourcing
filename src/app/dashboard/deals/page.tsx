@@ -15,7 +15,11 @@ import {
   ChevronRight,
   MoreHorizontal,
   Trash2,
-  Edit
+  Edit,
+  Send,
+  CheckCircle,
+  Clock,
+  AlertCircle
 } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -34,8 +38,14 @@ export default function DealsPage() {
   const deals = useQuery(api.deals.getAllDeals);
   const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate);
   const createDeal = useMutation(api.deals.createDeal);
+  const updateDeal = useMutation(api.deals.updateDeal);
+  const submitOrder = useMutation(api.deals.submitOrder);
+  
   const [showModal, setShowModal] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<typeof deals[0] | null>(null);
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [orderForm, setOrderForm] = useState({ deliveryAddress: "", orderNotes: "" });
+  const [submitting, setSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   
   const affiliateId = currentAffiliate?._id || "";
@@ -58,6 +68,38 @@ export default function DealsPage() {
       case "qualified": return "bg-blue-500/10 text-blue-400";
       default: return "bg-slate-500/10 text-slate-400";
     }
+  };
+
+  const getOrderStatusBadge = (status?: string) => {
+    switch (status) {
+      case "submitted": return { bg: "bg-blue-500/10", text: "text-blue-400", icon: Clock, label: "Awaiting Approval" };
+      case "approved": return { bg: "bg-emerald-500/10", text: "text-emerald-400", icon: CheckCircle, label: "Approved" };
+      case "rejected": return { bg: "bg-red-500/10", text: "text-red-400", icon: AlertCircle, label: "Rejected" };
+      default: return { bg: "bg-slate-500/10", text: "text-slate-400", icon: AlertCircle, label: "Not Submitted" };
+    }
+  };
+
+  const handleSubmitOrder = async () => {
+    if (!selectedDeal || !orderForm.deliveryAddress) return;
+    setSubmitting(true);
+    try {
+      await submitOrder({
+        dealId: selectedDeal._id,
+        deliveryAddress: orderForm.deliveryAddress,
+        orderNotes: orderForm.orderNotes || undefined,
+      });
+      setShowOrderModal(false);
+      setOrderForm({ deliveryAddress: "", orderNotes: "" });
+      setSelectedDeal(null);
+    } catch (error) {
+      console.error("Failed to submit order:", error);
+    }
+    setSubmitting(false);
+  };
+
+  const handleCloseWon = async (dealId: string) => {
+    await updateDeal({ id: dealId, status: "closed_won", commissionStatus: "pending" });
+    setSelectedDeal(null);
   };
 
   if (!deals || !currentAffiliate) {
@@ -300,6 +342,65 @@ export default function DealsPage() {
                     </div>
                   )}
                 </div>
+
+                {/* Order Status - Show for Closed Won deals */}
+                {selectedDeal.status === "closed_won" && (
+                  <div className="border-t border-white/10 pt-6">
+                    <div className="text-gray-500 text-sm mb-3">Order Status</div>
+                    <div className="bg-[#0a0a0b] rounded-xl p-4">
+                      {selectedDeal.orderSubmitted ? (
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${getOrderStatusBadge(selectedDeal.orderStatus).bg} ${getOrderStatusBadge(selectedDeal.orderStatus).text}`}>
+                              {(() => {
+                                const Icon = getOrderStatusBadge(selectedDeal.orderStatus).icon;
+                                return <Icon className="w-4 h-4" />;
+                              })()}
+                              {getOrderStatusBadge(selectedDeal.orderStatus).label}
+                            </span>
+                            {selectedDeal.orderReference && (
+                              <span className="text-gray-500 font-mono text-sm">{selectedDeal.orderReference}</span>
+                            )}
+                          </div>
+                          {selectedDeal.deliveryAddress && (
+                            <div className="text-gray-400 text-sm">
+                              <span className="text-gray-500">Delivery:</span> {selectedDeal.deliveryAddress}
+                            </div>
+                          )}
+                          {selectedDeal.orderSubmittedAt && (
+                            <div className="text-gray-500 text-xs">
+                              Submitted: {formatDate(selectedDeal.orderSubmittedAt)}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-center">
+                          <p className="text-gray-400 mb-4">Submit order details to receive your commission</p>
+                          <button
+                            onClick={() => setShowOrderModal(true)}
+                            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors inline-flex items-center gap-2"
+                          >
+                            <Send className="w-4 h-4" />
+                            Submit Order
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                {selectedDeal.status !== "closed_won" && selectedDeal.status !== "closed_lost" && (
+                  <div className="border-t border-white/10 pt-6 flex gap-3">
+                    <button
+                      onClick={() => handleCloseWon(selectedDeal._id)}
+                      className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl transition-colors inline-flex items-center justify-center gap-2"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      Close Deal
+                    </button>
+                  </div>
+                )}
               </div>
             </motion.div>
           </motion.div>
@@ -437,6 +538,95 @@ export default function DealsPage() {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Order Submission Modal */}
+      <AnimatePresence>
+        {showOrderModal && selectedDeal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowOrderModal(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-[#141417] rounded-2xl border border-white/10 max-w-xl w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between p-6 border-b border-white/5">
+                <div>
+                  <h2 className="text-xl font-semibold text-white">Submit Order</h2>
+                  <p className="text-gray-500 text-sm mt-1">{selectedDeal.clientName} - {formatCurrency(selectedDeal.dealValue)}</p>
+                </div>
+                <button
+                  onClick={() => setShowOrderModal(false)}
+                  className="p-2 text-gray-400 hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="p-6 space-y-4">
+                <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                  <p className="text-blue-400 text-sm">
+                    Submit payment proof and delivery details. Your commission will be approved within 8-10 business days after approval.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">Delivery Address *</label>
+                  <textarea
+                    value={orderForm.deliveryAddress}
+                    onChange={(e) => setOrderForm({ ...orderForm, deliveryAddress: e.target.value })}
+                    rows={3}
+                    required
+                    className="w-full px-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    placeholder="Enter delivery address..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">Order Notes</label>
+                  <textarea
+                    value={orderForm.orderNotes}
+                    onChange={(e) => setOrderForm({ ...orderForm, orderNotes: e.target.value })}
+                    rows={2}
+                    className="w-full px-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    placeholder="Any special instructions..."
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowOrderModal(false)}
+                    className="flex-1 px-5 py-3 bg-white/5 text-white rounded-xl font-medium hover:bg-white/10 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSubmitOrder}
+                    disabled={submitting || !orderForm.deliveryAddress}
+                    className="flex-1 px-5 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
+                  >
+                    {submitting ? (
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        Submit Order
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
             </motion.div>
           </motion.div>
         )}

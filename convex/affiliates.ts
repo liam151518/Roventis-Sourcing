@@ -80,9 +80,11 @@ export const registerAffiliate = mutation({
       status: "pending",
       tier: "bronze",
       trainingCompleted: false,
+      isApprovedToSell: false,
       totalSales: 0,
       totalCommissionEarned: 0,
       totalCommissionPaid: 0,
+      pendingCommission: 0,
       createdAt: Date.now(),
     });
     
@@ -125,6 +127,7 @@ export const seedDemoData = mutation({
             lastName: args.lastName || "User",
             email: args.email || "demo@roventis.co.za",
             status: "approved",
+            isApprovedToSell: true,
           });
           return { success: true, affiliateId: firstAffiliate._id, isNew: false };
         }
@@ -145,9 +148,11 @@ export const seedDemoData = mutation({
           status: "pending",
           tier: "bronze",
           trainingCompleted: false,
+          isApprovedToSell: false,
           totalSales: 0,
           totalCommissionEarned: 0,
           totalCommissionPaid: 0,
+          pendingCommission: 0,
           createdAt: Date.now(),
         });
         return { success: true, affiliateId, isNew: true };
@@ -173,10 +178,12 @@ export const seedDemoData = mutation({
         status: "approved",
         tier: "gold",
         trainingCompleted: true,
+        isApprovedToSell: true,
         trainingScore: 85,
         totalSales: 250000,
         totalCommissionEarned: 25000,
         totalCommissionPaid: 20000,
+        pendingCommission: 5000,
         bankName: "FNB",
         accountNumber: "1234567890",
         accountType: "business",
@@ -199,6 +206,11 @@ export const seedAllData = mutation({
       if (!affiliateId) {
         return { success: false, error: "No affiliate found" };
       }
+      
+      // Update affiliate with pending commission
+      await ctx.db.patch(affiliateId, {
+        pendingCommission: 5000,
+      });
       
       // Check if deals exist
       const existingDeals = await ctx.db.query("deals").take(1);
@@ -246,6 +258,62 @@ export const seedAllData = mutation({
         });
       }
       
+      // Seed demo leads
+      const existingLeads = await ctx.db.query("leads").take(1);
+      if (existingLeads.length === 0) {
+        const demoLeads = [
+          { companyName: "SolarTech SA", contactName: "John Smith", email: "john@solartech.co.za", phone: "+27 82 111 2222", companySize: "50-200", productInterest: "Solar panels", budgetRange: "R100k-R500k" },
+          { companyName: "EcoBuild Contractors", contactName: "Maria van der Merwe", email: "maria@ecobuild.co.za", phone: "+27 83 222 3333", companySize: "10-50", productInterest: "Building materials", budgetRange: "R50k-R150k" },
+          { companyName: "TechStart Incubator", contactName: "David Chen", email: "david@techstart.co.za", phone: "+27 84 333 4444", companySize: "10-50", productInterest: "Office supplies", budgetRange: "R10k-R50k" },
+        ];
+        for (const lead of demoLeads) {
+          await ctx.db.insert("leads", {
+            ...lead,
+            status: "available",
+            source: "Website",
+            createdAt: Date.now(),
+          });
+        }
+      }
+      
+      // Seed demo orders
+      const existingOrders = await ctx.db.query("orders").take(1);
+      if (existingOrders.length === 0) {
+        await ctx.db.insert("orders", {
+          affiliateId,
+          clientName: "Sarah Johnson",
+          clientCompany: "TechCorp Solutions",
+          clientEmail: "sarah@techcorp.co.za",
+          clientPhone: "+27 82 123 4567",
+          deliveryAddress: "123 Tech Street, Cape Town, 8001",
+          items: [
+            { productName: "Corporate Branded Notebooks", quantity: 100, unitPrice: 150, total: 15000 },
+          ],
+          totalAmount: 15000,
+          status: "delivered",
+          trackingNumber: "ROV-2024-001",
+          deliveryDate: Date.now() - 5 * 24 * 60 * 60 * 1000,
+          commissionStatus: "approved",
+          commissionAmount: 1500,
+          createdAt: Date.now() - 30 * 24 * 60 * 60 * 1000,
+        });
+      }
+      
+      // Seed demo marketing links
+      const existingMarketing = await ctx.db.query("marketingLinks").take(1);
+      if (existingMarketing.length === 0) {
+        await ctx.db.insert("marketingLinks", {
+          affiliateId,
+          name: "Main Referral Link",
+          url: "https://roventis.co.za",
+          shortCode: "MAIN-001",
+          clicks: 156,
+          conversions: 12,
+          isActive: true,
+          createdAt: Date.now() - 60 * 24 * 60 * 60 * 1000,
+        });
+      }
+      
       return { success: true, message: "All data seeded" };
     } catch (e) {
       return { success: false, error: String(e) };
@@ -269,9 +337,11 @@ export const createAffiliate = mutation({
     tier: v.union(v.literal("bronze"), v.literal("silver"), v.literal("gold"), v.literal("platinum")),
     trainingCompleted: v.boolean(),
     trainingScore: v.optional(v.number()),
+    isApprovedToSell: v.optional(v.boolean()),
     totalSales: v.number(),
     totalCommissionEarned: v.number(),
     totalCommissionPaid: v.number(),
+    pendingCommission: v.optional(v.number()),
     bankName: v.optional(v.string()),
     accountNumber: v.optional(v.string()),
     accountType: v.optional(v.string()),
@@ -296,13 +366,50 @@ export const updateAffiliate = mutation({
     tier: v.optional(v.union(v.literal("bronze"), v.literal("silver"), v.literal("gold"), v.literal("platinum"))),
     trainingCompleted: v.optional(v.boolean()),
     trainingScore: v.optional(v.number()),
+    isApprovedToSell: v.optional(v.boolean()),
     totalSales: v.optional(v.number()),
     totalCommissionEarned: v.optional(v.number()),
     totalCommissionPaid: v.optional(v.number()),
+    pendingCommission: v.optional(v.number()),
+    bankName: v.optional(v.string()),
+    accountNumber: v.optional(v.string()),
+    accountType: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
     await ctx.db.patch(id, updates);
     return id;
+  },
+});
+
+// Approve affiliate to sell (after training completion)
+export const approveToSell = mutation({
+  args: { affiliateId: v.string() },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.affiliateId, {
+      isApprovedToSell: true,
+      trainingCompleted: true,
+    });
+    return { success: true };
+  },
+});
+
+// Update affiliate tier (with auto-upgrade logic)
+export const updateAffiliateTier = mutation({
+  args: {
+    affiliateId: v.string(),
+    newTier: v.union(v.literal("bronze"), v.literal("silver"), v.literal("gold"), v.literal("platinum")),
+  },
+  handler: async (ctx, args) => {
+    const affiliate = await ctx.db.get(args.affiliateId);
+    if (!affiliate) {
+      throw new Error("Affiliate not found");
+    }
+
+    await ctx.db.patch(args.affiliateId, {
+      tier: args.newTier,
+    });
+
+    return { success: true, previousTier: affiliate.tier, newTier: args.newTier };
   },
 });

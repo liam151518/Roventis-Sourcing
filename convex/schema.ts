@@ -18,16 +18,19 @@ export default defineSchema({
     tier: v.union(v.literal("bronze"), v.literal("silver"), v.literal("gold"), v.literal("platinum")),
     trainingCompleted: v.boolean(),
     trainingScore: v.optional(v.number()),
+    isApprovedToSell: v.optional(v.boolean()), // Must complete training to sell
     totalSales: v.number(),
     totalCommissionEarned: v.number(),
     totalCommissionPaid: v.number(),
+    pendingCommission: v.optional(v.number()), // Commission awaiting payout
     bankName: v.optional(v.string()),
     accountNumber: v.optional(v.string()),
     accountType: v.optional(v.string()),
     createdAt: v.number(),
   }).index("by_email", ["email"])
     .index("by_clerk_id", ["clerkUserId"])
-    .index("by_status", ["status"]),
+    .index("by_status", ["status"])
+    .index("by_tier", ["tier"]),
 
   // Deals
   deals: defineTable({
@@ -45,6 +48,14 @@ export default defineSchema({
     commissionStatus: v.union(v.literal("pending"), v.literal("approved"), v.literal("paid"), v.literal("disputed")),
     expectedCloseDate: v.optional(v.number()),
     actualCloseDate: v.optional(v.number()),
+    // Order submission fields
+    orderSubmitted: v.optional(v.boolean()),
+    orderReference: v.optional(v.string()),
+    paymentProof: v.optional(v.string()),
+    deliveryAddress: v.optional(v.string()),
+    orderNotes: v.optional(v.string()),
+    orderSubmittedAt: v.optional(v.number()),
+    orderStatus: v.optional(v.union(v.literal("not_submitted"), v.literal("submitted"), v.literal("approved"), v.literal("rejected"))),
     createdAt: v.number(),
   }).index("by_affiliate", ["affiliateId"])
     .index("by_status", ["status"]),
@@ -101,4 +112,101 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_affiliate", ["affiliateId"])
     .index("by_created", ["createdAt"]),
+
+  // Leads (Platinum-only)
+  leads: defineTable({
+    companyName: v.string(),
+    contactName: v.string(),
+    email: v.string(),
+    phone: v.optional(v.string()),
+    companySize: v.optional(v.string()),
+    productInterest: v.optional(v.string()),
+    budgetRange: v.optional(v.string()),
+    source: v.optional(v.string()),
+    status: v.union(v.literal("available"), v.literal("claimed"), v.literal("converted"), v.literal("expired")),
+    claimedBy: v.optional(v.string()), // affiliateId
+    claimedAt: v.optional(v.number()),
+    convertedToDeal: v.optional(v.string()), // dealId
+    notes: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index("by_status", ["status"])
+    .index("by_claimed_by", ["claimedBy"])
+    .index("by_created", ["createdAt"]),
+
+  // Orders
+  orders: defineTable({
+    affiliateId: v.string(),
+    dealId: v.optional(v.string()),
+    clientName: v.string(),
+    clientCompany: v.optional(v.string()),
+    clientEmail: v.string(),
+    clientPhone: v.optional(v.string()),
+    deliveryAddress: v.optional(v.string()),
+    items: v.array(v.object({
+      productName: v.string(),
+      quantity: v.number(),
+      unitPrice: v.number(),
+      total: v.number(),
+    })),
+    totalAmount: v.number(),
+    status: v.union(v.literal("draft"), v.literal("submitted"), v.literal("supplier_confirmed"), v.literal("in_transit"), v.literal("delivered"), v.literal("installed"), v.literal("cancelled")),
+    trackingNumber: v.optional(v.string()),
+    deliveryDate: v.optional(v.number()),
+    installationDate: v.optional(v.number()),
+    commissionStatus: v.union(v.literal("pending"), v.literal("approved"), v.literal("paid")),
+    commissionAmount: v.number(),
+    notes: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index("by_affiliate", ["affiliateId"])
+    .index("by_status", ["status"])
+    .index("by_deal", ["dealId"]),
+
+  // Marketing links
+  marketingLinks: defineTable({
+    affiliateId: v.string(),
+    name: v.string(),
+    productId: v.optional(v.string()),
+    category: v.optional(v.string()),
+    url: v.string(),
+    shortCode: v.optional(v.string()),
+    clicks: v.number(),
+    conversions: v.number(),
+    isActive: v.boolean(),
+    createdAt: v.number(),
+  }).index("by_affiliate", ["affiliateId"])
+    .index("by_short_code", ["shortCode"]),
+
+  // Support tickets
+  supportTickets: defineTable({
+    affiliateId: v.string(),
+    subject: v.string(),
+    description: v.string(),
+    category: v.union(v.literal("deal"), v.literal("product"), v.literal("commission"), v.literal("technical"), v.literal("other")),
+    priority: v.union(v.literal("low"), v.literal("medium"), v.literal("high"), v.literal("urgent")),
+    status: v.union(v.literal("open"), v.literal("in_progress"), v.literal("resolved"), v.literal("closed")),
+    messages: v.array(v.object({
+      sender: v.string(), // "affiliate" or "admin"
+      content: v.string(),
+      createdAt: v.number(),
+    })),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_affiliate", ["affiliateId"])
+    .index("by_status", ["status"]),
+
+  // Payout requests
+  payoutRequests: defineTable({
+    affiliateId: v.string(),
+    amount: v.number(),
+    status: v.union(v.literal("requested"), v.literal("processing"), v.literal("paid"), v.literal("rejected")),
+    paymentMethod: v.optional(v.string()),
+    bankName: v.optional(v.string()),
+    accountNumber: v.optional(v.string()),
+    accountType: v.optional(v.string()),
+    referenceNumber: v.string(),
+    requestedAt: v.number(),
+    processedAt: v.optional(v.number()),
+    notes: v.optional(v.string()),
+  }).index("by_affiliate", ["affiliateId"])
+    .index("by_status", ["status"]),
 });

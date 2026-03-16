@@ -11,7 +11,11 @@
 import type * as affiliates from "../affiliates.js";
 import type * as commissions from "../commissions.js";
 import type * as deals from "../deals.js";
+import type * as leads from "../leads.js";
+import type * as marketing from "../marketing.js";
+import type * as orders from "../orders.js";
 import type * as resources from "../resources.js";
+import type * as support from "../support.js";
 import type * as training from "../training.js";
 
 import type {
@@ -24,7 +28,11 @@ declare const fullApi: ApiFromModules<{
   affiliates: typeof affiliates;
   commissions: typeof commissions;
   deals: typeof deals;
+  leads: typeof leads;
+  marketing: typeof marketing;
+  orders: typeof orders;
   resources: typeof resources;
+  support: typeof support;
   training: typeof training;
 }>;
 

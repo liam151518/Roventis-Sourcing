@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -13,18 +13,30 @@ import {
   DollarSign, 
   User, 
   Bell,
+  Target,
+  Megaphone,
+  Award,
+  HelpCircle,
+  Zap,
 } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { useAuth, useUser, UserButton } from "@clerk/nextjs";
 import { api } from "@/convex/_generated/api";
 
 const navItems = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/deals", label: "Deals", icon: TrendingUp },
-  { href: "/dashboard/training", label: "Training", icon: GraduationCap },
-  { href: "/dashboard/resources", label: "Resources", icon: FileText },
-  { href: "/dashboard/commissions", label: "Commissions", icon: DollarSign },
-  { href: "/dashboard/profile", label: "Profile", icon: User },
+  // Work items
+  { href: "/dashboard", label: "Overview", icon: LayoutDashboard, section: "work" },
+  { href: "/dashboard/deals", label: "Deals", icon: TrendingUp, section: "work" },
+  { href: "/dashboard/resources", label: "Resources", icon: FileText, section: "work" },
+  { href: "/dashboard/marketing", label: "Marketing", icon: Megaphone, section: "work" },
+  { href: "/dashboard/commissions", label: "Commissions", icon: DollarSign, section: "work" },
+  // Personal items
+  { href: "/dashboard/profile", label: "Profile", icon: User, section: "personal" },
+  { href: "/dashboard/tier", label: "Tier", icon: Award, section: "personal" },
+  { href: "/dashboard/training", label: "Training", icon: GraduationCap, section: "personal" },
+  { href: "/dashboard/support", label: "Support", icon: HelpCircle, section: "personal" },
+  // Platinum only
+  { href: "/dashboard/leads", label: "Leads", icon: Target, tier: "platinum", section: "platinum" },
 ];
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
@@ -37,9 +49,10 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const seedDemoData = useMutation(api.affiliates.seedDemoData);
   const seedAllData = useMutation(api.affiliates.seedAllData);
   
+  // Always pass a consistent argument to keep hooks stable
   const currentAffiliate = useQuery(
     api.affiliates.getCurrentAffiliate,
-    userId ? { clerkUserId: userId } : {}
+    { clerkUserId: userId || undefined }
   );
 
   useEffect(() => {
@@ -103,9 +116,33 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
           {/* Navigation */}
           <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-            {navItems.map((item) => {
+            {navItems.map((item, index) => {
               const isActive = pathname === item.href;
+              const tierRequired = item.tier;
+              const tierMet = !tierRequired || (currentAffiliate && (
+                tierRequired === "platinum" ? currentAffiliate.tier === "platinum" :
+                tierRequired === "gold" ? ["gold", "platinum"].includes(currentAffiliate.tier) :
+                tierRequired === "silver" ? ["silver", "gold", "platinum"].includes(currentAffiliate.tier) :
+                true
+              ));
+
+              if (!tierMet) return null;
+
+              // Check if we need a divider (before first item of personal section)
+              const showDivider = item.section === "personal" && navItems[index - 1]?.section === "work";
+
               return (
+                <Fragment key={item.href}>
+                  {showDivider && !collapsed && (
+                    <div className="pt-4 pb-2">
+                      <span className="px-3 text-xs font-medium text-gray-600 uppercase tracking-wider">
+                        Personal
+                      </span>
+                    </div>
+                  )}
+                  {showDivider && collapsed && (
+                    <div className="my-2 border-t border-white/10" />
+                  )}
                 <Link
                   key={item.href}
                   href={item.href}
@@ -128,7 +165,13 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                   <span className={`transition-all duration-200 ${collapsed ? 'w-0 opacity-0 hidden' : 'opacity-100'}`}>
                     {item.label}
                   </span>
+                  {item.tier && !collapsed && (
+                    <span className="ml-auto px-2 py-0.5 bg-violet-500/20 text-violet-400 text-xs rounded-full">
+                      <Zap className="w-3 h-3 inline" />
+                    </span>
+                  )}
                 </Link>
+                </Fragment>
               );
             })}
           </nav>

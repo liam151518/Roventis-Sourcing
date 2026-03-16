@@ -85,3 +85,32 @@ export const deleteDeal = mutation({
     return args.id;
   },
 });
+
+// Submit order details for a closed deal
+export const submitOrder = mutation({
+  args: {
+    dealId: v.string(),
+    deliveryAddress: v.string(),
+    orderNotes: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const deal = await ctx.db.get(args.dealId);
+    if (!deal) {
+      throw new Error("Deal not found");
+    }
+
+    // Generate order reference
+    const orderReference = `ORD-${Date.now().toString(36).toUpperCase()}`;
+
+    await ctx.db.patch(args.dealId, {
+      orderSubmitted: true,
+      orderReference,
+      deliveryAddress: args.deliveryAddress,
+      orderNotes: args.orderNotes,
+      orderSubmittedAt: Date.now(),
+      orderStatus: "submitted",
+    });
+
+    return { success: true, orderReference };
+  },
+});

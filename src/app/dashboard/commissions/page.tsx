@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   DollarSign, 
   Clock, 
@@ -10,16 +11,23 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Wallet,
-  Building
+  Building,
+  Send,
+  X
 } from "lucide-react";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 export default function CommissionsPage() {
   const commissionPayouts = useQuery(api.commissions.getAllPayouts);
   const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate);
+  const requestPayout = useMutation(api.commissions.requestPayout);
   
+  const [showPayoutModal, setShowPayoutModal] = useState(false);
+  const [payoutAmount, setPayoutAmount] = useState("");
+  const [requesting, setRequesting] = useState(false);
+
   if (!commissionPayouts || !currentAffiliate) {
     return (
       <div className="min-h-screen bg-[#0a0a0b] flex items-center justify-center">
@@ -28,11 +36,15 @@ export default function CommissionsPage() {
     );
   }
 
+  // Filter payouts for current user from the existing query
   const userPayouts = (commissionPayouts || []).filter((p: any) => p.affiliateId === currentAffiliate._id);
   
   const totalPaid = userPayouts.filter((p: any) => p.status === "paid").reduce((sum: number, p: any) => sum + p.amount, 0);
-  const totalPending = userPayouts.filter((p: any) => p.status === "pending").reduce((sum: number, p: any) => sum + p.amount, 0);
+  const totalPending = currentAffiliate.pendingCommission || 0;
   const totalProcessing = userPayouts.filter((p: any) => p.status === "processing").reduce((sum: number, p: any) => sum + p.amount, 0);
+  
+  const availablePayout = totalPending;
+  const maxPayout = availablePayout;
 
   const stats = [
     {
@@ -73,10 +85,42 @@ export default function CommissionsPage() {
     switch (status) {
       case "paid": return { bg: "bg-emerald-500/10", text: "text-emerald-400", icon: CheckCircle };
       case "pending": return { bg: "bg-amber-500/10", text: "text-amber-400", icon: Clock };
+      case "requested": return { bg: "bg-amber-500/10", text: "text-amber-400", icon: Clock };
       case "processing": return { bg: "bg-blue-500/10", text: "text-blue-400", icon: TrendingUp };
       case "failed": return { bg: "bg-red-500/10", text: "text-red-400", icon: XCircle };
+      case "rejected": return { bg: "bg-red-500/10", text: "text-red-400", icon: XCircle };
       default: return { bg: "bg-slate-500/10", text: "text-slate-400", icon: Clock };
     }
+  };
+
+  const handleRequestPayout = async () => {
+    if (!currentAffiliate?._id || !payoutAmount) return;
+    const amount = parseFloat(payoutAmount);
+    if (amount < 500) {
+      alert("Minimum payout amount is R500");
+      return;
+    }
+    if (amount > availablePayout) {
+      alert("Amount exceeds available balance");
+      return;
+    }
+    setRequesting(true);
+    try {
+      await requestPayout({
+        affiliateId: currentAffiliate._id,
+        amount,
+        paymentMethod: "eft",
+        bankName: currentAffiliate.bankName || "FNB",
+        accountNumber: currentAffiliate.accountNumber || "1234567890",
+        accountType: currentAffiliate.accountType || "business",
+      });
+      setShowPayoutModal(false);
+      setPayoutAmount("");
+    } catch (error) {
+      console.error("Failed to request payout:", error);
+      alert("Failed to request payout. Make sure you have pending commission.");
+    }
+    setRequesting(false);
   };
 
   return (
@@ -91,6 +135,14 @@ export default function CommissionsPage() {
           <h1 className="text-2xl font-semibold text-white">Commissions</h1>
           <p className="text-gray-500 mt-1">Track your commission payouts and earnings</p>
         </div>
+        <button 
+          onClick={() => setShowPayoutModal(true)}
+          disabled={availablePayout < 500}
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-colors"
+        >
+          <Send className="w-4 h-4" />
+          Request Payout
+        </button>
       </motion.div>
 
       {/* Stats Grid */}
@@ -182,6 +234,87 @@ export default function CommissionsPage() {
           </table>
         </div>
       </motion.div>
+
+      {/* Payout Modal */}
+      <AnimatePresence>
+        {showPayoutModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowPayoutModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-[#111113] rounded-2xl p-6 max-w-md w-full border border-white/10"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-white">Request Payout</h3>
+                <button 
+                  onClick={() => setShowPayoutModal(false)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl mb-6">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">Available Balance</span>
+                  <span className="text-white font-bold text-xl">{formatCurrency(availablePayout)}</span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-gray-400 text-sm mb-2">Amount (Min R500)</label>
+                  <input
+                    type="number"
+                    placeholder="Enter amount"
+                    value={payoutAmount}
+                    onChange={(e) => setPayoutAmount(e.target.value)}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="p-4 bg-white/5 rounded-xl space-y-2">
+                  <p className="text-gray-400 text-sm">Payout to:</p>
+                  <p className="text-white font-medium">{currentAffiliate.bankName || "FNB"}</p>
+                  <p className="text-gray-400 text-sm">Account: {currentAffiliate.accountNumber ? "****" + currentAffiliate.accountNumber.slice(-4) : "Not set"}</p>
+                  <p className="text-gray-400 text-sm">Type: {currentAffiliate.accountType || "business"}</p>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setShowPayoutModal(false)}
+                  className="flex-1 py-3 border border-white/10 text-gray-300 rounded-xl hover:bg-white/5 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleRequestPayout}
+                  disabled={requesting || !payoutAmount}
+                  className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+                >
+                  {requesting ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      Request
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
