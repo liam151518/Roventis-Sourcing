@@ -12,11 +12,7 @@ import {
   FileText, 
   DollarSign, 
   User, 
-  Menu, 
-  X, 
-  Bell, 
-  LogOut,
-  ChevronRight,
+  Bell,
 } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { useAuth, useUser, UserButton } from "@clerk/nextjs";
@@ -31,15 +27,9 @@ const navItems = [
   { href: "/dashboard/profile", label: "Profile", icon: User },
 ];
 
-const tierColors: Record<string, string> = {
-  bronze: "bg-amber-500",
-  silver: "bg-gray-400",
-  gold: "bg-yellow-400",
-  platinum: "bg-blue-500",
-};
-
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
   const { userId, isLoaded } = useAuth();
   const { user } = useUser();
@@ -47,18 +37,15 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const seedDemoData = useMutation(api.affiliates.seedDemoData);
   const seedAllData = useMutation(api.affiliates.seedAllData);
   
-  // Get current affiliate - pass clerk user ID if available
   const currentAffiliate = useQuery(
     api.affiliates.getCurrentAffiliate,
     userId ? { clerkUserId: userId } : {}
   );
 
-  // Auto-register new Clerk users and seed data on first load
   useEffect(() => {
     console.log("useEffect:", { isLoaded, userId, currentAffiliate });
     if (isLoaded && userId && currentAffiliate === null) {
       console.log("Calling seedDemoData for:", userId);
-      // User is logged in but no affiliate found - register them
       seedDemoData({ 
         clerkUserId: userId,
         firstName: user?.firstName || "Demo",
@@ -87,131 +74,90 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       </AnimatePresence>
 
       {/* Sidebar */}
-      <aside
-        className={`fixed top-0 left-0 z-50 h-full w-72 bg-[#0D0D0F] border-r border-white/10 transform transition-transform duration-200 ease-in-out lg:translate-x-0 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+      <motion.aside
+        initial={false}
+        animate={{ width: collapsed ? 100 : 280 }}
+        transition={{ duration: 0.2, ease: "easeInOut" }}
+        className={`fixed top-0 left-0 z-50 h-full bg-[#0a0a0b] border-r border-white/5 lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
         <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="flex items-center justify-between p-6 border-b border-white/10">
-            <Link href="/" className="flex items-center">
+          {/* Header */}
+          <div className="p-4 border-b border-white/5">
+            {/* Logo - Click to toggle collapse */}
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="w-full flex items-center hover:bg-white/5 rounded-xl p-2 transition-colors"
+            >
               <Image
                 src="/roventis-logo.png"
                 alt="Roventis"
-                width={140}
-                height={36}
-                className="h-9 w-auto object-contain object-left"
+                width={577}
+                height={247}
+                className="h-8 w-auto"
+                unoptimized
               />
-            </Link>
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 text-gray-400 hover:text-white"
-            >
-              <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* User Info */}
-          <div className="p-6 border-b border-white/10">
-            {currentAffiliate ? (
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                  {(currentAffiliate.firstName === "Demo" && user) ? `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}` : `${currentAffiliate.firstName[0]}${currentAffiliate.lastName[0]}`}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold truncate">
-                    {(currentAffiliate.firstName === "Demo" && user) ? `${user.firstName} ${user.lastName}` : `${currentAffiliate.firstName} ${currentAffiliate.lastName}`}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className={`px-2 py-0.5 rounded text-xs text-black font-medium capitalize ${tierColors[currentAffiliate.tier]}`}>
-                      {currentAffiliate.tier}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-gray-500 text-sm">Loading...</div>
-            )}
-          </div>
-
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+          <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
+                  className={`group flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-all relative ${
                     isActive
-                      ? "bg-blue-500/20 text-blue-400"
-                      : "text-gray-400 hover:bg-white/5 hover:text-white"
+                      ? "text-white"
+                      : "text-gray-400 hover:text-white hover:bg-white/5"
                   }`}
                   onClick={() => setSidebarOpen(false)}
                 >
-                  <item.icon className="w-5 h-5" />
-                  {item.label}
                   {isActive && (
-                    <ChevronRight className="w-4 h-4 ml-auto" />
+                    <motion.div
+                      layoutId="activeNav"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full"
+                    />
                   )}
+                  <item.icon className={`w-5 h-5 flex-shrink-0 transition-colors ${
+                    isActive ? "text-blue-400" : "text-gray-500 group-hover:text-gray-300"
+                  }`} />
+                  <span className={`transition-all duration-200 ${collapsed ? 'w-0 opacity-0 hidden' : 'opacity-100'}`}>
+                    {item.label}
+                  </span>
                 </Link>
               );
             })}
           </nav>
 
-          {/* Logout */}
-          <div className="p-4 border-t border-white/10">
-            <Link
-              href="/"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-400 hover:bg-white/5 hover:text-red-400 transition-all"
-            >
-              <LogOut className="w-5 h-5" />
-              Logout
-            </Link>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <div className="flex-1 lg:ml-72">
-        {/* Top Bar */}
-        <header className="bg-[#0D0D0F] border-b border-white/10 sticky top-0 z-30">
-          <div className="flex items-center justify-between px-6 py-4">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 text-gray-400 hover:text-white"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
-            
-            <div className="flex-1 lg:flex-none" />
-
-            <div className="flex items-center gap-4">
-              {/* Notifications */}
-              <button className="relative p-2 text-gray-400 hover:text-white">
+          {/* Footer */}
+          <div className="p-3 border-t border-white/5">
+            <div className="flex items-center justify-between">
+              <button className="relative p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
                 <Bell className="w-5 h-5" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" />
               </button>
-              
-              {/* Admin Link */}
-              <Link
-                href="/admin"
-                className="hidden md:flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"
-              >
-                Admin Panel
-              </Link>
-              
               <UserButton afterSignOutUrl="/" />
             </div>
           </div>
-        </header>
+        </div>
+      </motion.aside>
 
-        {/* Page Content */}
+      {/* Main Content */}
+      <motion.div
+        initial={false}
+        animate={{ marginLeft: collapsed ? 100 : 280 }}
+        transition={{ duration: 0.2, ease: "easeInOut" }}
+        className="flex-1 min-w-0"
+      >
+      {/* Page Content */}
         <main className="p-6 lg:p-8">
           {children}
         </main>
-      </div>
+      </motion.div>
     </div>
   );
 }
