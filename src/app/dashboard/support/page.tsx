@@ -29,7 +29,7 @@ const faqs = [
     questions: [
       {
         q: "How is my commission calculated?",
-        a: "Your commission is calculated based on your tier level. Bronze: 5%, Silver: 10%, Gold: 15%, Platinum: 15-25% (25% on solar products). Commissions are approved after order delivery/installation."
+        a: "Your commission is calculated based on your tier level. Bronze: 5%, Silver: 7.5%, Gold: 10%, Platinum: 12-15%. Commissions are approved after order delivery/installation."
       },
       {
         q: "When do I get paid?",
@@ -83,7 +83,7 @@ const faqs = [
       },
       {
         q: "What are the benefits of Platinum tier?",
-        a: "Platinum members get 25% commission on solar products (vs 15%), access to exclusive leads, priority support, and advanced training modules."
+        a: "Platinum members get 12-15% commission (higher rates on select products), access to exclusive leads, priority support, and advanced training modules."
       },
     ],
   },

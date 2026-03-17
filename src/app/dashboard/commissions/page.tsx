@@ -20,15 +20,15 @@ import { api } from "@/convex/_generated/api";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 export default function CommissionsPage() {
-  const commissionPayouts = useQuery(api.commissions.getAllPayouts);
   const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate);
+  const myPayoutRequests = useQuery(api.commissions.getMyPayoutRequests, { affiliateId: currentAffiliate?._id as string });
   const requestPayout = useMutation(api.commissions.requestPayout);
   
   const [showPayoutModal, setShowPayoutModal] = useState(false);
   const [payoutAmount, setPayoutAmount] = useState("");
   const [requesting, setRequesting] = useState(false);
 
-  if (!commissionPayouts || !currentAffiliate) {
+  if (!currentAffiliate) {
     return (
       <div className="min-h-screen bg-[#0a0a0b] flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
@@ -36,12 +36,11 @@ export default function CommissionsPage() {
     );
   }
 
-  // Filter payouts for current user from the existing query
-  const userPayouts = (commissionPayouts || []).filter((p: any) => p.affiliateId === currentAffiliate._id);
+  const userPayouts = (myPayoutRequests || []) as any[];
   
-  const totalPaid = userPayouts.filter((p: any) => p.status === "paid").reduce((sum: number, p: any) => sum + p.amount, 0);
+  const totalPaid = userPayouts.filter((p) => p.status === "paid").reduce((sum, p) => sum + p.amount, 0);
   const totalPending = currentAffiliate.pendingCommission || 0;
-  const totalProcessing = userPayouts.filter((p: any) => p.status === "processing").reduce((sum: number, p: any) => sum + p.amount, 0);
+  const totalProcessing = userPayouts.filter((p) => p.status === "processing" || p.status === "requested").reduce((sum, p) => sum + p.amount, 0);
   
   const availablePayout = totalPending;
   const maxPayout = availablePayout;

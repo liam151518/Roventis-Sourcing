@@ -48,6 +48,114 @@ export default function DashboardPage() {
   const payouts = useQuery(api.commissions.getAllPayouts);
   const [timeRange, setTimeRange] = useState("month");
   
+  // All hooks must be called before any early returns
+  // Filter deals for current user (safe to do with null checks)
+  const userDeals = (deals || []).filter(d => currentAffiliate && d.affiliateId === currentAffiliate._id);
+  const userPayouts = (payouts || []).filter(p => currentAffiliate && p.affiliateId === currentAffiliate._id);
+  
+  // Calculate totals directly from deals for accuracy
+  const closedWon = userDeals.filter(d => d.status === "closed_won");
+  const calculatedTotalSales = closedWon.reduce((sum, d) => sum + d.dealValue, 0);
+  const calculatedTotalEarnings = closedWon.reduce((sum, d) => sum + d.commissionAmount, 0);
+  const calculatedPending = closedWon.filter(d => d.commissionStatus === "pending").reduce((sum, d) => sum + d.commissionAmount, 0);
+  
+  const totalPaid = userPayouts.filter(p => p.status === "paid").reduce((sum, p) => sum + p.amount, 0);
+  const activeDeals = userDeals.filter(d => !["closed_won", "closed_lost"].includes(d.status));
+  const conversionRate = userDeals.length > 0 ? Math.round((closedWon.length / userDeals.length) * 100) : 0;
+
+  // Calculate pipeline value
+  const pipelineValue = activeDeals.reduce((sum, d) => sum + d.dealValue, 0);
+  const weightedPipeline = activeDeals.reduce((sum, d) => {
+    const stageWeight = d.status === "prospect" ? 0.1 : 
+                       d.status === "qualified" ? 0.3 : 
+                       d.status === "proposal_sent" ? 0.5 : 
+                       d.status === "negotiation" ? 0.75 : 0;
+    return sum + (d.dealValue * stageWeight);
+  }, 0);
+
+  // Generate data for chart based on time range (useMemo without the hook - just regular function)
+  const getChartData = () => {
+    const data = [];
+    const now = new Date();
+    
+    if (timeRange === 'week') {
+      // Last 7 days
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toLocaleDateString('en-US', { weekday: 'short' });
+        const dayDeals = userDeals.filter(d => {
+          const dealDate = new Date(d.createdAt);
+          return dealDate.toDateString() === date.toDateString();
+        });
+        const closedThatDay = dayDeals.filter(d => d.status === "closed_won");
+        data.push({
+          period: dateStr,
+          revenue: closedThatDay.reduce((sum, d) => sum + d.dealValue, 0),
+          commission: closedThatDay.reduce((sum, d) => sum + d.commissionAmount, 0),
+          deals: dayDeals.length,
+        });
+      }
+    } else if (timeRange === 'month') {
+      // Last 6 months
+      for (let i = 5; i >= 0; i--) {
+        const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthName = month.toLocaleDateString('en-US', { month: 'short' });
+        const monthDeals = userDeals.filter(d => {
+          const dealDate = new Date(d.createdAt);
+          return dealDate.getMonth() === month.getMonth() && dealDate.getFullYear() === month.getFullYear();
+        });
+        const closedThisMonth = monthDeals.filter(d => d.status === "closed_won");
+        data.push({
+          period: monthName,
+          revenue: closedThisMonth.reduce((sum, d) => sum + d.dealValue, 0),
+          commission: closedThisMonth.reduce((sum, d) => sum + d.commissionAmount, 0),
+          deals: monthDeals.length,
+        });
+      }
+    } else {
+      // Last 12 months (year view)
+      for (let i = 11; i >= 0; i--) {
+        const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthName = month.toLocaleDateString('en-US', { month: 'short' });
+        const monthDeals = userDeals.filter(d => {
+          const dealDate = new Date(d.createdAt);
+          return dealDate.getMonth() === month.getMonth() && dealDate.getFullYear() === month.getFullYear();
+        });
+        const closedThisMonth = monthDeals.filter(d => d.status === "closed_won");
+        data.push({
+          period: monthName,
+          revenue: closedThisMonth.reduce((sum, d) => sum + d.dealValue, 0),
+          commission: closedThisMonth.reduce((sum, d) => sum + d.commissionAmount, 0),
+          deals: monthDeals.length,
+        });
+      }
+    }
+    
+    return data;
+  };
+  
+  const chartData = getChartData();
+
+  // Pie chart data for deal stages
+  const stageData = [
+    { name: 'Prospect', value: userDeals.filter(d => d.status === "prospect").length },
+    { name: 'Qualified', value: userDeals.filter(d => d.status === "qualified").length },
+    { name: 'Proposal', value: userDeals.filter(d => d.status === "proposal_sent").length },
+    { name: 'Negotiation', value: userDeals.filter(d => d.status === "negotiation").length },
+    { name: 'Closed Won', value: userDeals.filter(d => d.status === "closed_won").length },
+    { name: 'Closed Lost', value: userDeals.filter(d => d.status === "closed_lost").length },
+  ].filter(d => d.value > 0);
+
+  // Forecast calculation
+  const avgDealSize = closedWon.length > 0 
+    ? closedWon.reduce((sum, d) => sum + d.dealValue, 0) / closedWon.length 
+    : 0;
+  const avgCloseRate = userDeals.length > 0 ? closedWon.length / userDeals.length : 0;
+  const forecast3Month = weightedPipeline * avgCloseRate * 3;
+  const forecast12Month = weightedPipeline * avgCloseRate * 12;
+
+  // Now we can do early returns after all hooks
   // Loading state
   if (currentAffiliate === null || deals === null || modules === null || payouts === null) {
     return (
@@ -68,62 +176,7 @@ export default function DashboardPage() {
     );
   }
   
-  const userDeals = (deals || []).filter(d => d.affiliateId === currentAffiliate._id);
-  const userPayouts = (payouts || []).filter(p => p.affiliateId === currentAffiliate._id);
-  
-  const totalPaid = userPayouts.filter(p => p.status === "paid").reduce((sum, p) => sum + p.amount, 0);
-  const totalPending = currentAffiliate.pendingCommission || 0;
-  
-  const activeDeals = userDeals.filter(d => !["closed_won", "closed_lost"].includes(d.status));
-  const closedWon = userDeals.filter(d => d.status === "closed_won");
-  const conversionRate = userDeals.length > 0 ? Math.round((closedWon.length / userDeals.length) * 100) : 0;
-
-  // Calculate pipeline value
-  const pipelineValue = activeDeals.reduce((sum, d) => sum + d.dealValue, 0);
-  const weightedPipeline = activeDeals.reduce((sum, d) => {
-    const stageWeight = d.status === "prospect" ? 0.1 : 
-                       d.status === "qualified" ? 0.3 : 
-                       d.status === "proposal_sent" ? 0.5 : 
-                       d.status === "negotiation" ? 0.75 : 0;
-    return sum + (d.dealValue * stageWeight);
-  }, 0);
-
-  // Generate monthly data for chart
-  const monthlyData = [];
-  const now = new Date();
-  for (let i = 5; i >= 0; i--) {
-    const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const monthName = month.toLocaleDateString('en-US', { month: 'short' });
-    const monthDeals = userDeals.filter(d => {
-      const dealDate = new Date(d.createdAt);
-      return dealDate.getMonth() === month.getMonth() && dealDate.getFullYear() === month.getFullYear();
-    });
-    const closedThisMonth = monthDeals.filter(d => d.status === "closed_won");
-    monthlyData.push({
-      month: monthName,
-      revenue: closedThisMonth.reduce((sum, d) => sum + d.dealValue, 0),
-      commission: closedThisMonth.reduce((sum, d) => sum + d.commissionAmount, 0),
-      deals: monthDeals.length,
-    });
-  }
-
-  // Pie chart data for deal stages
-  const stageData = [
-    { name: 'Prospect', value: userDeals.filter(d => d.status === "prospect").length },
-    { name: 'Qualified', value: userDeals.filter(d => d.status === "qualified").length },
-    { name: 'Proposal', value: userDeals.filter(d => d.status === "proposal_sent").length },
-    { name: 'Negotiation', value: userDeals.filter(d => d.status === "negotiation").length },
-    { name: 'Closed Won', value: userDeals.filter(d => d.status === "closed_won").length },
-    { name: 'Closed Lost', value: userDeals.filter(d => d.status === "closed_lost").length },
-  ].filter(d => d.value > 0);
-
-  // Forecast calculation
-  const avgDealSize = closedWon.length > 0 
-    ? closedWon.reduce((sum, d) => sum + d.dealValue, 0) / closedWon.length 
-    : 0;
-  const avgCloseRate = userDeals.length > 0 ? closedWon.length / userDeals.length : 0;
-  const forecast3Month = weightedPipeline * avgCloseRate * 3;
-  const forecast12Month = weightedPipeline * avgCloseRate * 12;
+  const totalPending = calculatedPending || currentAffiliate.pendingCommission || 0;
 
   // Tier progress
   const tierProgress = {
@@ -185,8 +238,12 @@ export default function DashboardPage() {
         {[
           {
             label: "Total Earnings",
-            value: currentAffiliate.totalCommissionEarned,
-            change: currentAffiliate.totalCommissionEarned - (currentAffiliate.totalCommissionPaid + currentAffiliate.pendingCommission),
+            value: calculatedTotalEarnings,
+            change: closedWon.filter(d => {
+              const closed = new Date(d.actualCloseDate || d.createdAt);
+              const now = new Date();
+              return closed.getMonth() === now.getMonth() && closed.getFullYear() === now.getFullYear();
+            }).reduce((sum, d) => sum + d.commissionAmount, 0),
             changeLabel: "This month",
             icon: DollarSign,
             color: "from-emerald-500 to-teal-600",
@@ -196,9 +253,13 @@ export default function DashboardPage() {
           },
           {
             label: "Total Sales",
-            value: currentAffiliate.totalSales,
-            change: closedWon.length > 0 ? closedWon.reduce((sum, d) => sum + d.dealValue, 0) : 0,
-            changeLabel: "Closed deals",
+            value: calculatedTotalSales,
+            change: closedWon.filter(d => {
+              const closed = new Date(d.actualCloseDate || d.createdAt);
+              const now = new Date();
+              return closed.getMonth() === now.getMonth() && closed.getFullYear() === now.getFullYear();
+            }).reduce((sum, d) => sum + d.dealValue, 0),
+            changeLabel: "This month",
             icon: TrendingUp,
             color: "from-blue-500 to-indigo-600",
             bgColor: "bg-blue-500/10",
@@ -208,8 +269,8 @@ export default function DashboardPage() {
           {
             label: "Pipeline Value",
             value: pipelineValue,
-            change: weightedPipeline,
-            changeLabel: "Weighted value",
+            change: activeDeals.length,
+            changeLabel: "Active deals",
             icon: Target,
             color: "from-purple-500 to-pink-600",
             bgColor: "bg-purple-500/10",
@@ -238,18 +299,16 @@ export default function DashboardPage() {
           return (
             <Link href={stat.link} key={stat.label}>
               <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.02, y: -2 }}
-                className="group relative overflow-hidden bg-[#141417] rounded-2xl border border-white/5 p-6 hover:border-white/10 transition-all cursor-pointer"
+                transition={{ duration: 0.3, delay: index * 0.08, ease: "easeOut" }}
+                className="group relative overflow-hidden bg-[#141417] rounded-2xl border border-white/5 p-6 hover:border-white/10 cursor-pointer"
               >
-                <div className={`absolute top-0 right-0 w-40 h-40 bg-gradient-to-br ${stat.color} opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2`} />
+                <div className={`absolute top-0 right-0 w-40 h-40 bg-gradient-to-br ${stat.color} opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:opacity-15 transition-opacity duration-300`} />
                 
                 {/* Header */}
                 <div className="flex items-center justify-between relative">
-                  <div className={`w-14 h-14 ${stat.bgColor} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                  <div className={`w-14 h-14 ${stat.bgColor} rounded-2xl flex items-center justify-center transition-transform duration-200 group-hover:scale-110`}>
                     <Icon className={`w-7 h-7 ${stat.iconColor}`} />
                   </div>
                   <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 rounded-full">
@@ -329,7 +388,7 @@ export default function DashboardPage() {
           </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={monthlyData}>
+              <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
@@ -341,7 +400,7 @@ export default function DashboardPage() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                <XAxis dataKey="month" stroke="#666" fontSize={12} tickLine={false} />
+                <XAxis dataKey="period" stroke="#666" fontSize={12} tickLine={false} />
                 <YAxis stroke="#666" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => formatCurrency(value)} />
                 <Tooltip content={<CustomTooltip />} />
                 <Area 
@@ -374,38 +433,111 @@ export default function DashboardPage() {
           transition={{ delay: 0.5 }}
           className="bg-[#141417] rounded-2xl border border-white/5 p-6"
         >
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-white">Deal Stages</h2>
-            <p className="text-sm text-gray-500 mt-1">Distribution of your deals</p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-white">Deal Stages</h2>
+              <p className="text-sm text-gray-500 mt-1">Your pipeline at a glance</p>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl font-bold text-white">{userDeals.length}</p>
+              <p className="text-xs text-gray-500">Total Deals</p>
+            </div>
           </div>
-          <div className="h-48">
+          
+          {/* Enhanced Pie Chart */}
+          <div className="relative h-52">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={stageData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={50}
-                  outerRadius={70}
-                  paddingAngle={2}
+                  innerRadius={60}
+                  outerRadius={85}
+                  paddingAngle={3}
                   dataKey="value"
+                  stroke="none"
                 >
                   {stageData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={COLORS[index % COLORS.length]}
+                      className="transition-all hover:opacity-80"
+                    />
                   ))}
                 </Pie>
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip 
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      const total = userDeals.length;
+                      const percentage = ((data.value / total) * 100).toFixed(1);
+                      return (
+                        <div className="bg-[#1a1a1d] border border-white/10 rounded-lg px-3 py-2 shadow-xl">
+                          <p className="text-white font-medium">{data.name}</p>
+                          <p className="text-gray-400 text-sm">{data.value} deals ({percentage}%)</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
-          </div>
-          <div className="grid grid-cols-2 gap-2 mt-4">
-            {stageData.map((entry, index) => (
-              <div key={entry.name} className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                <span className="text-xs text-gray-400">{entry.name}</span>
-                <span className="text-xs text-white ml-auto">{entry.value}</span>
+            
+            {/* Center Stats */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="text-center">
+                <p className="text-3xl font-bold text-white">{activeDeals.length}</p>
+                <p className="text-xs text-gray-500">Active</p>
               </div>
-            ))}
+            </div>
+          </div>
+
+          {/* Enhanced Legend */}
+          <div className="grid grid-cols-2 gap-3 mt-4">
+            {stageData.map((entry, index) => {
+              const total = userDeals.length;
+              const percentage = total > 0 ? ((entry.value / total) * 100).toFixed(0) : 0;
+              return (
+                <div 
+                  key={entry.name} 
+                  className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/5 transition-colors"
+                >
+                  <div 
+                    className="w-3 h-3 rounded-full flex-shrink-0" 
+                    style={{ backgroundColor: COLORS[index % COLORS.length] }} 
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs text-gray-300 truncate">{entry.name}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-semibold text-white">{entry.value}</p>
+                    <p className="text-xs text-gray-500">{percentage}%</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          
+          {/* Stage Progress Bar */}
+          <div className="mt-4 pt-4 border-t border-white/5">
+            <div className="flex h-2 rounded-full overflow-hidden bg-[#0a0a0b]">
+              {stageData.map((entry, index) => {
+                const total = userDeals.length;
+                const percentage = total > 0 ? (entry.value / total) * 100 : 0;
+                return (
+                  <div
+                    key={entry.name}
+                    className="h-full transition-all hover:opacity-80"
+                    style={{
+                      width: `${percentage}%`,
+                      backgroundColor: COLORS[index % COLORS.length],
+                    }}
+                  />
+                );
+              })}
+            </div>
           </div>
         </motion.div>
       </div>

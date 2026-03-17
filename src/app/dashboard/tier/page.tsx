@@ -95,7 +95,7 @@ const tiers = [
     accentColor: "text-violet-400",
     borderColor: "border-violet-500/30",
     icon: Crown,
-    commission: "15-25%",
+    commission: "12-15%",
     subscription: "R899.69/mo",
     requirements: ["Pay R899.69/month"],
     features: [
@@ -107,7 +107,7 @@ const tiers = [
       { name: "Lead pool access", included: true },
       { name: "Priority support", included: true },
       { name: "Advanced training", included: true },
-      { name: "25% solar commission", included: true },
+      { name: "12-15% commission", included: true },
     ],
   },
 ];
@@ -238,7 +238,7 @@ export default function TierPage() {
           {currentAffiliate?.tier === "gold" && (
             <div className="mt-4 p-4 bg-violet-500/10 border border-violet-500/20 rounded-xl">
               <p className="text-violet-400 text-sm">
-                Upgrade to Platinum for R899.69/month to unlock 25% commission on solar products and exclusive lead access.
+                Upgrade to Platinum for R899.69/month to unlock 12-15% commission and exclusive lead access.
               </p>
             </div>
           )}
@@ -361,7 +361,7 @@ export default function TierPage() {
             <div className="text-center md:text-right">
               <p className="text-3xl font-bold text-white mb-1">R899.69<span className="text-lg font-normal text-gray-400">/month</span></p>
               <ul className="text-gray-400 text-sm mb-4 space-y-1">
-                <li>+ 25% solar commission</li>
+                <li>+ 12-15% commission</li>
                 <li>+ Exclusive lead pool</li>
                 <li>+ Priority support</li>
               </ul>

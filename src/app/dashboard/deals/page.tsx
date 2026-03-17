@@ -19,11 +19,31 @@ import {
   Send,
   CheckCircle,
   Clock,
-  AlertCircle
+  AlertCircle,
+  GripVertical
 } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { formatCurrency, formatDate, dealStatuses } from "@/lib/utils";
+import { formatCurrency, formatDate, dealStatuses, getTierCommissionRate } from "@/lib/utils";
+import {
+  DndContext,
+  DragOverlay,
+  closestCorners,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragStartEvent,
+  DragEndEvent,
+  useDroppable,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 const columns = [
   { id: "prospect", label: "Prospect", color: "bg-slate-500" },
@@ -34,11 +54,149 @@ const columns = [
   { id: "closed_lost", label: "Closed Lost", color: "bg-red-500" },
 ];
 
+// Sortable Deal Card Component
+function SortableDealCard({ deal, onClick, searchQuery }: { deal: any; onClick: () => void; searchQuery?: string }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: deal._id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  // Highlight matching text
+  const highlightMatch = (text: string) => {
+    if (!searchQuery) return text;
+    const regex = new RegExp(`(${searchQuery})`, 'gi');
+    const parts = text.split(regex);
+    return parts.map((part, i) => 
+      regex.test(part) ? (
+        <mark key={i} className="bg-blue-500/40 text-blue-300 rounded px-0.5">
+          {part}
+        </mark>
+      ) : part
+    );
+  };
+
+  const isMatch = searchQuery && (
+    deal.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    deal.clientCompany?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`group bg-[#0a0a0b] rounded-xl p-3 border transition-all hover:shadow-lg hover:shadow-black/20 cursor-pointer ${
+        isDragging ? "opacity-50 z-50" : ""
+      } ${isMatch ? "border-blue-500/50 ring-1 ring-blue-500/30" : "border-white/5 hover:border-white/10"}`}
+      onClick={onClick}
+    >
+      <div className="flex items-start">
+        <button
+          {...attributes}
+          {...listeners}
+          className="p-1 text-gray-600 hover:text-gray-400 cursor-grab active:cursor-grabbing mr-1"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <GripVertical className="w-4 h-4" />
+        </button>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-white text-sm truncate group-hover:text-blue-400 transition-colors">
+            {highlightMatch(deal.clientName)}
+          </h3>
+          {deal.clientCompany && (
+            <p className="text-xs text-gray-500 mt-0.5 truncate">
+              {highlightMatch(deal.clientCompany)}
+            </p>
+          )}
+        </div>
+      </div>
+      
+      <div className="flex items-center justify-between mt-2 ml-5">
+        <span className="font-bold text-white text-sm">{formatCurrency(deal.dealValue)}</span>
+        {deal.expectedCloseDate && (
+          <span className="text-xs text-gray-500 flex items-center gap-1">
+            <Calendar className="w-3 h-3" />
+            {formatDate(deal.expectedCloseDate)}
+          </span>
+        )}
+      </div>
+      
+      {deal.productCategory && deal.productCategory.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-2 ml-5">
+          {deal.productCategory.slice(0, 2).map((cat: string) => (
+            <span key={cat} className="text-xs px-1.5 py-0.5 bg-white/5 text-gray-400 rounded">
+              {cat}
+            </span>
+          ))}
+          {deal.productCategory.length > 2 && (
+            <span className="text-xs px-1.5 py-0.5 bg-white/5 text-gray-400 rounded">
+              +{deal.productCategory.length - 2}
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Drag Overlay Deal Card
+function DealCardOverlay({ deal }: { deal: any }) {
+  return (
+    <div className="bg-[#0a0a0b] rounded-xl p-3 border-2 border-blue-500 shadow-2xl cursor-grabbing">
+      <div className="flex items-start">
+        <GripVertical className="w-4 h-4 text-gray-500 mr-1" />
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-white text-sm truncate">
+            {deal.clientName}
+          </h3>
+          {deal.clientCompany && (
+            <p className="text-xs text-gray-500 mt-0.5 truncate">{deal.clientCompany}</p>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center justify-between mt-2 ml-5">
+        <span className="font-bold text-white text-sm">{formatCurrency(deal.dealValue)}</span>
+      </div>
+    </div>
+  );
+}
+
+// Droppable Column Component
+function DroppableColumn({ 
+  columnId, 
+  children 
+}: { 
+  columnId: string; 
+  children: React.ReactNode 
+}) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: columnId,
+  });
+
+  return (
+    <div 
+      ref={setNodeRef} 
+      className={`transition-colors ${isOver ? 'bg-blue-500/10' : ''}`}
+    >
+      {children}
+    </div>
+  );
+}
+
 export default function DealsPage() {
   const deals = useQuery(api.deals.getAllDeals);
   const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate);
   const createDeal = useMutation(api.deals.createDeal);
   const updateDeal = useMutation(api.deals.updateDeal);
+  const deleteDeal = useMutation(api.deals.deleteDeal);
   const submitOrder = useMutation(api.deals.submitOrder);
   
   const [showModal, setShowModal] = useState(false);
@@ -47,17 +205,113 @@ export default function DealsPage() {
   const [orderForm, setOrderForm] = useState({ deliveryAddress: "", orderNotes: "" });
   const [submitting, setSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeDeal, setActiveDeal] = useState<any>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    status: "" as string,
+    minValue: "" as string,
+    maxValue: "" as string,
+  });
   
-  const affiliateId = currentAffiliate?._id || "";
+  // DnD Sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Handle drag start
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    const deal = filteredDeals.find(d => d._id === active.id);
+    if (deal) {
+      setActiveDeal(deal);
+    }
+  };
+
+  // Handle drag end
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveDeal(null);
+
+    if (!over) return;
+
+    const activeDealId = active.id as string;
+    const overId = over.id as string;
+
+    // Check if over is a column (column header)
+    let destColumn = columns.find(col => col.id === overId)?.id;
+    
+    // If not a column, check if over is a deal and find its column
+    if (!destColumn) {
+      const overDeal = filteredDeals.find(d => d._id === overId);
+      if (overDeal) {
+        destColumn = overDeal.status;
+      }
+    }
+
+    // Find source column
+    const sourceDeal = filteredDeals.find(d => d._id === activeDealId);
+    const sourceColumn = sourceDeal?.status;
+
+    if (sourceColumn && destColumn && sourceColumn !== destColumn) {
+      // Update the deal status
+      updateDeal({ id: activeDealId, status: destColumn as any });
+    }
+  };
+  
+  const affiliateId = currentAffiliate?._id as string;
   const userDeals = currentAffiliate ? (deals || []).filter(d => d.affiliateId === currentAffiliate._id) : [];
   
-  const filteredDeals = userDeals.filter(d => 
-    d.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    d.clientCompany?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredDeals = userDeals.filter(d => {
+    // Search filter
+    const matchesSearch = !searchQuery || 
+      d.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      d.clientCompany?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Status filter
+    const matchesStatus = !filters.status || d.status === filters.status;
+    
+    // Value filters
+    const matchesMinValue = !filters.minValue || d.dealValue >= Number(filters.minValue);
+    const matchesMaxValue = !filters.maxValue || d.dealValue <= Number(filters.maxValue);
+    
+    return matchesSearch && matchesStatus && matchesMinValue && matchesMaxValue;
+  }).sort((a, b) => {
+    // Sort matching results to top when searching
+    if (!searchQuery) return 0;
+    
+    const aMatches = a.clientName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                     a.clientCompany?.toLowerCase().includes(searchQuery.toLowerCase());
+    const bMatches = b.clientName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                     b.clientCompany?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (aMatches && !bMatches) return -1;
+    if (!aMatches && bMatches) return 1;
+    return 0;
+  });
+
+  // Clear filters
+  const clearFilters = () => {
+    setFilters({ status: "", minValue: "", maxValue: "" });
+    setSearchQuery("");
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters = searchQuery || filters.status || filters.minValue || filters.maxValue;
 
   const getDealsByStatus = (status: string) => 
     filteredDeals.filter(d => d.status === status);
+
+  // Filter columns to show only those with deals when filters are active
+  const visibleColumns = hasActiveFilters 
+    ? columns.filter(col => getDealsByStatus(col.id).length > 0)
+    : columns;
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -136,116 +390,203 @@ export default function DealsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="flex flex-col sm:flex-row gap-4"
+        className="flex flex-col gap-4"
       >
-        <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-          <input
-            type="text"
-            placeholder="Search deals..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-[#141417] border border-white/5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
-          />
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Search Input */}
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+            <input
+              type="text"
+              placeholder="Search by client name or company..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-10 py-2.5 bg-[#141417] border border-white/5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Filter Pills */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Status Filter Pill */}
+            <div className="relative">
+              <select
+                value={filters.status}
+                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                className={`appearance-none pl-4 pr-10 py-2.5 bg-[#141417] border rounded-xl text-sm font-medium cursor-pointer transition-all ${
+                  filters.status 
+                    ? "border-blue-500 text-blue-400 bg-blue-500/10" 
+                    : "border-white/5 text-gray-400 hover:border-white/10 hover:text-white"
+                }`}
+              >
+                <option value="">Status</option>
+                <option value="prospect">Prospect</option>
+                <option value="qualified">Qualified</option>
+                <option value="proposal_sent">Proposal</option>
+                <option value="negotiation">Negotiation</option>
+                <option value="closed_won">Closed Won</option>
+                <option value="closed_lost">Closed Lost</option>
+              </select>
+              <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none rotate-90" />
+            </div>
+
+            {/* Min Value */}
+            <div className="relative w-32">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">R</span>
+              <input
+                type="number"
+                placeholder="Min"
+                value={filters.minValue}
+                onChange={(e) => setFilters({ ...filters, minValue: e.target.value })}
+                className={`w-full pl-8 pr-3 py-2.5 bg-[#141417] border rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all ${
+                  filters.minValue ? "border-blue-500" : "border-white/5"
+                }`}
+              />
+            </div>
+
+            {/* Max Value */}
+            <div className="relative w-32">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">R</span>
+              <input
+                type="number"
+                placeholder="Max"
+                value={filters.maxValue}
+                onChange={(e) => setFilters({ ...filters, maxValue: e.target.value })}
+                className={`w-full pl-8 pr-3 py-2.5 bg-[#141417] border rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all ${
+                  filters.maxValue ? "border-blue-500" : "border-white/5"
+                }`}
+              />
+            </div>
+
+            {/* Clear All */}
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="flex items-center gap-1 px-3 py-2.5 bg-red-600/10 hover:bg-red-600/20 text-red-400 text-sm font-medium rounded-xl transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
+                Clear
+              </button>
+            )}
+          </div>
         </div>
-        <button className="flex items-center gap-2 px-5 py-3 bg-[#141417] border border-white/5 rounded-xl text-gray-400 hover:text-white hover:border-white/10 transition-colors">
-          <Filter className="w-5 h-5" />
-          Filter
-        </button>
+
+        {/* Active Filters Summary */}
+        {hasActiveFilters && (
+          <div className="flex items-center gap-3 text-sm">
+            <span className="text-gray-500">Showing</span>
+            <span className="text-white font-semibold">{filteredDeals.length}</span>
+            <span className="text-gray-500">of</span>
+            <span className="text-white font-semibold">{userDeals.length}</span>
+            <span className="text-gray-500">deals</span>
+            <div className="flex gap-2 ml-2">
+              {searchQuery && (
+                <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-lg flex items-center gap-1">
+                  "{searchQuery}"
+                  <button onClick={() => setSearchQuery("")} className="hover:text-white">
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+              {filters.status && (
+                <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-lg flex items-center gap-1 capitalize">
+                  {filters.status.replace("_", " ")}
+                  <button onClick={() => setFilters({ ...filters, status: "" })} className="hover:text-white">
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+              {(filters.minValue || filters.maxValue) && (
+                <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-lg flex items-center gap-1">
+                  R {filters.minValue || "0"} - R {filters.maxValue || "∞"}
+                  <button onClick={() => setFilters({ ...filters, minValue: "", maxValue: "" })} className="hover:text-white">
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+            </div>
+          </div>
+        )}
       </motion.div>
 
       {/* Kanban Board */}
-      <div className="flex gap-4 overflow-x-auto pb-4 -mx-6 px-6">
-        {columns.map((column, colIndex) => {
-          const columnDeals = getDealsByStatus(column.id);
-          const totalValue = columnDeals.reduce((sum, d) => sum + d.dealValue, 0);
-          
-          return (
-            <motion.div
-              key={column.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: colIndex * 0.05 }}
-              className="flex-shrink-0 w-80"
-            >
-              <div className="bg-[#141417] rounded-2xl p-4 border border-white/5">
-                {/* Column Header */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${column.color}`} />
-                    <span className="font-medium text-white">{column.label}</span>
-                    <span className="bg-white/5 text-gray-400 text-xs px-2 py-0.5 rounded-full">
-                      {columnDeals.length}
-                    </span>
-                  </div>
-                </div>
-                
-                {/* Column Total */}
-                <div className="text-sm text-gray-500 mb-4 font-mono">
-                  {formatCurrency(totalValue)}
-                </div>
-
-                {/* Cards */}
-                <div className="space-y-3 max-h-[calc(100vh-400px)] overflow-y-auto pr-2">
-                  {columnDeals.map((deal) => (
-                    <motion.div
-                      key={deal._id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="group bg-[#0a0a0b] rounded-xl p-4 border border-white/5 hover:border-white/10 cursor-pointer transition-all hover:shadow-lg hover:shadow-black/20"
-                      onClick={() => setSelectedDeal(deal)}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h3 className="font-semibold text-white group-hover:text-blue-400 transition-colors">{deal.clientName}</h3>
-                          {deal.clientCompany && (
-                            <p className="text-sm text-gray-500 mt-0.5">{deal.clientCompany}</p>
-                          )}
-                        </div>
-                        <button className="p-1 text-gray-500 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </button>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="flex gap-3 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+          {visibleColumns.map((column, colIndex) => {
+            const columnDeals = getDealsByStatus(column.id);
+            const totalValue = columnDeals.reduce((sum, d) => sum + d.dealValue, 0);
+            
+            return (
+              <motion.div
+                key={column.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: colIndex * 0.05 }}
+                className="flex-shrink-0 w-64 sm:w-72"
+              >
+                <div className="bg-[#141417] rounded-2xl p-3 border border-white/5">
+                  {/* Column Header - Drop Target */}
+                  <DroppableColumn columnId={column.id}>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2.5 h-2.5 rounded-full ${column.color}`} />
+                        <span className="font-medium text-white text-sm">{column.label}</span>
+                        <span className="bg-white/5 text-gray-400 text-xs px-1.5 py-0.5 rounded-full">
+                          {columnDeals.length}
+                        </span>
                       </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-white">{formatCurrency(deal.dealValue)}</span>
-                        {deal.expectedCloseDate && (
-                          <span className="text-xs text-gray-500 flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {formatDate(deal.expectedCloseDate)}
-                          </span>
+                    </div>
+                    
+                    {/* Column Total */}
+                    <div className="text-xs text-gray-500 mb-3 font-mono">
+                      {formatCurrency(totalValue)}
+                    </div>
+
+                    {/* Cards */}
+                    <SortableContext
+                      items={columnDeals.map(d => d._id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <div className="space-y-2 max-h-[calc(100vh-380px)] overflow-y-auto pr-1.5 scrollbar-thin scrollbar-thumb-white/10">
+                        {columnDeals.map((deal) => (
+                          <SortableDealCard
+                            key={deal._id}
+                            deal={deal}
+                            onClick={() => setSelectedDeal(deal)}
+                            searchQuery={searchQuery}
+                          />
+                        ))}
+                        
+                        {columnDeals.length === 0 && (
+                          <div className="text-center py-6 text-gray-500 text-xs border-2 border-dashed border-white/5 rounded-xl">
+                            Drag deals here
+                          </div>
                         )}
                       </div>
-                      
-                      {deal.productCategory && deal.productCategory.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-3">
-                          {deal.productCategory.slice(0, 2).map((cat) => (
-                            <span key={cat} className="text-xs px-2 py-0.5 bg-white/5 text-gray-400 rounded">
-                              {cat}
-                            </span>
-                          ))}
-                          {deal.productCategory.length > 2 && (
-                            <span className="text-xs px-2 py-0.5 bg-white/5 text-gray-400 rounded">
-                              +{deal.productCategory.length - 2}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </motion.div>
-                  ))}
-                  
-                  {columnDeals.length === 0 && (
-                    <div className="text-center py-8 text-gray-500 text-sm">
-                      No deals in this stage
-                    </div>
-                  )}
+                    </SortableContext>
+                  </DroppableColumn>
                 </div>
-              </div>
-            </motion.div>
-          );
-        })}
-      </div>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        <DragOverlay>
+          {activeDeal ? <DealCardOverlay deal={activeDeal} /> : null}
+        </DragOverlay>
+      </DndContext>
 
       {/* Deal Detail Modal */}
       <AnimatePresence>
@@ -389,16 +730,69 @@ export default function DealsPage() {
                   </div>
                 )}
 
+                {/* Delete Deal */}
+                <div className="border-t border-white/10 pt-6">
+                  <button
+                    onClick={() => {
+                      if (confirm("Are you sure you want to delete this deal?")) {
+                        deleteDeal({ id: selectedDeal._id });
+                        setSelectedDeal(null);
+                      }
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-600/10 hover:bg-red-600/20 text-red-400 text-sm font-medium rounded-lg transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete Deal
+                  </button>
+                </div>
+
                 {/* Action Buttons */}
                 {selectedDeal.status !== "closed_won" && selectedDeal.status !== "closed_lost" && (
-                  <div className="border-t border-white/10 pt-6 flex gap-3">
-                    <button
-                      onClick={() => handleCloseWon(selectedDeal._id)}
-                      className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl transition-colors inline-flex items-center justify-center gap-2"
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                      Close Deal
-                    </button>
+                  <div className="border-t border-white/10 pt-6 space-y-3">
+                    <div className="text-gray-500 text-sm mb-2">Quick Actions</div>
+                    <div className="flex gap-2 flex-wrap">
+                      {selectedDeal.status === "prospect" && (
+                        <button
+                          onClick={() => updateDeal({ id: selectedDeal._id, status: "qualified" })}
+                          className="px-4 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-sm font-medium rounded-lg transition-colors"
+                        >
+                          Move to Qualified
+                        </button>
+                      )}
+                      {selectedDeal.status === "qualified" && (
+                        <button
+                          onClick={() => updateDeal({ id: selectedDeal._id, status: "proposal_sent" })}
+                          className="px-4 py-2 bg-amber-600/20 hover:bg-amber-600/30 text-amber-400 text-sm font-medium rounded-lg transition-colors"
+                        >
+                          Move to Proposal
+                        </button>
+                      )}
+                      {selectedDeal.status === "proposal_sent" && (
+                        <button
+                          onClick={() => updateDeal({ id: selectedDeal._id, status: "negotiation" })}
+                          className="px-4 py-2 bg-orange-600/20 hover:bg-orange-600/30 text-orange-400 text-sm font-medium rounded-lg transition-colors"
+                        >
+                          Move to Negotiation
+                        </button>
+                      )}
+                      {selectedDeal.status === "negotiation" && (
+                        <button
+                          onClick={() => handleCloseWon(selectedDeal._id)}
+                          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors inline-flex items-center gap-2"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                          Close Deal
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      <button
+                        onClick={() => updateDeal({ id: selectedDeal._id, status: "closed_lost" })}
+                        className="px-4 py-2 bg-red-600/10 hover:bg-red-600/20 text-red-400 text-sm font-medium rounded-lg transition-colors"
+                      >
+                        Mark as Lost
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -437,6 +831,8 @@ export default function DealsPage() {
               <form className="p-6 space-y-4" onSubmit={(e) => {
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget);
+                const productCategories = (formData.get("productCategory") as string).split(",").map(s => s.trim()).filter(Boolean);
+                const tierRate = currentAffiliate ? getTierCommissionRate(currentAffiliate.tier) : 5;
                 createDeal({
                   affiliateId,
                   clientName: formData.get("clientName") as string,
@@ -444,11 +840,10 @@ export default function DealsPage() {
                   clientEmail: formData.get("clientEmail") as string || undefined,
                   clientPhone: formData.get("clientPhone") as string || undefined,
                   dealValue: Number(formData.get("dealValue")),
-                  productCategory: (formData.get("productCategory") as string).split(",").map(s => s.trim()).filter(Boolean),
+                  productCategory: productCategories.length > 0 ? productCategories : ["General"],
                   description: formData.get("description") as string || undefined,
                   status: "prospect",
-                  commissionRate: 10,
-                  commissionAmount: Number(formData.get("dealValue")) * 0.1,
+                  commissionRate: tierRate,
                 });
                 setShowModal(false);
               }}>

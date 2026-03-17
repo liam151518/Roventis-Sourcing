@@ -40,7 +40,7 @@ export const createDeal = mutation({
     commissionRate: v.number(),
   },
   handler: async (ctx, args) => {
-    const commissionAmount = args.dealValue * (args.commissionRate / 100);
+    const commissionAmount = Math.round(args.dealValue * (args.commissionRate / 100) * 100) / 100;
     return await ctx.db.insert("deals", {
       ...args,
       commissionAmount,
@@ -67,19 +67,37 @@ export const updateDeal = mutation({
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
+    const deal = await ctx.db.get(id);
+    
+    if (!deal) {
+      throw new Error("Deal not found");
+    }
+    
     if (updates.dealValue) {
-      const deal = await ctx.db.get(id);
-      if (deal) {
-        updates.commissionAmount = updates.dealValue * (deal.commissionRate / 100);
+      updates.commissionAmount = Math.round(updates.dealValue * (deal.commissionRate / 100) * 100) / 100;
+    }
+    
+    // If status is changing to closed_won, update affiliate totals
+    if (updates.status === "closed_won" && deal.status !== "closed_won") {
+      const affiliate = await ctx.db.get(deal.affiliateId);
+      if (affiliate) {
+        await ctx.db.patch(affiliate._id, {
+          totalSales: (affiliate.totalSales || 0) + deal.dealValue,
+          totalCommissionEarned: (affiliate.totalCommissionEarned || 0) + deal.commissionAmount,
+          pendingCommission: (affiliate.pendingCommission || 0) + deal.commissionAmount,
+        });
       }
     }
+    
     await ctx.db.patch(id, updates);
     return id;
   },
 });
 
 export const deleteDeal = mutation({
-  args: { id: v.string() },
+  args: {
+    id: v.string(),
+  },
   handler: async (ctx, args) => {
     await ctx.db.delete(args.id);
     return args.id;

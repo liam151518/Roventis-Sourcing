@@ -116,7 +116,7 @@ export const seedDemoTickets = mutation({
       status: "resolved",
       messages: [
         { sender: "affiliate", content: "Hi, I'd like to understand how my commission is calculated for solar products.", createdAt: Date.now() - 5 * 24 * 60 * 60 * 1000 },
-        { sender: "admin", content: "Great question! Platinum affiliates get 25% commission on solar products, 15% on all other categories.", createdAt: Date.now() - 4 * 24 * 60 * 60 * 1000 },
+        { sender: "admin", content: "Great question! Platinum affiliates get 12-15% commission on products, with higher rates on select categories.", createdAt: Date.now() - 4 * 24 * 60 * 60 * 1000 },
       ],
       createdAt: Date.now() - 5 * 24 * 60 * 60 * 1000,
       updatedAt: Date.now() - 4 * 24 * 60 * 60 * 1000,

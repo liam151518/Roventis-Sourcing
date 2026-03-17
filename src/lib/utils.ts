@@ -7,14 +7,19 @@ export function cn(...inputs: ClassValue[]) {
 
 // Force consistent formatting - avoid hydration issues by using simple string formatting
 export function formatCurrency(amount: number): string {
-  // Simple consistent formatting without locale differences
-  const str = amount.toString();
-  const formatted = str.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  return `R ${formatted}`;
+  // Format with proper locale and allow decimals
+  return new Intl.NumberFormat('en-ZA', {
+    style: 'currency',
+    currency: 'ZAR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(amount);
 }
 
-export function formatDate(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
+export function formatDate(date: Date | string | number | undefined | null): string {
+  if (!date) return "N/A";
+  const d = typeof date === "string" ? new Date(date) : typeof date === "number" ? new Date(date) : date;
+  if (isNaN(d.getTime())) return "Invalid Date";
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
 }

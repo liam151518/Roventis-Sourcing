@@ -87,7 +87,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <motion.aside
         initial={false}
-        animate={{ width: collapsed ? 100 : 280 }}
+        animate={{ width: collapsed ? 100 : 230 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
         className={`fixed top-0 left-0 z-50 h-full bg-[#0a0a0b] border-r border-white/5 lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
@@ -95,20 +95,21 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="p-4 border-b border-white/5">
+          <div className="p-4">
             {/* Logo - Click to toggle collapse */}
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="w-full flex items-center hover:bg-white/5 rounded-xl p-2 transition-colors"
+              className="w-full flex items-center justify-center hover:bg-white/5 rounded-xl p-2 transition-colors"
             >
-              <Image
-                src="/roventis-logo.png"
-                alt="Roventis"
-                width={577}
-                height={247}
-                className="h-8 w-auto"
-                unoptimized
-              />
+              <div className="relative h-8 w-[100px] flex-shrink-0">
+                <Image
+                  src="/roventis-logo.png"
+                  alt="Roventis"
+                  fill
+                  className="object-contain"
+                  unoptimized
+                />
+              </div>
             </button>
           </div>
 
@@ -126,25 +127,34 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
               if (!tierMet) return null;
 
+              // Check if we need a divider (before first item of work section)
+              const showWorkDivider = item.section === "work" && index === 0;
               // Check if we need a divider (before first item of personal section)
-              const showDivider = item.section === "personal" && navItems[index - 1]?.section === "work";
+              const showPersonalDivider = item.section === "personal" && navItems[index - 1]?.section === "work";
 
               return (
                 <Fragment key={item.href}>
-                  {showDivider && !collapsed && (
+                  {showWorkDivider && !collapsed && (
+                    <div className="pt-4 pb-2">
+                      <span className="px-3 text-xs font-medium text-gray-600 uppercase tracking-wider">
+                        Work
+                      </span>
+                    </div>
+                  )}
+                  {showPersonalDivider && !collapsed && (
                     <div className="pt-4 pb-2">
                       <span className="px-3 text-xs font-medium text-gray-600 uppercase tracking-wider">
                         Personal
                       </span>
                     </div>
                   )}
-                  {showDivider && collapsed && (
-                    <div className="my-2 border-t border-white/10" />
-                  )}
                 <Link
-                  key={item.href}
                   href={item.href}
                   className={`group flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-all relative ${
+                    collapsed 
+                      ? "justify-center px-2" 
+                      : ""
+                  } ${
                     isActive
                       ? "text-white"
                       : "text-gray-400 hover:text-white hover:bg-white/5"
@@ -175,13 +185,28 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           </nav>
 
           {/* Footer */}
-          <div className="p-3 border-t border-white/5">
-            <div className="flex items-center justify-between">
-              <button className="relative p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" />
-              </button>
-              <UserButton afterSignOutUrl="/" />
+          <div className={`p-3 ${collapsed ? 'px-2' : ''}`}>
+            <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
+              {!collapsed && (
+                <>
+                  <button className="relative p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                    <Bell className="w-5 h-5" />
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" />
+                  </button>
+                  <UserButton afterSignOutUrl="/" />
+                </>
+              )}
+              {collapsed && (
+                <div className="flex flex-col items-center gap-2">
+                  <button className="relative p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                    <Bell className="w-5 h-5" />
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" />
+                  </button>
+                  <div className="w-8 h-8">
+                    <UserButton afterSignOutUrl="/" />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -190,7 +215,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       {/* Main Content */}
       <motion.div
         initial={false}
-        animate={{ marginLeft: collapsed ? 100 : 280 }}
+        animate={{ marginLeft: collapsed ? 100 : 230 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
         className="flex-1 min-w-0"
       >
