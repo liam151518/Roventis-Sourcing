@@ -88,9 +88,12 @@ export default defineSchema({
     fileType: v.union(v.literal("pdf"), v.literal("video"), v.literal("image"), v.literal("link")),
     category: v.union(v.literal("coaching_sheet"), v.literal("catalog"), v.literal("price_list"), v.literal("script"), v.literal("creative"), v.literal("legal")),
     isPublic: v.boolean(),
+    isDraft: v.boolean(),
     downloadCount: v.number(),
     createdAt: v.number(),
-  }).index("by_category", ["category"]),
+    updatedAt: v.optional(v.number()),
+  }).index("by_category", ["category"])
+    .index("by_is_draft", ["isDraft"]),
 
   // Commission payouts
   commissionPayouts: defineTable({
@@ -137,11 +140,25 @@ export default defineSchema({
   orders: defineTable({
     affiliateId: v.string(),
     dealId: v.optional(v.string()),
+    
+    // Client Information
     clientName: v.string(),
     clientCompany: v.optional(v.string()),
     clientEmail: v.string(),
     clientPhone: v.optional(v.string()),
     deliveryAddress: v.optional(v.string()),
+    
+    // Company Details (for manufacturing)
+    companyName: v.optional(v.string()),
+    companyRegistrationNumber: v.optional(v.string()),
+    companyVATNumber: v.optional(v.string()),
+    companyWebsite: v.optional(v.string()),
+    companyAddress: v.optional(v.string()),
+    contactPersonName: v.optional(v.string()),
+    contactPersonEmail: v.optional(v.string()),
+    contactPersonPhone: v.optional(v.string()),
+    
+    // Order Items
     items: v.array(v.object({
       productName: v.string(),
       quantity: v.number(),
@@ -149,13 +166,29 @@ export default defineSchema({
       total: v.number(),
     })),
     totalAmount: v.number(),
+    
+    // Order Status
     status: v.union(v.literal("draft"), v.literal("submitted"), v.literal("supplier_confirmed"), v.literal("in_transit"), v.literal("delivered"), v.literal("installed"), v.literal("cancelled")),
     trackingNumber: v.optional(v.string()),
     deliveryDate: v.optional(v.number()),
     installationDate: v.optional(v.number()),
+    
+    // Commission
     commissionStatus: v.union(v.literal("pending"), v.literal("approved"), v.literal("paid")),
     commissionAmount: v.number(),
+    
+    // Documents & Files
+    invoiceDocument: v.optional(v.string()), // URL to invoice PDF
+    legalDocument: v.optional(v.string()), // URL to signed legal document
+    paymentProof: v.optional(v.string()), // URL to payment proof image
+    productImages: v.optional(v.array(v.string())), // URLs to product images
+    mockupPhotos: v.optional(v.array(v.string())), // URLs to mockup photos
+    customLogo: v.optional(v.string()), // URL to custom logo
+    
+    // Additional Notes
     notes: v.optional(v.string()),
+    adminNotes: v.optional(v.string()),
+    
     createdAt: v.number(),
   }).index("by_affiliate", ["affiliateId"])
     .index("by_status", ["status"])
@@ -189,6 +222,8 @@ export default defineSchema({
       content: v.string(),
       createdAt: v.number(),
     })),
+    resolvedAt: v.optional(v.number()),
+    closedAt: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_affiliate", ["affiliateId"])

@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as admin from "../admin.js";
 import type * as affiliates from "../affiliates.js";
 import type * as commissions from "../commissions.js";
 import type * as deals from "../deals.js";
@@ -25,6 +26,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  admin: typeof admin;
   affiliates: typeof affiliates;
   commissions: typeof commissions;
   deals: typeof deals;

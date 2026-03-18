@@ -7,13 +7,12 @@ export function cn(...inputs: ClassValue[]) {
 
 // Force consistent formatting - avoid hydration issues by using simple string formatting
 export function formatCurrency(amount: number): string {
-  // Format with proper locale and allow decimals
-  return new Intl.NumberFormat('en-ZA', {
-    style: 'currency',
-    currency: 'ZAR',
+  // Use consistent formatting without locale-specific variations to prevent hydration mismatches
+  const formatted = amount.toLocaleString('en-US', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  }).format(amount);
+  });
+  return `R ${formatted}`;
 }
 
 export function formatDate(date: Date | string | number | undefined | null): string {
@@ -22,6 +21,25 @@ export function formatDate(date: Date | string | number | undefined | null): str
   if (isNaN(d.getTime())) return "Invalid Date";
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+export function formatRelativeTime(date: Date | string | number | undefined | null): string {
+  if (!date) return "N/A";
+  const d = typeof date === "string" ? new Date(date) : typeof date === "number" ? new Date(date) : date;
+  if (isNaN(d.getTime())) return "Invalid Date";
+  
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  
+  if (diffSecs < 60) return "just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return formatDate(date);
 }
 
 export function generateAffiliateCode(firstName: string, lastName: string, count: number): string {

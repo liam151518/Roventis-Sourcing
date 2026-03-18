@@ -20,7 +20,6 @@ import { api } from "@/convex/_generated/api";
 import { formatDate } from "@/lib/utils";
 
 const categories = [
-  { id: "all", label: "All Resources", icon: File },
   { id: "coaching_sheet", label: "Coaching", icon: FileText },
   { id: "catalog", label: "Catalogs", icon: Presentation },
   { id: "price_list", label: "Price Lists", icon: FileText },
@@ -55,7 +54,7 @@ export default function ResourcesPage() {
   const resources = useQuery(api.resources.getResources);
   const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedCategory, setSelectedCategory] = useState("coaching_sheet");
   const [previewResource, setPreviewResource] = useState<any>(null);
 
   if (!resources || !currentAffiliate) {
@@ -69,7 +68,7 @@ export default function ResourcesPage() {
   const filteredResources = (resources || []).filter((r: any) => {
     const matchesSearch = r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || r.category === selectedCategory;
+    const matchesCategory = r.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 

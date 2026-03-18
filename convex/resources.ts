@@ -14,6 +14,8 @@ export const getResources = query({
   },
   handler: async (ctx, args) => {
     let results = await ctx.db.query("resources").collect();
+    // Only return published resources (not drafts)
+    results = results.filter((r) => !r.isDraft);
     if (args.category) {
       results = results.filter((r) => r.category === args.category);
     }
@@ -29,6 +31,7 @@ export const createResource = mutation({
     fileType: v.union(v.literal("pdf"), v.literal("video"), v.literal("image"), v.literal("link")),
     category: v.union(v.literal("coaching_sheet"), v.literal("catalog"), v.literal("price_list"), v.literal("script"), v.literal("creative"), v.literal("legal")),
     isPublic: v.boolean(),
+    isDraft: v.boolean(),
     downloadCount: v.number(),
   },
   handler: async (ctx, args) => {

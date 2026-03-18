@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { 
   TrendingUp, 
   DollarSign, 
@@ -23,6 +25,7 @@ import Link from "next/link";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { formatCurrency } from "@/lib/utils";
+import { isAdminEmail, isAdminUserId } from "@/lib/admin";
 import { 
   AreaChart, 
   Area, 
@@ -42,11 +45,36 @@ import {
 const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#ef4444'];
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const { userId, user, isLoaded } = useAuth();
   const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate);
   const deals = useQuery(api.deals.getAllDeals);
   const modules = useQuery(api.training.getTrainingModules);
   const payouts = useQuery(api.commissions.getAllPayouts);
   const [timeRange, setTimeRange] = useState("month");
+
+  // Check if user is admin - using useMemo for stability
+  const userEmail = useMemo(() => {
+    if (!user) return "";
+    return user.emailAddresses?.[0]?.emailAddress || 
+           (user as any).primaryEmailAddress?.emailAddress ||
+           "";
+  }, [user]);
+
+  const isAdmin = useMemo(() => {
+    if (!userId) return false;
+    // Check both email and user ID for admin
+    const emailAdmin = userEmail ? isAdminEmail(userEmail) : false;
+    const idAdmin = isAdminUserId(userId);
+    return emailAdmin || idAdmin;
+  }, [userId, userEmail]);
+
+  // Redirect admins to admin dashboard - but only after auth is loaded
+  useEffect(() => {
+    if (isLoaded && isAdmin) {
+      router.push("/admin");
+    }
+  }, [isLoaded, isAdmin, router]);
   
   // All hooks must be called before any early returns
   // Filter deals for current user (safe to do with null checks)

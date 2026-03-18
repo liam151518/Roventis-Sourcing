@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   HelpCircle, 
@@ -17,10 +17,12 @@ import {
   DollarSign,
   ShoppingCart,
   Settings,
-  BookOpen
+  BookOpen,
+  User
 } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { formatDate, formatRelativeTime } from "@/lib/utils";
 
 const faqs = [
   {
@@ -111,22 +113,53 @@ const statusColors: Record<string, string> = {
   closed: "bg-gray-500/10 text-gray-400",
 };
 
+const statusLabels: Record<string, string> = {
+  open: "Open",
+  in_progress: "In Progress",
+  resolved: "Resolved",
+  closed: "Closed",
+};
+
 export default function SupportPage() {
   const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate);
   const tickets = useQuery(api.support.getMyTickets, { 
     affiliateId: currentAffiliate?._id as string 
   });
   const createTicket = useMutation(api.support.createTicket);
+  const addTicketMessage = useMutation(api.support.addTicketMessage);
   
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null);
-  const [newTicket, setNewTicket] = useState({
+  const [selectedTicket, setSelectedTicket] = useState<any>(null);
+  const [replyMessage, setReplyMessage] = useState("");
+  const [view, setView] = useState<"tickets" | "chat">("tickets");
+  
+  const newTicket = useState({
     subject: "",
     description: "",
     category: "other" as "deal" | "product" | "commission" | "technical" | "other",
     priority: "medium" as "low" | "medium" | "high" | "urgent",
   });
+  
   const [submitting, setSubmitting] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Update selected ticket when tickets change
+  useEffect(() => {
+    if (selectedTicket && tickets) {
+      const updated = tickets.find((t: any) => t._id === selectedTicket._id);
+      if (updated) {
+        setSelectedTicket(updated);
+      }
+    }
+  }, [tickets, selectedTicket?._id]);
+
+  // Auto-scroll to bottom when viewing chat
+  useEffect(() => {
+    if (view === "chat" && selectedTicket) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [selectedTicket?.messages, view]);
 
   // Loading state
   if (currentAffiliate === null || tickets === null) {
@@ -138,18 +171,18 @@ export default function SupportPage() {
   }
 
   const handleSubmitTicket = async () => {
-    if (!currentAffiliate?._id || !newTicket.subject || !newTicket.description) return;
+    if (!currentAffiliate?._id || !newTicket[0].subject || !newTicket[0].description) return;
     setSubmitting(true);
     try {
       await createTicket({
         affiliateId: currentAffiliate._id,
-        subject: newTicket.subject,
-        description: newTicket.description,
-        category: newTicket.category,
-        priority: newTicket.priority,
+        subject: newTicket[0].subject,
+        description: newTicket[0].description,
+        category: newTicket[0].category,
+        priority: newTicket[0].priority,
       });
       setShowTicketModal(false);
-      setNewTicket({
+      newTicket[1]({
         subject: "",
         description: "",
         category: "other",
@@ -161,7 +194,20 @@ export default function SupportPage() {
     setSubmitting(false);
   };
 
+  const handleReply = async () => {
+    if (!selectedTicket || !replyMessage.trim()) return;
+    await addTicketMessage({
+      ticketId: selectedTicket._id,
+      sender: "affiliate",
+      content: replyMessage,
+    });
+    setReplyMessage("");
+  };
+
   const openTickets = tickets?.filter(t => t.status === "open" || t.status === "in_progress").length || 0;
+
+  // Sort tickets by updated time
+  const sortedTickets = [...(tickets || [])].sort((a: any, b: any) => b.updatedAt - a.updatedAt);
 
   return (
     <div className="space-y-6">
@@ -229,55 +275,225 @@ export default function SupportPage() {
         </motion.div>
       </div>
 
-      {/* My Tickets */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-white">My Tickets</h2>
-        {tickets && tickets.length > 0 ? (
-          <div className="space-y-3">
-            {tickets.map((ticket, index) => {
-              const CategoryIcon = categoryIcons[ticket.category] || HelpCircle;
-              return (
-                <motion.div
-                  key={ticket._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="bg-[#111113] rounded-2xl p-5 border border-white/5"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
-                        <CategoryIcon className="w-5 h-5 text-gray-400" />
-                      </div>
-                      <div>
-                        <h3 className="text-white font-semibold">{ticket.subject}</h3>
-                        <p className="text-gray-400 text-sm line-clamp-2">{ticket.description}</p>
-                        <p className="text-gray-500 text-xs mt-2">
-                          {new Date(ticket.createdAt).toLocaleDateString()} - {ticket.messages?.length || 1} messages
+      {/* Main Content - Tickets List or Chat View */}
+      {view === "chat" && selectedTicket ? (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Back button and ticket list */}
+          <div className="lg:col-span-1 space-y-4">
+            <button
+              onClick={() => { setView("tickets"); setSelectedTicket(null); }}
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+            >
+              <ChevronDown className="w-4 h-4 rotate-90" />
+              Back to Tickets
+            </button>
+            
+            <div className="bg-[#111113] rounded-2xl border border-white/5 overflow-hidden">
+              <div className="max-h-[500px] overflow-y-auto">
+                {sortedTickets.map((ticket: any) => (
+                  <div
+                    key={ticket._id}
+                    onClick={() => setSelectedTicket(ticket)}
+                    className={`p-4 border-b border-white/5 cursor-pointer hover:bg-white/5 transition-colors ${
+                      selectedTicket?._id === ticket._id ? "bg-blue-600/20" : ""
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className={`font-medium truncate ${
+                          ticket.status === "closed" ? "text-gray-500" : "text-white"
+                        }`}>
+                          {ticket.subject}
+                        </p>
+                        <p className="text-gray-500 text-sm truncate">
+                          {ticket.description}
                         </p>
                       </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${statusColors[ticket.status]}`}>
-                        {ticket.status.replace("_", " ")}
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[ticket.status]}`}>
+                        {statusLabels[ticket.status]}
                       </span>
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${priorityColors[ticket.priority]}`}>
+                    </div>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${priorityColors[ticket.priority]}`}>
                         {ticket.priority}
+                      </span>
+                      <span className="text-gray-600 text-xs ml-auto">
+                        {formatRelativeTime(ticket.updatedAt)}
                       </span>
                     </div>
                   </div>
-                </motion.div>
-              );
-            })}
+                ))}
+              </div>
+            </div>
           </div>
-        ) : (
-          <div className="bg-[#111113] rounded-2xl p-12 border border-white/5 text-center">
-            <MessageCircle className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <p className="text-gray-400 mb-2">No support tickets</p>
-            <p className="text-gray-500 text-sm">Submit a ticket if you need help</p>
+
+          {/* Chat View */}
+          <div className="lg:col-span-2 bg-[#111113] rounded-2xl border border-white/5 overflow-hidden flex flex-col">
+            {/* Chat Header */}
+            <div className="p-4 border-b border-white/5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-white">{selectedTicket.subject}</h3>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className={`px-2 py-0.5 rounded-full text-xs ${statusColors[selectedTicket.status]}`}>
+                      {statusLabels[selectedTicket.status]}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs ${priorityColors[selectedTicket.priority]}`}>
+                      {selectedTicket.priority} priority
+                    </span>
+                    <span className="text-gray-500 text-xs">
+                      Created {formatDate(selectedTicket.createdAt)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[400px]">
+              {/* Original Message */}
+              <div className="bg-white/5 rounded-2xl rounded-tl-sm p-4 max-w-[90%]">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-xs font-medium text-white">
+                    {currentAffiliate?.firstName?.[0]}{currentAffiliate?.lastName?.[0]}
+                  </div>
+                  <span className="text-gray-400 text-xs">
+                    {currentAffiliate?.firstName} {currentAffiliate?.lastName}
+                  </span>
+                  <span className="text-gray-600 text-xs">· {formatDate(selectedTicket.createdAt)}</span>
+                </div>
+                <p className="text-white whitespace-pre-wrap">{selectedTicket.description}</p>
+              </div>
+
+              {/* Replies */}
+              {selectedTicket.messages?.map((msg: any, idx: number) => {
+                const isAdmin = msg.sender === "admin";
+                return (
+                  <div
+                    key={idx}
+                    className={`flex ${isAdmin ? "justify-end" : "justify-start"}`}
+                  >
+                    <div className={`max-w-[90%] rounded-2xl p-4 ${
+                      isAdmin 
+                        ? "bg-blue-600 text-white rounded-tr-sm" 
+                        : "bg-white/5 text-white rounded-tl-sm"
+                    }`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        {isAdmin ? (
+                          <>
+                            <span className="text-xs text-blue-200 font-medium">Support Team</span>
+                            <span className="text-blue-300 text-xs">· {formatRelativeTime(msg.createdAt)}</span>
+                          </>
+                        ) : (
+                          <>
+                            <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-xs font-medium text-white">
+                              {currentAffiliate?.firstName?.[0]}
+                            </div>
+                            <span className="text-gray-400 text-xs">
+                              {currentAffiliate?.firstName}
+                            </span>
+                            <span className="text-gray-600 text-xs">· {formatRelativeTime(msg.createdAt)}</span>
+                          </>
+                        )}
+                      </div>
+                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                    </div>
+                  </div>
+                );
+              })}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Reply Input */}
+            {selectedTicket.status !== "closed" ? (
+              <div className="p-4 border-t border-white/5">
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    placeholder="Type your reply..."
+                    value={replyMessage}
+                    onChange={(e) => setReplyMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && handleReply()}
+                    className="flex-1 px-4 py-3 bg-black border border-white/5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  />
+                  <button
+                    onClick={handleReply}
+                    disabled={!replyMessage.trim()}
+                    className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                  >
+                    <Send className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 border-t border-white/5 bg-gray-900/50">
+                <p className="text-gray-500 text-sm text-center">This ticket is closed. Contact support to reopen.</p>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <>
+          {/* My Tickets List View */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-white">My Tickets</h2>
+            {tickets && tickets.length > 0 ? (
+              <div className="space-y-3">
+                {sortedTickets.map((ticket: any, index: number) => {
+                  const CategoryIcon = categoryIcons[ticket.category] || HelpCircle;
+                  return (
+                    <motion.div
+                      key={ticket._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      onClick={() => { setSelectedTicket(ticket); setView("chat"); }}
+                      className="bg-[#111113] rounded-2xl p-5 border border-white/5 cursor-pointer hover:border-white/10 transition-all"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                            <CategoryIcon className="w-5 h-5 text-gray-400" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              {ticket.status === "closed" && (
+                                <span className="text-gray-500">✓</span>
+                              )}
+                              <h3 className={`font-semibold ${ticket.status === "closed" ? "text-gray-500" : "text-white"}`}>
+                                {ticket.subject}
+                              </h3>
+                            </div>
+                            <p className="text-gray-400 text-sm line-clamp-2 mt-1">{ticket.description}</p>
+                            <div className="flex items-center gap-3 mt-2">
+                              <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusColors[ticket.status]}`}>
+                                {statusLabels[ticket.status]}
+                              </span>
+                              <span className={`px-2 py-0.5 rounded text-xs font-medium ${priorityColors[ticket.priority]}`}>
+                                {ticket.priority}
+                              </span>
+                              <span className="text-gray-600 text-xs">
+                                {formatRelativeTime(ticket.updatedAt)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <ChevronUp className="w-5 h-5 text-gray-600 rotate-90 flex-shrink-0" />
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="bg-[#111113] rounded-2xl p-12 border border-white/5 text-center">
+                <MessageCircle className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-400 mb-2">No support tickets</p>
+                <p className="text-gray-500 text-sm">Submit a ticket if you need help</p>
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       {/* FAQ Section */}
       <div className="space-y-4">
@@ -365,16 +581,16 @@ export default function SupportPage() {
                   <input
                     type="text"
                     placeholder="Brief description of your issue"
-                    value={newTicket.subject}
-                    onChange={(e) => setNewTicket({ ...newTicket, subject: e.target.value })}
+                    value={newTicket[0].subject}
+                    onChange={(e) => newTicket[1]({ ...newTicket[0], subject: e.target.value })}
                     className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                   />
                 </div>
                 <div>
                   <label className="block text-gray-400 text-sm mb-2">Category</label>
                   <select
-                    value={newTicket.category}
-                    onChange={(e) => setNewTicket({ ...newTicket, category: e.target.value as any })}
+                    value={newTicket[0].category}
+                    onChange={(e) => newTicket[1]({ ...newTicket[0], category: e.target.value as any })}
                     className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-blue-500"
                   >
                     <option value="deal">Deal Related</option>
@@ -387,8 +603,8 @@ export default function SupportPage() {
                 <div>
                   <label className="block text-gray-400 text-sm mb-2">Priority</label>
                   <select
-                    value={newTicket.priority}
-                    onChange={(e) => setNewTicket({ ...newTicket, priority: e.target.value as any })}
+                    value={newTicket[0].priority}
+                    onChange={(e) => newTicket[1]({ ...newTicket[0], priority: e.target.value as any })}
                     className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-blue-500"
                   >
                     <option value="low">Low</option>
@@ -402,8 +618,8 @@ export default function SupportPage() {
                   <textarea
                     rows={4}
                     placeholder="Describe your issue in detail..."
-                    value={newTicket.description}
-                    onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
+                    value={newTicket[0].description}
+                    onChange={(e) => newTicket[1]({ ...newTicket[0], description: e.target.value })}
                     className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-none"
                   />
                 </div>
@@ -418,7 +634,7 @@ export default function SupportPage() {
                 </button>
                 <button
                   onClick={handleSubmitTicket}
-                  disabled={submitting || !newTicket.subject || !newTicket.description}
+                  disabled={submitting || !newTicket[0].subject || !newTicket[0].description}
                   className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
                 >
                   {submitting ? (

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, Fragment } from "react";
+import { useState, useEffect, useMemo, Fragment } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   LayoutDashboard, 
@@ -21,6 +21,7 @@ import {
 import { useQuery, useMutation } from "convex/react";
 import { useAuth, useUser, UserButton } from "@clerk/nextjs";
 import { api } from "@/convex/_generated/api";
+import { isAdminEmail, isAdminUserId } from "@/lib/admin";
 
 const navItems = [
   // Work items
@@ -41,33 +42,74 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const { userId, isLoaded } = useAuth();
   const { user } = useUser();
   const registerAffiliate = useMutation(api.affiliates.registerAffiliate);
   const seedDemoData = useMutation(api.affiliates.seedDemoData);
   const seedAllData = useMutation(api.affiliates.seedAllData);
   
+  // Get user email - using useMemo to ensure stability
+  // Also log full user object to debug
+  const userEmail = useMemo(() => {
+    if (!user) {
+      console.log("No user object");
+      return "";
+    }
+    console.log("User object:", JSON.stringify(user));
+    
+    // Try different ways Clerk provides email
+    const email = user.emailAddresses?.[0]?.emailAddress || 
+           (user as any).primaryEmailAddress?.emailAddress ||
+           "";
+    console.log("Extracted email:", email);
+    return email;
+  }, [user]);
+
+  // Check admin - use userId which is more reliable
+  const isAdmin = useMemo(() => {
+    if (!userId) return false;
+    // Check both email and user ID for admin
+    const emailAdmin = userEmail ? isAdminEmail(userEmail) : false;
+    const idAdmin = isAdminUserId(userId);
+    console.log("Admin check:", { userId, userEmail, emailAdmin, idAdmin });
+    return emailAdmin || idAdmin;
+  }, [userId, userEmail]);
+
   // Always pass a consistent argument to keep hooks stable
   const currentAffiliate = useQuery(
     api.affiliates.getCurrentAffiliate,
     { clerkUserId: userId || undefined }
   );
 
+  // Debug
   useEffect(() => {
-    console.log("useEffect:", { isLoaded, userId, currentAffiliate });
-    if (isLoaded && userId && currentAffiliate === null) {
-      console.log("Calling seedDemoData for:", userId);
+    console.log("Dashboard:", { isLoaded, userId, userEmail, isAdmin, hasAffiliate: !!currentAffiliate });
+  }, [isLoaded, userId, userEmail, isAdmin, currentAffiliate]);
+
+  // Redirect admins to admin dashboard - only when fully loaded and confirmed admin
+  useEffect(() => {
+    if (isLoaded && userId && isAdmin) {
+      console.log("Redirecting admin to admin dashboard");
+      router.push("/admin");
+    }
+  }, [isLoaded, userId, isAdmin, router]);
+
+  // Skip seeding for admin users
+  useEffect(() => {
+    if (isAdmin || !userEmail || !userId) return;
+    
+    if (isLoaded && currentAffiliate === null) {
       seedDemoData({ 
         clerkUserId: userId,
         firstName: user?.firstName || "Demo",
         lastName: user?.lastName || "User", 
-        email: user?.primaryEmailAddress?.emailAddress || "demo@roventis.co.za"
-      }).then((result) => {
-        console.log("seedDemoData result:", result);
+        email: userEmail
+      }).then(() => {
         seedAllData();
       });
     }
-  }, [isLoaded, userId, currentAffiliate, user]);
+  }, [isLoaded, userId, currentAffiliate, user, isAdmin, userEmail]);
 
   return (
     <div className="min-h-screen bg-black flex">
@@ -96,7 +138,6 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="p-4">
-            {/* Logo - Click to toggle collapse */}
             <button
               onClick={() => setCollapsed(!collapsed)}
               className="w-full flex items-center justify-center hover:bg-white/5 rounded-xl p-2 transition-colors"
@@ -127,9 +168,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
               if (!tierMet) return null;
 
-              // Check if we need a divider (before first item of work section)
               const showWorkDivider = item.section === "work" && index === 0;
-              // Check if we need a divider (before first item of personal section)
               const showPersonalDivider = item.section === "personal" && navItems[index - 1]?.section === "work";
 
               return (
@@ -151,13 +190,9 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                 <Link
                   href={item.href}
                   className={`group flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-all relative ${
-                    collapsed 
-                      ? "justify-center px-2" 
-                      : ""
+                    collapsed ? "justify-center px-2" : ""
                   } ${
-                    isActive
-                      ? "text-white"
-                      : "text-gray-400 hover:text-white hover:bg-white/5"
+                    isActive ? "text-white" : "text-gray-400 hover:text-white hover:bg-white/5"
                   }`}
                   onClick={() => setSidebarOpen(false)}
                 >
@@ -219,7 +254,6 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         transition={{ duration: 0.2, ease: "easeInOut" }}
         className="flex-1 min-w-0"
       >
-      {/* Page Content */}
         <main className="p-6 lg:p-8">
           {children}
         </main>

@@ -33,11 +33,22 @@ export const createOrder = mutation({
   args: {
     affiliateId: v.string(),
     dealId: v.optional(v.string()),
+    // Client Information
     clientName: v.string(),
     clientCompany: v.optional(v.string()),
     clientEmail: v.string(),
     clientPhone: v.optional(v.string()),
     deliveryAddress: v.optional(v.string()),
+    // Company Details (for manufacturing)
+    companyName: v.optional(v.string()),
+    companyRegistrationNumber: v.optional(v.string()),
+    companyVATNumber: v.optional(v.string()),
+    companyWebsite: v.optional(v.string()),
+    companyAddress: v.optional(v.string()),
+    contactPersonName: v.optional(v.string()),
+    contactPersonEmail: v.optional(v.string()),
+    contactPersonPhone: v.optional(v.string()),
+    // Order Items
     items: v.array(v.object({
       productName: v.string(),
       quantity: v.number(),
@@ -46,13 +57,24 @@ export const createOrder = mutation({
     })),
     totalAmount: v.number(),
     notes: v.optional(v.string()),
+    // Documents & Files (URLs)
+    invoiceDocument: v.optional(v.string()),
+    legalDocument: v.optional(v.string()),
+    paymentProof: v.optional(v.string()),
+    productImages: v.optional(v.array(v.string())),
+    mockupPhotos: v.optional(v.array(v.string())),
+    customLogo: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const { productImages, mockupPhotos, ...rest } = args;
+    
     const orderId = await ctx.db.insert("orders", {
-      ...args,
+      ...rest,
+      productImages: productImages || [],
+      mockupPhotos: mockupPhotos || [],
       status: "draft",
       commissionStatus: "pending",
-      commissionAmount: 0, // Will be calculated based on affiliate tier
+      commissionAmount: 0,
       createdAt: Date.now(),
     });
 
@@ -159,6 +181,57 @@ export const submitOrder = mutation({
       status: "submitted",
     });
 
+    return { success: true };
+  },
+});
+
+// Admin: Update order with all fields
+export const adminUpdateOrder = mutation({
+  args: {
+    orderId: v.string(),
+    // Client Information
+    clientName: v.optional(v.string()),
+    clientCompany: v.optional(v.string()),
+    clientEmail: v.optional(v.string()),
+    clientPhone: v.optional(v.string()),
+    deliveryAddress: v.optional(v.string()),
+    // Company Details
+    companyName: v.optional(v.string()),
+    companyRegistrationNumber: v.optional(v.string()),
+    companyVATNumber: v.optional(v.string()),
+    companyWebsite: v.optional(v.string()),
+    companyAddress: v.optional(v.string()),
+    contactPersonName: v.optional(v.string()),
+    contactPersonEmail: v.optional(v.string()),
+    contactPersonPhone: v.optional(v.string()),
+    // Order Items
+    items: v.optional(v.array(v.object({
+      productName: v.string(),
+      quantity: v.number(),
+      unitPrice: v.number(),
+      total: v.number(),
+    }))),
+    totalAmount: v.optional(v.number()),
+    // Status
+    status: v.optional(v.union(v.literal("draft"), v.literal("submitted"), v.literal("supplier_confirmed"), v.literal("in_transit"), v.literal("delivered"), v.literal("installed"), v.literal("cancelled"))),
+    trackingNumber: v.optional(v.string()),
+    // Commission
+    commissionStatus: v.optional(v.union(v.literal("pending"), v.literal("approved"), v.literal("paid"))),
+    commissionAmount: v.optional(v.number()),
+    // Documents
+    invoiceDocument: v.optional(v.string()),
+    legalDocument: v.optional(v.string()),
+    paymentProof: v.optional(v.string()),
+    productImages: v.optional(v.array(v.string())),
+    mockupPhotos: v.optional(v.array(v.string())),
+    customLogo: v.optional(v.string()),
+    // Notes
+    notes: v.optional(v.string()),
+    adminNotes: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const { orderId, ...updates } = args;
+    await ctx.db.patch(orderId, updates);
     return { success: true };
   },
 });
