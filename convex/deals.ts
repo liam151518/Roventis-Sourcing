@@ -108,7 +108,29 @@ export const deleteDeal = mutation({
 export const submitOrder = mutation({
   args: {
     dealId: v.string(),
+    // Client Information
+    clientName: v.string(),
+    clientCompany: v.optional(v.string()),
+    clientEmail: v.string(),
+    clientPhone: v.optional(v.string()),
     deliveryAddress: v.string(),
+    // Company Details (for manufacturing)
+    companyName: v.optional(v.string()),
+    companyRegistrationNumber: v.optional(v.string()),
+    companyVATNumber: v.optional(v.string()),
+    companyWebsite: v.optional(v.string()),
+    companyAddress: v.optional(v.string()),
+    contactPersonName: v.optional(v.string()),
+    contactPersonEmail: v.optional(v.string()),
+    contactPersonPhone: v.optional(v.string()),
+    // Documents (URLs)
+    invoiceDocument: v.optional(v.string()),
+    legalDocument: v.optional(v.string()),
+    paymentProof: v.optional(v.string()),
+    customLogo: v.optional(v.string()),
+    productImages: v.optional(v.array(v.string())),
+    mockupPhotos: v.optional(v.array(v.string())),
+    // Notes
     orderNotes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -117,14 +139,17 @@ export const submitOrder = mutation({
       throw new Error("Deal not found");
     }
 
+    const { dealId, productImages, mockupPhotos, ...orderData } = args;
+    
     // Generate order reference
     const orderReference = `ORD-${Date.now().toString(36).toUpperCase()}`;
 
     await ctx.db.patch(args.dealId, {
       orderSubmitted: true,
       orderReference,
-      deliveryAddress: args.deliveryAddress,
-      orderNotes: args.orderNotes,
+      ...orderData,
+      productImages: productImages || [],
+      mockupPhotos: mockupPhotos || [],
       orderSubmittedAt: Date.now(),
       orderStatus: "submitted",
     });

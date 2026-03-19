@@ -6,6 +6,7 @@ import {
   Plus, 
   X, 
   Building, 
+  Building2,
   Mail, 
   Phone, 
   Calendar, 
@@ -20,7 +21,10 @@ import {
   CheckCircle,
   Clock,
   AlertCircle,
-  GripVertical
+  GripVertical,
+  User,
+  Image,
+  FileText,
 } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -202,7 +206,32 @@ export default function DealsPage() {
   const [showModal, setShowModal] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<typeof deals[0] | null>(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
-  const [orderForm, setOrderForm] = useState({ deliveryAddress: "", orderNotes: "" });
+  const [orderForm, setOrderForm] = useState({
+    // Client Info
+    clientName: "",
+    clientCompany: "",
+    clientEmail: "",
+    clientPhone: "",
+    deliveryAddress: "",
+    // Company Details
+    companyName: "",
+    companyRegistrationNumber: "",
+    companyVATNumber: "",
+    companyWebsite: "",
+    companyAddress: "",
+    contactPersonName: "",
+    contactPersonEmail: "",
+    contactPersonPhone: "",
+    // Documents
+    invoiceDocument: "",
+    legalDocument: "",
+    paymentProof: "",
+    customLogo: "",
+    productImages: [] as string[],
+    mockupPhotos: [] as string[],
+    // Notes
+    orderNotes: "",
+  });
   const [submitting, setSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeDeal, setActiveDeal] = useState<any>(null);
@@ -212,6 +241,25 @@ export default function DealsPage() {
     minValue: "" as string,
     maxValue: "" as string,
   });
+
+  // Helper functions for URL arrays
+  const handleAddUrl = (field: "productImages" | "mockupPhotos", url: string) => {
+    if (url.trim()) {
+      setOrderForm({
+        ...orderForm,
+        [field]: [...orderForm[field], url.trim()]
+      });
+    }
+  };
+
+  const handleRemoveUrl = (field: "productImages" | "mockupPhotos", index: number) => {
+    const newUrls = [...orderForm[field]];
+    newUrls.splice(index, 1);
+    setOrderForm({
+      ...orderForm,
+      [field]: newUrls
+    });
+  };
   
   // DnD Sensors
   const sensors = useSensors(
@@ -334,16 +382,66 @@ export default function DealsPage() {
   };
 
   const handleSubmitOrder = async () => {
-    if (!selectedDeal || !orderForm.deliveryAddress) return;
+    // Check required fields
+    const hasClientInfo = orderForm.clientName && orderForm.clientEmail && orderForm.deliveryAddress;
+    // Company details required: companyName OR (contactPersonName AND (contactPersonPhone OR contactPersonEmail))
+    const hasCompanyName = orderForm.companyName;
+    const hasContactPerson = orderForm.contactPersonName && (orderForm.contactPersonPhone || orderForm.contactPersonEmail);
+    const hasCompanyDetails = hasCompanyName || hasContactPerson;
+    
+    if (!selectedDeal || !hasClientInfo || !hasCompanyDetails) return;
     setSubmitting(true);
     try {
       await submitOrder({
         dealId: selectedDeal._id,
+        // Client Info
+        clientName: orderForm.clientName,
+        clientCompany: orderForm.clientCompany || undefined,
+        clientEmail: orderForm.clientEmail,
+        clientPhone: orderForm.clientPhone || undefined,
         deliveryAddress: orderForm.deliveryAddress,
+        // Company Details
+        companyName: orderForm.companyName || undefined,
+        companyRegistrationNumber: orderForm.companyRegistrationNumber || undefined,
+        companyVATNumber: orderForm.companyVATNumber || undefined,
+        companyWebsite: orderForm.companyWebsite || undefined,
+        companyAddress: orderForm.companyAddress || undefined,
+        contactPersonName: orderForm.contactPersonName || undefined,
+        contactPersonEmail: orderForm.contactPersonEmail || undefined,
+        contactPersonPhone: orderForm.contactPersonPhone || undefined,
+        // Documents
+        invoiceDocument: orderForm.invoiceDocument || undefined,
+        legalDocument: orderForm.legalDocument || undefined,
+        paymentProof: orderForm.paymentProof || undefined,
+        customLogo: orderForm.customLogo || undefined,
+        productImages: orderForm.productImages.length > 0 ? orderForm.productImages : undefined,
+        mockupPhotos: orderForm.mockupPhotos.length > 0 ? orderForm.mockupPhotos : undefined,
+        // Notes
         orderNotes: orderForm.orderNotes || undefined,
       });
       setShowOrderModal(false);
-      setOrderForm({ deliveryAddress: "", orderNotes: "" });
+      setOrderForm({
+        clientName: "",
+        clientCompany: "",
+        clientEmail: "",
+        clientPhone: "",
+        deliveryAddress: "",
+        companyName: "",
+        companyRegistrationNumber: "",
+        companyVATNumber: "",
+        companyWebsite: "",
+        companyAddress: "",
+        contactPersonName: "",
+        contactPersonEmail: "",
+        contactPersonPhone: "",
+        invoiceDocument: "",
+        legalDocument: "",
+        paymentProof: "",
+        customLogo: "",
+        productImages: [],
+        mockupPhotos: [],
+        orderNotes: "",
+      });
       setSelectedDeal(null);
     } catch (error) {
       console.error("Failed to submit order:", error);
@@ -945,17 +1043,17 @@ export default function DealsPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto"
             onClick={() => setShowOrderModal(false)}
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#141417] rounded-2xl border border-white/10 max-w-xl w-full"
+              className="bg-[#141417] rounded-2xl border border-white/10 w-full max-w-4xl max-h-[90vh] overflow-y-auto my-8"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between p-6 border-b border-white/5">
+              <div className="flex items-center justify-between p-6 border-b border-white/5 sticky top-0 bg-[#141417]">
                 <div>
                   <h2 className="text-xl font-semibold text-white">Submit Order</h2>
                   <p className="text-gray-500 text-sm mt-1">{selectedDeal.clientName} - {formatCurrency(selectedDeal.dealValue)}</p>
@@ -968,37 +1066,311 @@ export default function DealsPage() {
                 </button>
               </div>
               
-              <div className="p-6 space-y-4">
+              <div className="p-6 space-y-6">
                 <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
                   <p className="text-blue-400 text-sm">
-                    Submit payment proof and delivery details. Your commission will be approved within 8-10 business days after approval.
+                    Fill in all required details below. Your commission will be approved within 8-10 business days after order is processed.
                   </p>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">Delivery Address *</label>
-                  <textarea
-                    value={orderForm.deliveryAddress}
-                    onChange={(e) => setOrderForm({ ...orderForm, deliveryAddress: e.target.value })}
-                    rows={3}
-                    required
-                    className="w-full px-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                    placeholder="Enter delivery address..."
-                  />
+                {/* Client Information */}
+                <div className="space-y-4">
+                  <h3 className="text-white font-medium flex items-center gap-2">
+                    <User className="w-4 h-4" /> Client Information
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Client Name *</label>
+                      <input
+                        type="text"
+                        value={orderForm.clientName}
+                        onChange={(e) => setOrderForm({ ...orderForm, clientName: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        placeholder="John Doe"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Company Name</label>
+                      <input
+                        type="text"
+                        value={orderForm.clientCompany}
+                        onChange={(e) => setOrderForm({ ...orderForm, clientCompany: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        placeholder="Acme Corp"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Email *</label>
+                      <input
+                        type="email"
+                        value={orderForm.clientEmail}
+                        onChange={(e) => setOrderForm({ ...orderForm, clientEmail: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        placeholder="john@example.com"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Phone</label>
+                      <input
+                        type="tel"
+                        value={orderForm.clientPhone}
+                        onChange={(e) => setOrderForm({ ...orderForm, clientPhone: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        placeholder="+27 82 123 4567"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Delivery Address *</label>
+                      <textarea
+                        value={orderForm.deliveryAddress}
+                        onChange={(e) => setOrderForm({ ...orderForm, deliveryAddress: e.target.value })}
+                        rows={2}
+                        required
+                        className="w-full px-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        placeholder="123 Main Street, City, 8001"
+                      />
+                    </div>
+                  </div>
                 </div>
 
+                {/* Company Details (For Manufacturing) */}
+                <div className="space-y-4">
+                  <h3 className="text-white font-medium flex items-center gap-2">
+                    <Building2 className="w-4 h-4" /> Company Details (For Manufacturing)
+                  </h3>
+                  <p className="text-gray-500 text-sm">At least Company Name OR (Contact Person Name + Phone/Email) is required</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Company Name *</label>
+                      <input
+                        type="text"
+                        value={orderForm.companyName}
+                        onChange={(e) => setOrderForm({ ...orderForm, companyName: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        placeholder="Acme Manufacturing"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Registration Number</label>
+                      <input
+                        type="text"
+                        value={orderForm.companyRegistrationNumber}
+                        onChange={(e) => setOrderForm({ ...orderForm, companyRegistrationNumber: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        placeholder="2021/123456/07"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">VAT Number</label>
+                      <input
+                        type="text"
+                        value={orderForm.companyVATNumber}
+                        onChange={(e) => setOrderForm({ ...orderForm, companyVATNumber: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        placeholder="4120185361"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Website</label>
+                      <input
+                        type="url"
+                        value={orderForm.companyWebsite}
+                        onChange={(e) => setOrderForm({ ...orderForm, companyWebsite: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        placeholder="https://acme.co.za"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Company Address</label>
+                      <input
+                        type="text"
+                        value={orderForm.companyAddress}
+                        onChange={(e) => setOrderForm({ ...orderForm, companyAddress: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        placeholder="Factory Address for Manufacturing"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Contact Person Name *</label>
+                      <input
+                        type="text"
+                        value={orderForm.contactPersonName}
+                        onChange={(e) => setOrderForm({ ...orderForm, contactPersonName: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        placeholder="Jane Smith"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Contact Person Email</label>
+                      <input
+                        type="email"
+                        value={orderForm.contactPersonEmail}
+                        onChange={(e) => setOrderForm({ ...orderForm, contactPersonEmail: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        placeholder="jane@acme.co.za"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Contact Person Phone</label>
+                      <input
+                        type="tel"
+                        value={orderForm.contactPersonPhone}
+                        onChange={(e) => setOrderForm({ ...orderForm, contactPersonPhone: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        placeholder="+27 82 987 6543"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Documents */}
+                <div className="space-y-4">
+                  <h3 className="text-white font-medium flex items-center gap-2">
+                    <FileText className="w-4 h-4" /> Documents & Files
+                  </h3>
+                  <p className="text-gray-500 text-sm">Upload your files to cloud storage and paste the links below</p>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Invoice Document URL</label>
+                      <input
+                        type="url"
+                        value={orderForm.invoiceDocument}
+                        onChange={(e) => setOrderForm({ ...orderForm, invoiceDocument: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        placeholder="https://storage.example.com/invoice.pdf"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Legal Document URL (Signed)</label>
+                      <input
+                        type="url"
+                        value={orderForm.legalDocument}
+                        onChange={(e) => setOrderForm({ ...orderForm, legalDocument: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        placeholder="https://storage.example.com/contract.pdf"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Payment Proof URL</label>
+                      <input
+                        type="url"
+                        value={orderForm.paymentProof}
+                        onChange={(e) => setOrderForm({ ...orderForm, paymentProof: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        placeholder="https://storage.example.com/payment.jpg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Custom Logo URL</label>
+                      <input
+                        type="url"
+                        value={orderForm.customLogo}
+                        onChange={(e) => setOrderForm({ ...orderForm, customLogo: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        placeholder="https://storage.example.com/logo.png"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Product Images */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-2">Product Images URLs</label>
+                    <div className="flex gap-2 mb-2">
+                      <input
+                        type="url"
+                        id="productImageUrl"
+                        className="flex-1 px-4 py-2 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        placeholder="https://storage.example.com/product1.jpg"
+                        onKeyPress={(e) => {
+                          if (e.key === "Enter") {
+                            const input = document.getElementById("productImageUrl") as HTMLInputElement;
+                            handleAddUrl("productImages", input.value);
+                            input.value = "";
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const input = document.getElementById("productImageUrl") as HTMLInputElement;
+                          handleAddUrl("productImages", input.value);
+                          input.value = "";
+                        }}
+                        className="px-4 py-2 bg-white/10 text-white rounded-xl hover:bg-white/20"
+                      >
+                        Add
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {orderForm.productImages.map((url, idx) => (
+                        <div key={idx} className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg">
+                          <Image className="w-4 h-4 text-pink-400" />
+                          <span className="text-white text-sm">{idx + 1}</span>
+                          <button type="button" onClick={() => handleRemoveUrl("productImages", idx)} className="text-gray-400 hover:text-red-400">
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Mockup Photos */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-2">Mockup Photos URLs</label>
+                    <div className="flex gap-2 mb-2">
+                      <input
+                        type="url"
+                        id="mockupUrl"
+                        className="flex-1 px-4 py-2 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        placeholder="https://storage.example.com/mockup1.jpg"
+                        onKeyPress={(e) => {
+                          if (e.key === "Enter") {
+                            const input = document.getElementById("mockupUrl") as HTMLInputElement;
+                            handleAddUrl("mockupPhotos", input.value);
+                            input.value = "";
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const input = document.getElementById("mockupUrl") as HTMLInputElement;
+                          handleAddUrl("mockupPhotos", input.value);
+                          input.value = "";
+                        }}
+                        className="px-4 py-2 bg-white/10 text-white rounded-xl hover:bg-white/20"
+                      >
+                        Add
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {orderForm.mockupPhotos.map((url, idx) => (
+                        <div key={idx} className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg">
+                          <Image className="w-4 h-4 text-cyan-400" />
+                          <span className="text-white text-sm">{idx + 1}</span>
+                          <button type="button" onClick={() => handleRemoveUrl("mockupPhotos", idx)} className="text-gray-400 hover:text-red-400">
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Notes */}
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">Order Notes</label>
                   <textarea
                     value={orderForm.orderNotes}
                     onChange={(e) => setOrderForm({ ...orderForm, orderNotes: e.target.value })}
-                    rows={2}
+                    rows={3}
                     className="w-full px-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                     placeholder="Any special instructions..."
                   />
                 </div>
 
-                <div className="flex gap-3 pt-4">
+                <div className="flex gap-3 pt-4 border-t border-white/10">
                   <button
                     type="button"
                     onClick={() => setShowOrderModal(false)}
@@ -1008,7 +1380,7 @@ export default function DealsPage() {
                   </button>
                   <button
                     onClick={handleSubmitOrder}
-                    disabled={submitting || !orderForm.deliveryAddress}
+                    disabled={submitting || !orderForm.clientName || !orderForm.clientEmail || !orderForm.deliveryAddress || !(orderForm.companyName || (orderForm.contactPersonName && (orderForm.contactPersonPhone || orderForm.contactPersonEmail)))}
                     className="flex-1 px-5 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
                   >
                     {submitting ? (
