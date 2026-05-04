@@ -1,0 +1,252 @@
+{
+  "products": [
+    {
+      "id": "cotton-tshirt",
+      "name": "100% Cotton Tshirt",
+      "category": "Apparel",
+      "colors": [
+        { "name": "Black", "image": "/product-images/100-Cotton-Tshirt-Black.jpeg" },
+        { "name": "Stone", "image": "/product-images/100-Cotton-Tshirt-Stone.jpeg" },
+        { "name": "Khaki", "image": "/product-images/100-Cotton-Tshirt-Khaki.jpeg" }
+      ],
+      "pricing": { "50": 284.90, "100": 240.50, "500": 169.28, "confirmed": true }
+    },
+    {
+      "id": "beanie",
+      "name": "Beanie",
+      "category": "Headwear",
+      "colors": [
+        { "name": "Black", "image": "/product-images/BeanieBlack.jpeg" },
+        { "name": "Blaze Orange", "image": "/product-images/BeanieBlaze-Orange.jpeg" },
+        { "name": "Olive", "image": "/product-images/BeanieOlive.png" }
+      ],
+      "pricing": { "50": 140.60, "100": 111.00, "500": 85.10, "confirmed": true }
+    },
+    {
+      "id": "fishing-shirt",
+      "name": "Fishing Shirt",
+      "category": "Apparel",
+      "colors": [
+        { "name": "Black", "image": "/product-images/Fishing-Shirt-Black.jpeg" },
+        { "name": "Gunmetal", "image": "/product-images/Fishing-Shirt-Gunmetal.jpeg" },
+        { "name": "Major Brown", "image": "/product-images/Fishing-Shirt-Major-Brown.jpeg" },
+        { "name": "Navy Blue", "image": "/product-images/Fishing-Shirt-Navy-Blue.jpeg" }
+      ],
+      "pricing": { "50": 569.80, "100": 444.00, "500": 339.48, "confirmed": true }
+    },
+    {
+      "id": "hoodie",
+      "name": "Hoodie",
+      "category": "Apparel",
+      "colors": [
+        { "name": "Black", "image": "/product-images/Hoodie-Black.jpeg" },
+        { "name": "Brown", "image": "/product-images/Hoodie-Brown.jpeg" },
+        { "name": "Olive Green", "image": "/product-images/Hoodie-Olive-Green.jpeg" }
+      ],
+      "pricing": { "50": 569.80, "100": 492.10, "500": 398.68, "confirmed": true }
+    },
+    {
+      "id": "uv-fishing-hoodie",
+      "name": "UV Fishing Hoodie",
+      "category": "Apparel",
+      "colors": [
+        { "name": "Black", "image": "/product-images/UV-Fishing-Hoodie-Black.jpeg" },
+        { "name": "Stone", "image": "/product-images/UV-Fishing-Hoodie-Stone.jpeg" },
+        { "name": "Sublimation", "image": "/product-images/UV-Fishing-Hoodie-Sublimation.jpeg" },
+        { "name": "White", "image": "/product-images/UV-Fishing-Hoodie-White.jpeg" }
+      ],
+      "pricing": { "50": 773.30, "100": 684.50, "500": 593.85, "confirmed": true }
+    },
+    {
+      "id": "down-jacket",
+      "name": "Down Jacket",
+      "category": "Apparel",
+      "colors": [
+        { "name": "Black", "image": "/product-images/Down-Jacket-Black.jpeg" },
+        { "name": "Gunmetal Grey", "image": "/product-images/Down-Jacket-Gunmetal-Grey.png" },
+        { "name": "Olive", "image": "/product-images/Down-Jacket-Olive.jpeg" }
+      ],
+      "pricing": null
+    },
+    {
+      "id": "flannel",
+      "name": "Flannel",
+      "category": "Apparel",
+      "colors": [
+        { "name": "Black", "image": "/product-images/Flannel-Black.png" },
+        { "name": "Gunmetal Grey", "image": "/product-images/Flannel-Gunmetal-Grey.jpeg" },
+        { "name": "Olive", "image": "/product-images/Flannel-Olive.jpeg" }
+      ],
+      "pricing": null
+    },
+    {
+      "id": "polo",
+      "name": "Polo",
+      "category": "Apparel",
+      "colors": [
+        { "name": "Black", "image": "/product-images/Polo-Black.jpeg" },
+        { "name": "Navy Blue", "image": "/product-images/Polo-Navy-Blue.png" },
+        { "name": "Olive", "image": "/product-images/Polo-Olive.png" }
+      ],
+      "pricing": null
+    },
+    {
+      "id": "ranch-long-pants",
+      "name": "Ranch Long Pants",
+      "category": "Apparel",
+      "colors": [
+        { "name": "Black", "image": "/product-images/Ranch-Long-PantsBlack.png" },
+        { "name": "Gunmetal Grey", "image": "/product-images/Ranch-Long-PantsGunmetal-Grey.png" },
+        { "name": "Olive", "image": "/product-images/Ranch-Long-PantsOlive.png" }
+      ],
+      "pricing": null
+    },
+    {
+      "id": "safari-hat",
+      "name": "Safari Hat",
+      "category": "Headwear",
+      "colors": [
+        { "name": "Khaki", "image": "/product-images/Safari-Hat-Khaki.jpeg" },
+        { "name": "Olive Green", "image": "/product-images/Safari-Hat-Olive-Green.jpeg" },
+        { "name": "Stone", "image": "/product-images/Safari-Hat-Stone.jpeg" }
+      ],
+      "pricing": null
+    },
+    {
+      "id": "shorts",
+      "name": "Shorts",
+      "category": "Apparel",
+      "colors": [
+        { "name": "Black", "image": "/product-images/Shorts-Black.jpeg" },
+        { "name": "Gunmetal", "image": "/product-images/Shorts-Gunmetal.jpeg" },
+        { "name": "Khaki", "image": "/product-images/Shorts-Khaki.jpeg" },
+        { "name": "Olive Green", "image": "/product-images/Shorts-Olive-Green.jpeg" }
+      ],
+      "pricing": null
+    },
+    {
+      "id": "soft-shell",
+      "name": "Soft Shell",
+      "category": "Apparel",
+      "colors": [
+        { "name": "Black", "image": "/product-images/Soft-Shell-Black.jpeg" },
+        { "name": "Gunmetal", "image": "/product-images/Soft-Shell-Gunmetal.jpeg" },
+        { "name": "Olive", "image": "/product-images/Soft-Shell-Olive.jpeg" },
+        { "name": "Sublimized", "image": "/product-images/Soft-Shell-Sublimized.jpeg" }
+      ],
+      "pricing": null
+    },
+    {
+      "id": "travel-bag",
+      "name": "Travel Bag",
+      "category": "Accessories",
+      "colors": [
+        { "name": "Black", "image": "/product-images/Travel-Bag-Black.png" },
+        { "name": "Olive Green", "image": "/product-images/Travel-Bag-Olive-Green.jpeg" },
+        { "name": "Stone", "image": "/product-images/Travel-Bag-Stone.jpeg" }
+      ],
+      "pricing": null
+    },
+    {
+      "id": "cooler-bag",
+      "name": "Cooler Bag",
+      "category": "Accessories",
+      "colors": [
+        { "name": "Default", "image": "/product-images/Cooler-Backpack.jpeg" }
+      ],
+      "pricing": null
+    },
+    {
+      "id": "bag-cooler",
+      "name": "Bag Cooler",
+      "category": "Accessories",
+      "colors": [
+        { "name": "Default", "image": "/product-images/Bag-Cooler.jpeg" }
+      ],
+      "pricing": null
+    },
+    {
+      "id": "cooler",
+      "name": "Cooler",
+      "category": "Accessories",
+      "colors": [
+        { "name": "Default", "image": "/product-images/Cooler.jpeg" }
+      ],
+      "pricing": null
+    },
+    {
+      "id": "duffle-bag",
+      "name": "Duffle Bag",
+      "category": "Accessories",
+      "colors": [
+        { "name": "Default", "image": "/product-images/Duffle-Bag.jpeg" }
+      ],
+      "pricing": null
+    },
+    {
+      "id": "fishing-cooler-bag",
+      "name": "Fishing Cooler Bag",
+      "category": "Accessories",
+      "colors": [
+        { "name": "Default", "image": "/product-images/Fishing-Cooler-Bag.jpeg" }
+      ],
+      "pricing": null
+    },
+    {
+      "id": "flask-cup",
+      "name": "Flask Cup",
+      "category": "Accessories",
+      "colors": [
+        { "name": "Default", "image": "/product-images/Flask-Cup.jpeg" }
+      ],
+      "pricing": null
+    },
+    {
+      "id": "gloves",
+      "name": "Gloves",
+      "category": "Accessories",
+      "colors": [
+        { "name": "White", "image": "/product-images/Gloves--White.jpeg" },
+        { "name": "Black", "image": "/product-images/Gloves-Black.jpeg" }
+      ],
+      "pricing": null
+    },
+    {
+      "id": "mask",
+      "name": "Mask",
+      "category": "Accessories",
+      "colors": [
+        { "name": "Default", "image": "/product-images/Mask.jpeg" }
+      ],
+      "pricing": null
+    },
+    {
+      "id": "no-slip-boat-shoes",
+      "name": "NO slip Boat Shoes",
+      "category": "Footwear",
+      "colors": [
+        { "name": "Default", "image": "/product-images/NO-slip-Boat-Shoes.png" }
+      ],
+      "pricing": null
+    },
+    {
+      "id": "semi-glove",
+      "name": "Semi Glove",
+      "category": "Accessories",
+      "colors": [
+        { "name": "Black", "image": "/product-images/Semi-Glove-Black.jpeg" }
+      ],
+      "pricing": null
+    },
+    {
+      "id": "waterproof-backpack",
+      "name": "Waterproof Backpack",
+      "category": "Accessories",
+      "colors": [
+        { "name": "Default", "image": "/product-images/Waterproof-Backpack.jpeg" }
+      ],
+      "pricing": null
+    }
+  ],
+  "categories": ["Apparel", "Headwear", "Accessories", "Footwear"]
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Fragment } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -17,19 +17,23 @@ import {
   LogOut,
   Bell,
   Target,
+  Tag,
+  Receipt,
 } from "lucide-react";
 import { useAuth, useUser, UserButton, SignInButton } from "@clerk/nextjs";
 import { isAdminEmail, isAdminUserId } from "@/lib/admin";
 
 const adminNavItems = [
-  { href: "/admin", label: "Overview", icon: LayoutDashboard },
-  { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/leads", label: "Leads", icon: Target },
-  { href: "/admin/payouts", label: "Payouts", icon: DollarSign },
-  { href: "/admin/orders", label: "Orders", icon: Package },
-  { href: "/admin/tickets", label: "Support Tickets", icon: Ticket },
-  { href: "/admin/resources", label: "Resources", icon: FileText },
-  { href: "/admin/leaderboard", label: "Leaderboard", icon: Trophy },
+  { href: "/admin", label: "Overview", icon: LayoutDashboard, section: "dashboard" },
+  { href: "/admin/users", label: "Users", icon: Users, section: "people" },
+  { href: "/admin/leads", label: "Leads", icon: Target, section: "sales" },
+  { href: "/admin/orders", label: "Orders", icon: Package, section: "sales" },
+  { href: "/admin/payouts", label: "Payouts", icon: DollarSign, section: "finance" },
+  { href: "/admin/pricing", label: "Pricing", icon: Tag, section: "finance" },
+  { href: "/admin/invoices", label: "Invoice Settings", icon: Receipt, section: "finance" },
+  { href: "/admin/leaderboard", label: "Leaderboard", icon: Trophy, section: "performance" },
+  { href: "/admin/tickets", label: "Support Tickets", icon: Ticket, section: "support" },
+  { href: "/admin/resources", label: "Resources", icon: FileText, section: "support" },
 ];
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
@@ -113,19 +117,20 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
       <motion.aside
         initial={false}
-        animate={{ width: collapsed ? 100 : 230 }}
+        animate={{ width: collapsed ? 80 : 230 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
         className={`fixed top-0 left-0 z-50 h-full bg-[#0a0a0b] border-r border-white/5 lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
         <div className="flex flex-col h-full">
-          <div className="p-4">
+          {/* Header with logo - click to toggle collapse */}
+          <div className="p-4 flex items-center justify-center">
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="w-full flex items-center justify-center hover:bg-white/5 rounded-xl p-2 transition-colors"
+              className="flex items-center gap-2 hover:bg-white/5 rounded-xl p-2 transition-colors"
             >
-              <div className="relative h-8 w-[100px] flex-shrink-0">
+              <div className={`relative h-12 ${collapsed ? 'w-12' : 'w-[160px]'} flex-shrink-0 transition-all`}>
                 <Image
                   src="/roventis-logo.png"
                   alt="Roventis"
@@ -138,16 +143,28 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
           </div>
 
           <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-            {adminNavItems.map((item) => {
+            {adminNavItems.map((item, index) => {
               const isActive = pathname === item.href || 
                 (item.href !== "/admin" && pathname.startsWith(item.href));
 
+              // Show section title when section changes
+              const showSectionTitle = item.section && (index === 0 || adminNavItems[index - 1].section !== item.section);
+              const sectionLabel = item.section === "dashboard" ? "Dashboard" : item.section === "people" ? "People" : item.section === "sales" ? "Sales" : item.section === "finance" ? "Finance" : item.section === "performance" ? "Performance" : item.section === "support" ? "Support" : null;
+
               return (
-                <Link
+                <Fragment key={item.href}>
+                  {showSectionTitle && sectionLabel && !collapsed && (
+                    <div className="pt-4 pb-2 px-3">
+                      <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
+                        {sectionLabel}
+                      </span>
+                    </div>
+                  )}
+                  <Link
                   key={item.href}
                   href={item.href}
-                  className={`group flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-all relative ${
-                    collapsed ? "justify-center px-2" : ""
+                  className={`group flex items-center gap-2 px-3 py-2 rounded-xl font-medium transition-all relative ${
+                    collapsed ? "justify-center px-1" : ""
                   } ${
                     isActive
                       ? "text-white"
@@ -168,6 +185,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                     {item.label}
                   </span>
                 </Link>
+                </Fragment>
               );
             })}
           </nav>
@@ -190,14 +208,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                 </>
               )}
               {collapsed && (
-                <div className="flex flex-col items-center gap-2">
-                  <button className="relative p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                    <Bell className="w-5 h-5" />
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" />
-                  </button>
-                  <div className="w-8 h-8">
-                    <UserButton afterSignOutUrl="/" />
-                  </div>
+                <div className="w-8 h-8">
+                  <UserButton afterSignOutUrl="/" />
                 </div>
               )}
             </div>

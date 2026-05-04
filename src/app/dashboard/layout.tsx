@@ -17,6 +17,8 @@ import {
   Megaphone,
   HelpCircle,
   Zap,
+  Receipt,
+  ChevronLeft,
 } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { useAuth, useUser, UserButton } from "@clerk/nextjs";
@@ -24,17 +26,21 @@ import { api } from "@/convex/_generated/api";
 import { isAdminEmail, isAdminUserId } from "@/lib/admin";
 
 const navItems = [
-  // Work items
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard, section: "work" },
-  { href: "/dashboard/deals", label: "Deals", icon: TrendingUp, section: "work" },
-  { href: "/dashboard/leads", label: "Leads", icon: Target, section: "work" },
-  { href: "/dashboard/resources", label: "Resources", icon: FileText, section: "work" },
-  { href: "/dashboard/marketing", label: "Marketing", icon: Megaphone, section: "work" },
-  { href: "/dashboard/commissions", label: "Commissions", icon: DollarSign, section: "work" },
-  // Personal items
-  { href: "/dashboard/profile", label: "Profile", icon: User, section: "personal" },
-  { href: "/dashboard/training", label: "Training", icon: GraduationCap, section: "personal" },
-  { href: "/dashboard/support", label: "Support", icon: HelpCircle, section: "personal" },
+  // Dashboard
+  { href: "/dashboard", label: "Overview", icon: LayoutDashboard, section: "dashboard" },
+  // Pipeline
+  { href: "/dashboard/deals", label: "Deals", icon: TrendingUp, section: "pipeline" },
+  { href: "/dashboard/leads", label: "Leads", icon: Target, section: "pipeline" },
+  // Finance
+  { href: "/dashboard/commissions", label: "Commissions", icon: DollarSign, section: "finance" },
+  { href: "/dashboard/invoice", label: "Invoice Generator", icon: Receipt, section: "finance" },
+  // Growth
+  { href: "/dashboard/marketing", label: "Marketing", icon: Megaphone, section: "growth" },
+  { href: "/dashboard/resources", label: "Resources", icon: FileText, section: "growth" },
+  // Settings
+  { href: "/dashboard/profile", label: "Profile", icon: User, section: "settings" },
+  { href: "/dashboard/training", label: "Training", icon: GraduationCap, section: "settings" },
+  { href: "/dashboard/support", label: "Support", icon: HelpCircle, section: "settings" },
 ];
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
@@ -128,20 +134,20 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <motion.aside
         initial={false}
-        animate={{ width: collapsed ? 100 : 230 }}
+        animate={{ width: collapsed ? 80 : 230 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
         className={`fixed top-0 left-0 z-50 h-full bg-[#0a0a0b] border-r border-white/5 lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
         <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="p-4">
+          {/* Header with logo - click to toggle collapse */}
+          <div className="p-4 flex items-center justify-center">
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="w-full flex items-center justify-center hover:bg-white/5 rounded-xl p-2 transition-colors"
+              className="flex items-center gap-2 hover:bg-white/5 rounded-xl p-2 transition-colors"
             >
-              <div className="relative h-8 w-[100px] flex-shrink-0">
+              <div className={`relative h-12 ${collapsed ? 'w-12' : 'w-[160px]'} flex-shrink-0 transition-all`}>
                 <Image
                   src="/roventis-logo.png"
                   alt="Roventis"
@@ -154,7 +160,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+          <nav className="flex-1 px-3 pb-3 space-y-1 overflow-y-auto">
             {navItems.map((item, index) => {
               const isActive = pathname === item.href;
               const tierRequired = item.tier;
@@ -167,29 +173,23 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
               if (!tierMet) return null;
 
-              const showWorkDivider = item.section === "work" && index === 0;
-              const showPersonalDivider = item.section === "personal" && navItems[index - 1]?.section === "work";
+              // Show section title when section changes
+              const showSectionTitle = item.section && navItems.slice(0, index).every(i => i.section !== item.section);
+              const sectionLabel = item.section === "dashboard" ? "Dashboard" : item.section === "pipeline" ? "Pipeline" : item.section === "finance" ? "Finance" : item.section === "growth" ? "Growth" : item.section === "settings" ? "Settings" : null;
 
               return (
                 <Fragment key={item.href}>
-                  {showWorkDivider && !collapsed && (
-                    <div className="pt-4 pb-2">
-                      <span className="px-3 text-xs font-medium text-gray-600 uppercase tracking-wider">
-                        Work
-                      </span>
-                    </div>
-                  )}
-                  {showPersonalDivider && !collapsed && (
-                    <div className="pt-4 pb-2">
-                      <span className="px-3 text-xs font-medium text-gray-600 uppercase tracking-wider">
-                        Personal
+                  {showSectionTitle && sectionLabel && !collapsed && (
+                    <div className="pt-4 pb-2 px-3">
+                      <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
+                        {sectionLabel}
                       </span>
                     </div>
                   )}
                 <Link
                   href={item.href}
-                  className={`group flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-all relative ${
-                    collapsed ? "justify-center px-2" : ""
+                  className={`group flex items-center gap-2 px-3 py-2 rounded-xl font-medium transition-all relative ${
+                    collapsed ? "justify-center px-1" : ""
                   } ${
                     isActive ? "text-white" : "text-gray-400 hover:text-white hover:bg-white/5"
                   }`}
@@ -231,14 +231,8 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                 </>
               )}
               {collapsed && (
-                <div className="flex flex-col items-center gap-2">
-                  <button className="relative p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                    <Bell className="w-5 h-5" />
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" />
-                  </button>
-                  <div className="w-8 h-8">
-                    <UserButton afterSignOutUrl="/" />
-                  </div>
+                <div className="w-8 h-8">
+                  <UserButton afterSignOutUrl="/" />
                 </div>
               )}
             </div>

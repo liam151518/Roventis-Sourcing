@@ -285,4 +285,83 @@ export default defineSchema({
     notes: v.optional(v.string()),
   }).index("by_affiliate", ["affiliateId"])
     .index("by_status", ["status"]),
+
+  // Invoices
+  invoices: defineTable({
+    affiliateId: v.string(),
+    dealId: v.optional(v.string()),
+    invoiceNumber: v.string(),
+    invoiceDate: v.string(),
+    clientCompanyName: v.string(),
+    clientAddress1: v.optional(v.string()),
+    clientAddress2: v.optional(v.string()),
+    clientVatNumber: v.optional(v.string()),
+    clientEmail: v.optional(v.string()),
+    projectSummary: v.optional(v.string()),
+    lineItems: v.array(v.object({
+      productName: v.string(),
+      productSubtitle: v.optional(v.string()),
+      imageDataUrl: v.optional(v.string()),
+      unitPrice: v.number(),
+      quantity: v.number(),
+      amount: v.number(),
+    })),
+    notes: v.array(v.string()),
+    subtotal: v.number(),
+    total: v.number(),
+    status: v.union(v.literal("draft"), v.literal("sent"), v.literal("paid"), v.literal("retired")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_affiliate", ["affiliateId"])
+    .index("by_deal", ["dealId"]),
+
+  // Invoice Settings (global template - single row)
+  invoiceSettings: defineTable({
+    // Company Info
+    companyName: v.string(),
+    companyEmail: v.string(),
+    companyPhone: v.string(),
+    companyWebsite: v.string(),
+    companySocial: v.string(),
+    // Bank Details
+    bankName: v.string(),
+    accountType: v.string(),
+    accountNumber: v.string(),
+    branchCode: v.string(),
+    accountHolder: v.string(),
+    // Customization
+    tagline: v.string(),
+    defaultNotes: v.array(v.string()),
+    // Colors
+    primaryColor: v.string(),
+    secondaryColor: v.string(),
+    accentColor: v.string(),
+    dividerColor: v.string(),
+    // Layout
+    headerStyle: v.optional(v.string()), // "centered" | "left"
+    showLogo: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }),
+
+  // Products - for product library
+  products: defineTable({
+    name: v.string(),
+    description: v.optional(v.string()),
+    category: v.optional(v.string()),
+    colors: v.array(v.object({
+      name: v.string(),
+      imageUrl: v.string(),
+    })),
+    pricing: v.optional(v.object({
+      price50: v.number(),
+      price100: v.number(),
+      price500: v.number(),
+      confirmed: v.boolean(),
+    })),
+    isActive: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_category", ["category"])
+    .index("by_isActive", ["isActive"]),
 });
