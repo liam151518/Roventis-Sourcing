@@ -27,6 +27,7 @@ const navItems = [
   // Work items
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard, section: "work" },
   { href: "/dashboard/deals", label: "Deals", icon: TrendingUp, section: "work" },
+  { href: "/dashboard/leads", label: "Leads", icon: Target, section: "work" },
   { href: "/dashboard/resources", label: "Resources", icon: FileText, section: "work" },
   { href: "/dashboard/marketing", label: "Marketing", icon: Megaphone, section: "work" },
   { href: "/dashboard/commissions", label: "Commissions", icon: DollarSign, section: "work" },
@@ -34,8 +35,6 @@ const navItems = [
   { href: "/dashboard/profile", label: "Profile", icon: User, section: "personal" },
   { href: "/dashboard/training", label: "Training", icon: GraduationCap, section: "personal" },
   { href: "/dashboard/support", label: "Support", icon: HelpCircle, section: "personal" },
-  // Platinum only
-  { href: "/dashboard/leads", label: "Leads", icon: Target, tier: "platinum", section: "platinum" },
 ];
 
 function DashboardContent({ children }: { children: React.ReactNode }) {

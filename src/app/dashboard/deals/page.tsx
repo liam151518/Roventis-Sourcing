@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Plus, 
@@ -25,6 +25,9 @@ import {
   User,
   Image,
   FileText,
+  Target,
+  MapPin,
+  Pencil,
 } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -58,6 +61,39 @@ const columns = [
   { id: "closed_lost", label: "Closed Lost", color: "bg-red-500" },
 ];
 
+// Countdown Badge for leads
+function CountdownBadge({ expiresAt }: { expiresAt: number }) {
+  const [timeLeft, setTimeLeft] = useState("");
+  
+  useEffect(() => {
+    const update = () => {
+      const diff = expiresAt - Date.now();
+      if (diff <= 0) {
+        setTimeLeft("Expired");
+        return;
+      }
+      const hours = Math.floor(diff / (60 * 60 * 1000));
+      const mins = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
+      setTimeLeft(`${hours}h ${mins}m`);
+    };
+    update();
+    const interval = setInterval(update, 60000);
+    return () => clearInterval(interval);
+  }, [expiresAt]);
+  
+  const urgency = expiresAt - Date.now();
+  const color = urgency < 6 * 60 * 60 * 1000 ? "text-red-400" : 
+               urgency < 24 * 60 * 60 * 1000 ? "text-amber-400" : 
+               "text-blue-400";
+
+  return (
+    <span className={`flex items-center gap-1 px-2 py-1 rounded-lg ${color} bg-current/10 text-xs font-medium`}>
+      <Clock className="w-3 h-3" />
+      {timeLeft}
+    </span>
+  );
+}
+
 // Sortable Deal Card Component
 function SortableDealCard({ deal, onClick, searchQuery }: { deal: any; onClick: () => void; searchQuery?: string }) {
   const {
@@ -73,6 +109,11 @@ function SortableDealCard({ deal, onClick, searchQuery }: { deal: any; onClick: 
     transform: CSS.Transform.toString(transform),
     transition,
   };
+
+  // Check if this deal came from a lead
+  const isFromLead = !!deal.fromLeadId;
+  const leadExpiringSoon = deal.leadClaimExpiresAt && (deal.leadClaimExpiresAt - Date.now()) < 24 * 60 * 60 * 1000;
+  const leadUrgent = deal.leadClaimExpiresAt && (deal.leadClaimExpiresAt - Date.now()) < 6 * 60 * 60 * 1000;
 
   // Highlight matching text
   const highlightMatch = (text: string) => {
@@ -99,10 +140,26 @@ function SortableDealCard({ deal, onClick, searchQuery }: { deal: any; onClick: 
       style={style}
       className={`group bg-[#0a0a0b] rounded-xl p-3 border transition-all hover:shadow-lg hover:shadow-black/20 cursor-pointer ${
         isDragging ? "opacity-50 z-50" : ""
-      } ${isMatch ? "border-blue-500/50 ring-1 ring-blue-500/30" : "border-white/5 hover:border-white/10"}`}
+      } ${
+        // Different styling for deals from leads
+        isFromLead 
+          ? leadUrgent 
+            ? "border-red-500/50 ring-1 ring-red-500/30" 
+            : leadExpiringSoon 
+              ? "border-amber-500/50 ring-1 ring-amber-500/30"
+              : "border-blue-500/30 ring-1 ring-blue-500/20"
+          : isMatch 
+            ? "border-blue-500/50 ring-1 ring-blue-500/30" 
+            : "border-white/5 hover:border-white/10"
+      }`}
       onClick={onClick}
     >
       <div className="flex items-start">
+        {isFromLead && (
+          <div className="mr-1" title="From Lead">
+            <Target className="w-3 h-3 text-blue-400" />
+          </div>
+        )}
         <button
           {...attributes}
           {...listeners}
@@ -197,14 +254,31 @@ function DroppableColumn({
 
 export default function DealsPage() {
   const deals = useQuery(api.deals.getAllDeals);
-  const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate);
+  const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate, {});
+  const myClaimedLeads = useQuery(
+    api.leads.getMyClaimedLeads,
+    currentAffiliate?._id ? { affiliateId: currentAffiliate._id as string } : "skip"
+  );
   const createDeal = useMutation(api.deals.createDeal);
   const updateDeal = useMutation(api.deals.updateDeal);
   const deleteDeal = useMutation(api.deals.deleteDeal);
   const submitOrder = useMutation(api.deals.submitOrder);
+  const convertLeadToDeal = useMutation(api.leads.convertLeadToDeal);
+  const releaseLead = useMutation(api.leads.releaseLead);
   
   const [showModal, setShowModal] = useState(false);
-  const [selectedDeal, setSelectedDeal] = useState<typeof deals[0] | null>(null);
+  const [selectedDeal, setSelectedDeal] = useState<any>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    clientName: "",
+    clientCompany: "",
+    clientEmail: "",
+    clientPhone: "",
+    dealValue: 0,
+    productCategory: [] as string[],
+    description: "",
+    expectedCloseDate: null as number | null,
+  });
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [orderForm, setOrderForm] = useState({
     // Client Info
@@ -662,7 +736,20 @@ export default function DealsPage() {
                           <SortableDealCard
                             key={deal._id}
                             deal={deal}
-                            onClick={() => setSelectedDeal(deal)}
+                            onClick={() => {
+              setSelectedDeal(deal);
+              setEditForm({
+                clientName: deal.clientName || "",
+                clientCompany: deal.clientCompany || "",
+                clientEmail: deal.clientEmail || "",
+                clientPhone: deal.clientPhone || "",
+                dealValue: deal.dealValue || 0,
+                productCategory: deal.productCategory || [],
+                description: deal.description || "",
+                expectedCloseDate: deal.expectedCloseDate || null,
+              });
+              setIsEditing(false);
+            }}
                             searchQuery={searchQuery}
                           />
                         ))}
@@ -703,27 +790,64 @@ export default function DealsPage() {
               className="bg-[#141417] rounded-2xl border border-white/10 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-start justify-between p-6 border-b border-white/5">
+              <div className="flex items-center justify-between p-6 border-b border-white/5">
                 <div>
-                  <h2 className="text-xl font-semibold text-white">{selectedDeal.clientName}</h2>
-                  {selectedDeal.clientCompany && (
-                    <p className="text-gray-500 mt-1">{selectedDeal.clientCompany}</p>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editForm.clientName}
+                      onChange={(e) => setEditForm({ ...editForm, clientName: e.target.value })}
+                      className="bg-[#0a0a0b] text-xl font-semibold text-white border border-white/10 rounded-lg px-3 py-2 w-full"
+                      placeholder="Client Name"
+                    />
+                  ) : (
+                    <>
+                      <h2 className="text-xl font-semibold text-white">{selectedDeal.clientName}</h2>
+                      {selectedDeal.clientCompany && (
+                        <p className="text-gray-500 mt-1">{selectedDeal.clientCompany}</p>
+                      )}
+                    </>
                   )}
                 </div>
-                <button
-                  onClick={() => setSelectedDeal(null)}
-                  className="p-2 text-gray-400 hover:text-white transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  {!isEditing && (
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="p-2 text-gray-400 hover:text-white transition-colors"
+                      title="Edit deal"
+                    >
+                      <Pencil className="w-5 h-5" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      setSelectedDeal(null);
+                      setIsEditing(false);
+                    }}
+                    className="p-2 text-gray-400 hover:text-white transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
               
               <div className="p-6 space-y-6">
-                {/* Deal Value */}
+                {/* Deal Value - Editable */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-[#0a0a0b] rounded-xl p-4">
-                    <div className="text-gray-500 text-sm mb-1">Deal Value</div>
-                    <div className="text-2xl font-semibold text-white">{formatCurrency(selectedDeal.dealValue)}</div>
+                    <div className="text-gray-500 text-sm mb-1">
+                      {isEditing ? "Deal Value (R)" : "Deal Value"}
+                    </div>
+                    {isEditing ? (
+                      <input
+                        type="number"
+                        value={editForm.dealValue}
+                        onChange={(e) => setEditForm({ ...editForm, dealValue: Number(e.target.value) })}
+                        className="bg-[#1a1a1b] text-2xl font-semibold text-white border border-white/10 rounded-lg px-3 py-2 w-full"
+                      />
+                    ) : (
+                      <div className="text-2xl font-semibold text-white">{formatCurrency(selectedDeal.dealValue)}</div>
+                    )}
                   </div>
                   <div className="bg-[#0a0a0b] rounded-xl p-4">
                     <div className="text-gray-500 text-sm mb-1">Commission</div>
@@ -739,34 +863,102 @@ export default function DealsPage() {
                   </span>
                 </div>
 
-                {/* Contact Info */}
-                {selectedDeal.clientEmail || selectedDeal.clientPhone ? (
-                  <div>
-                    <div className="text-gray-500 text-sm mb-3">Contact Information</div>
-                    <div className="space-y-2">
-                      {selectedDeal.clientEmail && (
-                        <div className="flex items-center gap-3 text-gray-300">
-                          <Mail className="w-4 h-4 text-gray-500" />
-                          {selectedDeal.clientEmail}
-                        </div>
-                      )}
-                      {selectedDeal.clientPhone && (
-                        <div className="flex items-center gap-3 text-gray-300">
-                          <Phone className="w-4 h-4 text-gray-500" />
-                          {selectedDeal.clientPhone}
-                        </div>
+                {/* Description - Editable */}
+                <div>
+                  <div className="text-gray-500 text-sm mb-2">Notes / Description</div>
+                  {isEditing ? (
+                    <textarea
+                      value={editForm.description}
+                      onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                      className="bg-[#1a1a1b] text-gray-300 border border-white/10 rounded-lg px-3 py-2 w-full h-24 resize-none"
+                      placeholder="Add notes about what you want to sell them..."
+                    />
+                  ) : (
+                    <p className="text-gray-300">{selectedDeal.description || "No notes yet"}</p>
+                  )}
+                </div>
+
+                {/* Product Category - Editable */}
+                <div>
+                  <div className="text-gray-500 text-sm mb-2">Product Interest</div>
+                  {isEditing ? (
+                    <div className="flex flex-wrap gap-2">
+                      {["Roventis Pro", "Roventis Enterprise", "Roventis Lite", "Custom Solution"].map((product) => (
+                        <button
+                          key={product}
+                          onClick={() => {
+                            const current = editForm.productCategory || [];
+                            const newCategory = current.includes(product)
+                              ? current.filter((c: string) => c !== product)
+                              : [...current, product];
+                            setEditForm({ ...editForm, productCategory: newCategory });
+                          }}
+                          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                            (editForm.productCategory || []).includes(product)
+                              ? "bg-blue-600 text-white"
+                              : "bg-[#1a1a1b] text-gray-400 border border-white/10"
+                          }`}
+                        >
+                          {product}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {(selectedDeal.productCategory || []).map((product: string) => (
+                        <span key={product} className="px-3 py-1.5 rounded-full text-sm font-medium bg-blue-600/20 text-blue-400">
+                          {product}
+                        </span>
+                      ))}
+                      {(!selectedDeal.productCategory || selectedDeal.productCategory.length === 0) && (
+                        <span className="text-gray-500">No product interest specified</span>
                       )}
                     </div>
-                  </div>
-                ) : null}
+                  )}
+                </div>
 
-                {/* Description */}
-                {selectedDeal.description && (
-                  <div>
-                    <div className="text-gray-500 text-sm mb-2">Description</div>
-                    <p className="text-gray-300">{selectedDeal.description}</p>
+                {/* Client Contact - Editable */}
+                <div>
+                  <div className="text-gray-500 text-sm mb-2">Client Contact</div>
+                  <div className="space-y-3">
+                    {isEditing ? (
+                      <>
+                        <input
+                          type="email"
+                          value={editForm.clientEmail || ""}
+                          onChange={(e) => setEditForm({ ...editForm, clientEmail: e.target.value })}
+                          className="bg-[#1a1a1b] text-gray-300 border border-white/10 rounded-lg px-3 py-2 w-full"
+                          placeholder="Client email"
+                        />
+                        <input
+                          type="tel"
+                          value={editForm.clientPhone || ""}
+                          onChange={(e) => setEditForm({ ...editForm, clientPhone: e.target.value })}
+                          className="bg-[#1a1a1b] text-gray-300 border border-white/10 rounded-lg px-3 py-2 w-full"
+                          placeholder="Client phone"
+                        />
+                      </>
+                    ) : (
+                      <div className="space-y-2">
+                        {selectedDeal.clientEmail && (
+                          <div className="flex items-center gap-3 text-gray-300">
+                            <Mail className="w-4 h-4 text-gray-500" />
+                            {selectedDeal.clientEmail}
+                          </div>
+                        )}
+                        {selectedDeal.clientPhone && (
+                          <div className="flex items-center gap-3 text-gray-300">
+                            <Phone className="w-4 h-4 text-gray-500" />
+                            {selectedDeal.clientPhone}
+                          </div>
+                        )}
+                        {!selectedDeal.clientEmail && !selectedDeal.clientPhone && (
+                          <span className="text-gray-500">No contact info</span>
+                        )}
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
 
                 {/* Dates */}
                 <div className="grid grid-cols-2 gap-4 text-sm">
@@ -845,7 +1037,55 @@ export default function DealsPage() {
                 </div>
 
                 {/* Action Buttons */}
-                {selectedDeal.status !== "closed_won" && selectedDeal.status !== "closed_lost" && (
+                {isEditing && (
+                  <div className="border-t border-white/10 pt-6 space-y-3">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={async () => {
+                          const currentAffiliate2 = currentAffiliate;
+                          let commissionRate = 0.05;
+                          if (currentAffiliate2?.tier === "silver") commissionRate = 0.10;
+                          if (currentAffiliate2?.tier === "gold") commissionRate = 0.15;
+                          if (currentAffiliate2?.tier === "platinum") commissionRate = 0.25;
+                          
+                          const newCommissionAmount = editForm.dealValue * commissionRate;
+                          
+                          const updateFields: any = {
+                            id: selectedDeal._id,
+                            clientName: editForm.clientName,
+                            clientCompany: editForm.clientCompany,
+                            clientEmail: editForm.clientEmail,
+                            clientPhone: editForm.clientPhone,
+                            dealValue: editForm.dealValue,
+                            productCategory: editForm.productCategory,
+                            description: editForm.description,
+                            commissionAmount: newCommissionAmount,
+                            commissionRate: commissionRate,
+                          };
+                          
+                          // Only include expectedCloseDate if it has a value
+                          if (editForm.expectedCloseDate) {
+                            updateFields.expectedCloseDate = editForm.expectedCloseDate;
+                          }
+                          
+                          await updateDeal(updateFields);
+                          setIsEditing(false);
+                          setSelectedDeal(null);
+                        }}
+                        className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors"
+                      >
+                        Save Changes
+                      </button>
+                      <button
+                        onClick={() => setIsEditing(false)}
+                        className="px-4 py-2.5 bg-[#1a1a1b] hover:bg-[#2a2a2b] text-gray-300 font-medium rounded-xl transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {!isEditing && selectedDeal.status !== "closed_won" && selectedDeal.status !== "closed_lost" && (
                   <div className="border-t border-white/10 pt-6 space-y-3">
                     <div className="text-gray-500 text-sm mb-2">Quick Actions</div>
                     <div className="flex gap-2 flex-wrap">

@@ -11,8 +11,11 @@
 import type * as admin from "../admin.js";
 import type * as affiliates from "../affiliates.js";
 import type * as commissions from "../commissions.js";
+import type * as crons from "../crons.js";
 import type * as deals from "../deals.js";
 import type * as leads from "../leads.js";
+import type * as lib_auth from "../lib/auth.js";
+import type * as lib_tierConfig from "../lib/tierConfig.js";
 import type * as marketing from "../marketing.js";
 import type * as orders from "../orders.js";
 import type * as resources from "../resources.js";
@@ -29,8 +32,11 @@ declare const fullApi: ApiFromModules<{
   admin: typeof admin;
   affiliates: typeof affiliates;
   commissions: typeof commissions;
+  crons: typeof crons;
   deals: typeof deals;
   leads: typeof leads;
+  "lib/auth": typeof lib_auth;
+  "lib/tierConfig": typeof lib_tierConfig;
   marketing: typeof marketing;
   orders: typeof orders;
   resources: typeof resources;

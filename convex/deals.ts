@@ -1,5 +1,5 @@
 import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
+import { v, Id } from "convex/values";
 
 export const getDealsByAffiliate = query({
   args: { affiliateId: v.string() },
@@ -62,24 +62,39 @@ export const updateDeal = mutation({
       v.literal("closed_lost"),
       v.literal("on_hold")
     )),
+    clientName: v.optional(v.string()),
+    clientCompany: v.optional(v.string()),
+    clientEmail: v.optional(v.string()),
+    clientPhone: v.optional(v.string()),
     dealValue: v.optional(v.number()),
+    productCategory: v.optional(v.array(v.string())),
+    description: v.optional(v.string()),
+    expectedCloseDate: v.optional(v.number()),
+    commissionRate: v.optional(v.number()),
+    commissionAmount: v.optional(v.number()),
     commissionStatus: v.optional(v.union(v.literal("pending"), v.literal("approved"), v.literal("paid"), v.literal("disputed"))),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
-    const deal = await ctx.db.get(id);
+    
+    // Convert string to Id if needed
+    const dealId = typeof id === 'string' ? id as Id<"deals"> : id;
+    const deal = await ctx.db.get(dealId);
     
     if (!deal) {
       throw new Error("Deal not found");
     }
     
+    // If dealValue is being updated, recalculate commissionAmount based on rate (use new rate if provided, otherwise use existing)
     if (updates.dealValue) {
-      updates.commissionAmount = Math.round(updates.dealValue * (deal.commissionRate / 100) * 100) / 100;
+      const rate = updates.commissionRate ?? deal.commissionRate ?? 5;
+      updates.commissionAmount = Math.round(updates.dealValue * (rate / 100) * 100) / 100;
     }
     
     // If status is changing to closed_won, update affiliate totals
     if (updates.status === "closed_won" && deal.status !== "closed_won") {
-      const affiliate = await ctx.db.get(deal.affiliateId);
+      const affiliateId = typeof deal.affiliateId === 'string' ? deal.affiliateId as Id<"affiliates"> : deal.affiliateId;
+      const affiliate = await ctx.db.get(affiliateId);
       if (affiliate) {
         await ctx.db.patch(affiliate._id, {
           totalSales: (affiliate.totalSales || 0) + deal.dealValue,

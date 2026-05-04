@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   LogOut,
   Bell,
+  Target,
 } from "lucide-react";
 import { useAuth, useUser, UserButton, SignInButton } from "@clerk/nextjs";
 import { isAdminEmail, isAdminUserId } from "@/lib/admin";
@@ -23,6 +24,7 @@ import { isAdminEmail, isAdminUserId } from "@/lib/admin";
 const adminNavItems = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/leads", label: "Leads", icon: Target },
   { href: "/admin/payouts", label: "Payouts", icon: DollarSign },
   { href: "/admin/orders", label: "Orders", icon: Package },
   { href: "/admin/tickets", label: "Support Tickets", icon: Ticket },

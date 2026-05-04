@@ -23,6 +23,11 @@ export default defineSchema({
     totalCommissionEarned: v.number(),
     totalCommissionPaid: v.number(),
     pendingCommission: v.optional(v.number()), // Commission awaiting payout
+    // Lead management fields
+    weeklyClaimsUsed: v.optional(v.number()), // default 0
+    weeklyClaimsResetAt: v.optional(v.number()), // timestamp of next Monday 00:00 SAST
+    totalLeadsClaimed: v.optional(v.number()), // lifetime
+    totalLeadsConverted: v.optional(v.number()), // lifetime
     bankName: v.optional(v.string()),
     accountNumber: v.optional(v.string()),
     accountType: v.optional(v.string()),
@@ -48,6 +53,9 @@ export default defineSchema({
     commissionStatus: v.union(v.literal("pending"), v.literal("approved"), v.literal("paid"), v.literal("disputed")),
     expectedCloseDate: v.optional(v.number()),
     actualCloseDate: v.optional(v.number()),
+    // Track if deal came from a lead
+    fromLeadId: v.optional(v.id("leads")),
+    leadClaimExpiresAt: v.optional(v.number()), // For countdown urgency
     // Order submission fields
     orderSubmitted: v.optional(v.boolean()),
     orderReference: v.optional(v.string()),
@@ -116,25 +124,58 @@ export default defineSchema({
   }).index("by_affiliate", ["affiliateId"])
     .index("by_created", ["createdAt"]),
 
-  // Leads (Platinum-only)
+  // Leads - tiered lead management system
   leads: defineTable({
     companyName: v.string(),
-    contactName: v.string(),
-    email: v.string(),
-    phone: v.optional(v.string()),
-    companySize: v.optional(v.string()),
-    productInterest: v.optional(v.string()),
-    budgetRange: v.optional(v.string()),
-    source: v.optional(v.string()),
-    status: v.union(v.literal("available"), v.literal("claimed"), v.literal("converted"), v.literal("expired")),
-    claimedBy: v.optional(v.string()), // affiliateId
-    claimedAt: v.optional(v.number()),
-    convertedToDeal: v.optional(v.string()), // dealId
+    contactName: v.optional(v.string()),
+    contactEmail: v.optional(v.string()),
+    contactPhone: v.optional(v.string()),
+    city: v.optional(v.string()),
+    province: v.optional(v.string()),
+    industry: v.optional(v.string()), // e.g. "Lodge", "Mine", "Construction", "Corporate"
+    productInterest: v.optional(v.array(v.string())), // ["workwear","merchandise","solar","sourcing"]
+    estimatedBudget: v.optional(v.number()), // ZAR
     notes: v.optional(v.string()),
+    source: v.optional(v.string()), // "google_maps", "directory", "referral", "manual"
+    dedupeKey: v.optional(v.string()), // lowercased email OR phone OR slugified companyName+city
+    poolTier: v.optional(v.union(v.literal("standard"), v.literal("priority"), v.literal("premium"))),
+    status: v.optional(v.union(
+      v.literal("available"),
+      v.literal("claimed"),
+      v.literal("converted"),
+      v.literal("expired"),
+      v.literal("retired")
+    )),
+    claimedBy: v.optional(v.id("affiliates")),
+    claimedAt: v.optional(v.number()),
+    claimExpiresAt: v.optional(v.number()), // claimedAt + 72h
+    timesReleased: v.optional(v.number()), // increments each time it expires back to pool
+    maxReleases: v.optional(v.number()), // default 2; after this it goes "retired"
+    uploadedBy: v.optional(v.string()), // admin clerkUserId
+    uploadBatchId: v.optional(v.string()),
+    createdAt: v.optional(v.number()),
+  }).index("by_status_pool", ["status", "poolTier"])
+    .index("by_dedupeKey", ["dedupeKey"])
+    .index("by_claimedBy", ["claimedBy"])
+    .index("by_claimExpiresAt", ["claimExpiresAt"]),
+
+  // Lead Activity - audit trail
+  leadActivity: defineTable({
+    leadId: v.id("leads"),
+    affiliateId: v.optional(v.id("affiliates")),
+    action: v.union(
+      v.literal("uploaded"),
+      v.literal("claimed"),
+      v.literal("released"),
+      v.literal("expired"),
+      v.literal("converted"),
+      v.literal("retired"),
+      v.literal("admin_reassigned")
+    ),
+    meta: v.optional(v.string()), // JSON string for extra context
     createdAt: v.number(),
-  }).index("by_status", ["status"])
-    .index("by_claimed_by", ["claimedBy"])
-    .index("by_created", ["createdAt"]),
+  }).index("by_leadId", ["leadId"])
+    .index("by_affiliateId", ["affiliateId"]),
 
   // Orders
   orders: defineTable({
