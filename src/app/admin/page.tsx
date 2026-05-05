@@ -14,6 +14,8 @@ import {
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { formatCurrency } from "@/lib/utils";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
+import { SkeletonBlock } from "@/components/ui/SkeletonBlock";
 
 const statCards = [
   { label: "Total Affiliates", key: "totalAffiliates", icon: Users, color: "blue" },
@@ -53,8 +55,18 @@ export default function AdminOverviewPage() {
 
   if (!stats) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="space-y-6">
+        <SkeletonBlock className="h-8 w-48" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <SkeletonBlock className="h-28" />
+          <SkeletonBlock className="h-28" />
+          <SkeletonBlock className="h-28" />
+          <SkeletonBlock className="h-28" />
+          <SkeletonBlock className="h-28" />
+          <SkeletonBlock className="h-28" />
+          <SkeletonBlock className="h-28" />
+          <SkeletonBlock className="h-28" />
+        </div>
       </div>
     );
   }
@@ -70,7 +82,7 @@ export default function AdminOverviewPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-white">Admin Dashboard</h1>
+        <h1 className="text-2xl font-semibold text-white tracking-tight">Admin Dashboard</h1>
         <p className="text-gray-500 mt-1">Overview of your affiliate program</p>
       </div>
 
@@ -86,7 +98,13 @@ export default function AdminOverviewPage() {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-gray-400 text-sm">{stat.label}</p>
-                <p className="text-2xl font-semibold text-white mt-2">{getValue(stat.key)}</p>
+                <p className="text-2xl font-semibold text-white mt-2">
+                  {stat.key.includes("Sales") || stat.key.includes("Commission") ? (
+                    <AnimatedNumber value={(stats as any)[stat.key] || 0} formatter={formatCurrency} />
+                  ) : (
+                    <AnimatedNumber value={(stats as any)[stat.key] || 0} formatter={(v) => v.toLocaleString()} />
+                  )}
+                </p>
               </div>
               <div className={`p-3 rounded-xl bg-white/5 ${iconColorMap[stat.color]}`}>
                 <stat.icon className="w-6 h-6" />

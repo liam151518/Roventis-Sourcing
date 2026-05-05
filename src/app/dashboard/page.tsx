@@ -26,6 +26,8 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { formatCurrency } from "@/lib/utils";
 import { isAdminEmail, isAdminUserId } from "@/lib/admin";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
+import { SkeletonBlock } from "@/components/ui/SkeletonBlock";
 import { 
   AreaChart, 
   Area, 
@@ -187,8 +189,23 @@ export default function DashboardPage() {
   // Loading state
   if (currentAffiliate === null || deals === null || modules === null || payouts === null) {
     return (
-      <div className="min-h-screen bg-[#0a0a0b] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="space-y-6">
+        {/* Header skeleton */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <SkeletonBlock className="h-8 w-64" />
+            <SkeletonBlock className="h-4 w-96" />
+          </div>
+        </div>
+        {/* Stats grid skeleton - 4 cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <SkeletonBlock className="h-32" />
+          <SkeletonBlock className="h-32" />
+          <SkeletonBlock className="h-32" />
+          <SkeletonBlock className="h-32" />
+        </div>
+        {/* Chart skeleton */}
+        <SkeletonBlock className="h-80" />
       </div>
     );
   }
@@ -217,7 +234,7 @@ export default function DashboardPage() {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-[#1a1a1d] border border-white/10 rounded-xl p-3 shadow-xl">
+        <div className="bg-[#1a1a1d]/95 backdrop-blur-sm border border-white/10 rounded-xl p-3 shadow-2xl shadow-black/40">
           <p className="text-gray-400 text-sm mb-1">{label}</p>
           {payload.map((entry: any, index: number) => (
             <p key={index} className="text-white font-medium" style={{ color: entry.color }}>
@@ -239,7 +256,7 @@ export default function DashboardPage() {
         className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
       >
         <div>
-          <h1 className="text-2xl font-semibold text-white">
+          <h1 className="text-2xl font-semibold text-white tracking-tight">
             Welcome back, {currentAffiliate.firstName}
           </h1>
           <p className="text-gray-500 mt-1">
@@ -360,7 +377,11 @@ export default function DashboardPage() {
                 {/* Value */}
                 <div className="mt-5">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-white">{typeof stat.value === 'number' ? formatCurrency(stat.value) : stat.value}</span>
+                    <span className="text-3xl font-bold text-white">
+                      {typeof stat.value === 'number' ? (
+                        <AnimatedNumber value={stat.value} formatter={formatCurrency} />
+                      ) : stat.value}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between mt-1">
                     <span className="text-sm font-medium text-gray-300">{stat.label}</span>
@@ -395,7 +416,7 @@ export default function DashboardPage() {
         >
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-lg font-semibold text-white">Revenue Overview</h2>
+              <h2 className="text-lg font-semibold text-white tracking-tight">Revenue Overview</h2>
               <p className="text-sm text-gray-500 mt-1">Monthly revenue and commission trends</p>
             </div>
             <div className="flex items-center gap-2">
@@ -419,17 +440,17 @@ export default function DashboardPage() {
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.25}/>
                     <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                   </linearGradient>
                   <linearGradient id="colorCommission" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.25}/>
                     <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                <XAxis dataKey="period" stroke="#666" fontSize={12} tickLine={false} />
-                <YAxis stroke="#666" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => formatCurrency(value)} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                <XAxis dataKey="period" tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={{ stroke: "rgba(255,255,255,0.05)" }} tickLine={false} />
+                <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={{ stroke: "rgba(255,255,255,0.05)" }} tickLine={false} tickFormatter={(value) => formatCurrency(value)} />
                 <Tooltip content={<CustomTooltip />} />
                 <Area 
                   type="monotone" 
@@ -463,7 +484,7 @@ export default function DashboardPage() {
         >
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-lg font-semibold text-white">Deal Stages</h2>
+              <h2 className="text-lg font-semibold text-white tracking-tight">Deal Stages</h2>
               <p className="text-sm text-gray-500 mt-1">Your pipeline at a glance</p>
             </div>
             <div className="text-right">
@@ -484,7 +505,8 @@ export default function DashboardPage() {
                   outerRadius={85}
                   paddingAngle={3}
                   dataKey="value"
-                  stroke="none"
+                  stroke="#0a0a0b"
+                  strokeWidth={2}
                 >
                   {stageData.map((entry, index) => (
                     <Cell 
@@ -584,7 +606,7 @@ export default function DashboardPage() {
               <TrendingUp className="w-5 h-5 text-blue-400" />
             </div>
             <div>
-              <h3 className="text-white font-semibold">Forecast</h3>
+              <h3 className="text-white font-semibold tracking-tight">Forecast</h3>
               <p className="text-xs text-gray-400">Based on current pipeline</p>
             </div>
           </div>
@@ -658,7 +680,7 @@ export default function DashboardPage() {
           className="bg-[#141417] rounded-2xl border border-white/5 p-6"
         >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-white font-semibold">Tier Progress</h3>
+            <h3 className="text-white font-semibold tracking-tight">Tier Progress</h3>
             <span className="px-2 py-1 bg-amber-500/20 text-amber-400 text-xs rounded-full font-medium">{currentAffiliate.tier.toUpperCase()}</span>
           </div>
           <div className="space-y-4">
@@ -695,7 +717,7 @@ export default function DashboardPage() {
           className="bg-[#141417] rounded-2xl border border-white/5 overflow-hidden"
         >
           <div className="flex items-center justify-between p-6 border-b border-white/5">
-            <h2 className="text-lg font-semibold text-white">Recent Deals</h2>
+            <h2 className="text-lg font-semibold text-white tracking-tight">Recent Deals</h2>
             <Link href="/dashboard/deals" className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1">
               View all <ChevronRight className="w-4 h-4" />
             </Link>

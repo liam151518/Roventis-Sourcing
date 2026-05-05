@@ -457,3 +457,22 @@ body {
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.4);
 }
+
+/* Card surface polish */
+.card-surface {
+  background: #141417;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 1rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: border-color 200ms ease-out, box-shadow 200ms ease-out;
+}
+
+.card-surface:hover {
+  border-color: rgba(255, 255, 255, 0.10);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Shimmer loading animation */
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}

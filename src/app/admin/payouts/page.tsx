@@ -7,6 +7,8 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@clerk/nextjs";
 import { formatDate, formatCurrency } from "@/lib/utils";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { SkeletonBlock } from "@/components/ui/SkeletonBlock";
 
 const orderStatuses = [
   { value: "submitted", label: "Submitted" },
@@ -156,8 +158,14 @@ export default function AdminPayoutsPage() {
 
   if (!orders) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="space-y-6">
+        <SkeletonBlock className="h-8 w-48" />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <SkeletonBlock className="h-32" />
+          <SkeletonBlock className="h-32" />
+          <SkeletonBlock className="h-32" />
+          <SkeletonBlock className="h-32" />
+        </div>
       </div>
     );
   }
@@ -182,7 +190,7 @@ export default function AdminPayoutsPage() {
 
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-white">Commission Approvals & Payouts</h1>
+          <h1 className="text-2xl font-semibold text-white tracking-tight">Commission Approvals & Payouts</h1>
           <p className="text-gray-500 mt-1">Validate orders and manage affiliate commission payments</p>
         </div>
         <button
@@ -339,9 +347,9 @@ export default function AdminPayoutsPage() {
                         </p>
                       </td>
                       <td className="p-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                        <StatusBadge tone={order.status === "submitted" || order.status === "supplier_confirmed" || order.status === "in_transit" ? "active" : order.status === "delivered" || order.status === "installed" ? "paid" : "neutral"}>
                           {order.status?.replace("_", " ")}
-                        </span>
+                        </StatusBadge>
                       </td>
                       {statusFilter !== "paid" && (
                         <td className="p-4">
@@ -467,9 +475,9 @@ export default function AdminPayoutsPage() {
                         <p className="text-gray-500 text-xs capitalize">{payout.accountType}</p>
                       </td>
                       <td className="p-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getPayoutStatusColor(payout.status)}`}>
+                        <StatusBadge tone={payout.status === "paid" ? "paid" : payout.status === "requested" || payout.status === "processing" ? "pending" : payout.status === "rejected" ? "rejected" : "neutral"}>
                           {payout.status}
-                        </span>
+                        </StatusBadge>
                       </td>
                       <td className="p-4">
                         <p className="text-gray-500 font-mono text-sm">{payout.referenceNumber || "-"}</p>

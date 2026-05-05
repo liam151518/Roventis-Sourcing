@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, Fragment } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
+import { Toaster } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   LayoutDashboard, 
@@ -155,7 +156,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                 <Fragment key={item.href}>
                   {showSectionTitle && sectionLabel && !collapsed && (
                     <div className="pt-4 pb-2 px-3">
-                      <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
+                      <span className="text-[10px] font-semibold text-gray-600 uppercase tracking-[0.12em]">
                         {sectionLabel}
                       </span>
                     </div>
@@ -167,7 +168,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                     collapsed ? "justify-center px-1" : ""
                   } ${
                     isActive
-                      ? "text-white"
+                      ? "text-white bg-white/[0.04]"
                       : "text-gray-400 hover:text-white hover:bg-white/5"
                   }`}
                   onClick={() => setSidebarOpen(false)}
@@ -175,11 +176,11 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                   {isActive && (
                     <motion.div
                       layoutId="activeNav"
-                      className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-7 bg-gradient-to-b from-blue-400 via-indigo-500 to-purple-500 rounded-r-full shadow-[0_0_12px_rgba(99,102,241,0.5)]"
                     />
                   )}
                   <item.icon className={`w-5 h-5 flex-shrink-0 transition-colors ${
-                    isActive ? "text-blue-400" : "text-gray-500 group-hover:text-gray-300"
+                    isActive ? "text-indigo-400" : "text-gray-500 group-hover:text-gray-300"
                   }`} />
                   <span className={`transition-all duration-200 ${collapsed ? 'w-0 opacity-0 hidden' : 'opacity-100'}`}>
                     {item.label}
@@ -224,7 +225,30 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         className="flex-1 min-w-0"
       >
         <main className="p-6 lg:p-8">
-          {children}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={pathname}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
+          <Toaster
+            theme="dark"
+            position="bottom-right"
+            toastOptions={{
+              style: {
+                background: "#141417",
+                border: "1px solid rgba(255,255,255,0.06)",
+                color: "#f5f5f7",
+                borderRadius: "12px",
+                boxShadow: "0 12px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)",
+              },
+            }}
+          />
         </main>
       </motion.div>
     </div>

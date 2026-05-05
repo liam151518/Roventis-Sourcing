@@ -10,6 +10,7 @@ import {
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { formatDate, formatCurrency } from "@/lib/utils";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 
 const orderStatuses = [
   { value: "draft", label: "Draft", color: "bg-gray-500/20 text-gray-400" },
@@ -110,7 +111,7 @@ export default function AdminOrdersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-white">Orders</h1>
+          <h1 className="text-2xl font-semibold text-white tracking-tight">Orders</h1>
           <p className="text-gray-500 mt-1">Manage all orders with full details and fulfillment</p>
         </div>
         <div className="flex items-center gap-3">
@@ -191,9 +192,9 @@ export default function AdminOrdersPage() {
                     </div>
                   </td>
                   <td className="p-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                    <StatusBadge tone={order.status === "submitted" || order.status === "supplier_confirmed" || order.status === "in_transit" || order.status === "draft" ? "active" : order.status === "delivered" || order.status === "installed" ? "paid" : "neutral"}>
                       {order.status?.replace("_", " ")}
-                    </span>
+                    </StatusBadge>
                   </td>
                   <td className="p-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${getCommissionColor(order.commissionStatus)}`}>
@@ -244,9 +245,9 @@ export default function AdminOrdersPage() {
                 <div>
                   <div className="flex items-center gap-3">
                     <h2 className="text-xl font-semibold text-white">Order #{selectedOrder._id.slice(-8)}</h2>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(selectedOrder.status)}`}>
+                    <StatusBadge tone={selectedOrder.status === "submitted" || selectedOrder.status === "supplier_confirmed" || selectedOrder.status === "in_transit" || selectedOrder.status === "draft" ? "active" : selectedOrder.status === "delivered" || selectedOrder.status === "installed" ? "paid" : "neutral"}>
                       {selectedOrder.status?.replace("_", " ")}
-                    </span>
+                    </StatusBadge>
                   </div>
                   <p className="text-gray-500 text-sm mt-1">Created: {formatDate(selectedOrder.createdAt)}</p>
                 </div>

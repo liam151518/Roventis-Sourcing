@@ -31,6 +31,7 @@ import {
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { formatCurrency } from "@/lib/utils";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 
 const statusConfig = {
   draft: { label: "Draft", color: "bg-gray-500/10 text-gray-400", icon: Edit },
@@ -267,7 +268,7 @@ export default function OrdersPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Orders</h1>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Orders</h1>
           <p className="text-gray-400">Track and manage your orders</p>
         </div>
         <button 
@@ -368,10 +369,10 @@ export default function OrdersPage() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusConfig[order.status as keyof typeof statusConfig]?.color || "bg-gray-500/10 text-gray-400"}`}>
+                      <StatusBadge tone={order.status === "submitted" || order.status === "supplier_confirmed" || order.status === "in_transit" ? "active" : order.status === "delivered" || order.status === "installed" ? "paid" : "neutral"}>
                         <StatusIcon className="w-3 h-3 inline mr-1" />
                         {statusConfig[order.status as keyof typeof statusConfig]?.label || order.status}
-                      </span>
+                      </StatusBadge>
                     </div>
                     <ChevronRight className="w-5 h-5 text-gray-500" />
                   </div>

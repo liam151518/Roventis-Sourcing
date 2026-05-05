@@ -17,6 +17,8 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@clerk/nextjs";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { SkeletonBlock } from "@/components/ui/SkeletonBlock";
 
 export default function CommissionsPage() {
   const { userId } = useAuth();
@@ -53,8 +55,14 @@ export default function CommissionsPage() {
 
   if (!currentAffiliate) {
     return (
-      <div className="min-h-screen bg-[#0a0a0b] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="space-y-6">
+        <SkeletonBlock className="h-8 w-48" />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <SkeletonBlock className="h-32" />
+          <SkeletonBlock className="h-32" />
+          <SkeletonBlock className="h-32" />
+          <SkeletonBlock className="h-32" />
+        </div>
       </div>
     );
   }
@@ -228,7 +236,7 @@ export default function CommissionsPage() {
         className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
       >
         <div>
-          <h1 className="text-2xl font-semibold text-white">Commissions</h1>
+          <h1 className="text-2xl font-semibold text-white tracking-tight">Commissions</h1>
           <p className="text-gray-500 mt-1">Track your commission earnings and payouts</p>
         </div>
       </motion.div>
@@ -337,13 +345,9 @@ export default function CommissionsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium ${badge.bg} ${badge.text}`}>
-                        {item.status === "paid" && <CheckCircle className="w-3.5 h-3.5" />}
-                        {item.status === "approved" && <CheckCircle className="w-3.5 h-3.5" />}
-                        {item.status === "pending" && <Clock className="w-3.5 h-3.5" />}
-                        {item.status === "no_order" && <Package className="w-3.5 h-3.5" />}
+                      <StatusBadge tone={item.status === "paid" || item.status === "approved" ? "paid" : item.status === "pending" ? "pending" : "neutral"}>
                         {badge.label}
-                      </span>
+                      </StatusBadge>
                     </td>
                   </tr>
                 );
