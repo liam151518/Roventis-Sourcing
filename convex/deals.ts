@@ -1,5 +1,5 @@
 import { query, mutation } from "./_generated/server";
-import { v, Id } from "convex/values";
+import { v } from "convex/values";
 
 export const getDealsByAffiliate = query({
   args: { affiliateId: v.string() },
@@ -78,8 +78,8 @@ export const updateDeal = mutation({
     const { id, ...updates } = args;
     
     // Convert string to Id if needed
-    const dealId = typeof id === 'string' ? id as Id<"deals"> : id;
-    const deal = await ctx.db.get(dealId);
+    const dealId = id as any;
+    const deal = await ctx.db.get(dealId) as any;
     
     if (!deal) {
       throw new Error("Deal not found");
@@ -91,20 +91,16 @@ export const updateDeal = mutation({
       updates.commissionAmount = Math.round(updates.dealValue * (rate / 100) * 100) / 100;
     }
     
-    // If status is changing to closed_won, update affiliate totals
+    // If status is changing to closed_won, do NOT auto-credit pendingCommission
+    // Commission is credited only after admin approves the order (see approveOrderCommission mutation)
     if (updates.status === "closed_won" && deal.status !== "closed_won") {
-      const affiliateId = typeof deal.affiliateId === 'string' ? deal.affiliateId as Id<"affiliates"> : deal.affiliateId;
-      const affiliate = await ctx.db.get(affiliateId);
-      if (affiliate) {
-        await ctx.db.patch(affiliate._id, {
-          totalSales: (affiliate.totalSales || 0) + deal.dealValue,
-          totalCommissionEarned: (affiliate.totalCommissionEarned || 0) + deal.commissionAmount,
-          pendingCommission: (affiliate.pendingCommission || 0) + deal.commissionAmount,
-        });
-      }
+      // Just update the deal status to closed_won - no commission credit yet
+      // The commission becomes real only after:
+      // 1. Affiliate submits order (submitOrder mutation creates order in orders table)
+      // 2. Admin approves commission (approveOrderCommission mutation)
     }
     
-    await ctx.db.patch(id, updates);
+    await ctx.db.patch(id as any, updates);
     return id;
   },
 });
@@ -114,12 +110,12 @@ export const deleteDeal = mutation({
     id: v.string(),
   },
   handler: async (ctx, args) => {
-    await ctx.db.delete(args.id);
+    await ctx.db.delete(args.id as any);
     return args.id;
   },
 });
 
-// Submit order details for a closed deal
+// Submit order details for a closed deal - creates an actual order in the orders table
 export const submitOrder = mutation({
   args: {
     dealId: v.string(),
@@ -149,26 +145,70 @@ export const submitOrder = mutation({
     orderNotes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const deal = await ctx.db.get(args.dealId);
+    const deal = await ctx.db.get(args.dealId as any) as any;
     if (!deal) {
       throw new Error("Deal not found");
     }
+    
+    // Check if deal already has an order submitted
+    if (deal.orderSubmitted && deal.orderId) {
+      throw new Error("Order already submitted for this deal");
+    }
 
-    const { dealId, productImages, mockupPhotos, ...orderData } = args;
+    const { dealId, productImages, mockupPhotos, ...clientData } = args;
     
     // Generate order reference
     const orderReference = `ORD-${Date.now().toString(36).toUpperCase()}`;
+    
+    // Copy commission data from the deal
+    const commissionAmount = deal.commissionAmount || 0;
+    const commissionRate = deal.commissionRate || 5;
+    
+    // Get the affiliate ID
+    const affiliateId = typeof deal.affiliateId === 'string' 
+      ? deal.affiliateId 
+      : deal.affiliateId;
 
-    await ctx.db.patch(args.dealId, {
-      orderSubmitted: true,
-      orderReference,
-      ...orderData,
+    // Create the actual order in the orders table
+    const orderId = await ctx.db.insert("orders", {
+      affiliateId,
+      dealId: args.dealId,
+      clientName: args.clientName,
+      clientCompany: args.clientCompany,
+      clientEmail: args.clientEmail,
+      clientPhone: args.clientPhone,
+      deliveryAddress: args.deliveryAddress,
+      companyName: args.companyName,
+      companyRegistrationNumber: args.companyRegistrationNumber,
+      companyVATNumber: args.companyVATNumber,
+      companyWebsite: args.companyWebsite,
+      companyAddress: args.companyAddress,
+      contactPersonName: args.contactPersonName,
+      contactPersonEmail: args.contactPersonEmail,
+      contactPersonPhone: args.contactPersonPhone,
+      items: [],
+      totalAmount: deal.dealValue,
+      status: "submitted",
+      commissionStatus: "pending", // Not approved yet - admin must approve
+      invoiceDocument: args.invoiceDocument,
+      legalDocument: args.legalDocument,
+      paymentProof: args.paymentProof,
+      customLogo: args.customLogo,
       productImages: productImages || [],
       mockupPhotos: mockupPhotos || [],
+      notes: args.orderNotes,
+      createdAt: Date.now(),
+    } as any);
+
+    // Update the deal to mark order as submitted
+    await ctx.db.patch(args.dealId as any, {
+      orderSubmitted: true,
+      orderReference,
+      orderId: orderId,
       orderSubmittedAt: Date.now(),
       orderStatus: "submitted",
-    });
+    } as any);
 
-    return { success: true, orderReference };
+    return { success: true, orderReference, orderId };
   },
 });

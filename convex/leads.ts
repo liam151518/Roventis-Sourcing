@@ -41,7 +41,7 @@ function createDedupeKey(data: {
 export const getAvailableLeadsForAffiliate = query({
   args: { affiliateId: v.string() },
   handler: async (ctx, args) => {
-    const affiliate = await ctx.db.get(args.affiliateId);
+    const affiliate = await ctx.db.get(args.affiliateId as any);
     if (!affiliate) {
       throw new Error("Affiliate not found");
     }
@@ -96,7 +96,7 @@ export const getAvailableLeadsForAffiliate = query({
 export const getMyClaimedLeads = query({
   args: { affiliateId: v.string() },
   handler: async (ctx, args) => {
-    const affiliate = await ctx.db.get(args.affiliateId);
+    const affiliate = await ctx.db.get(args.affiliateId as any);
     if (!affiliate) {
       return [];
     }

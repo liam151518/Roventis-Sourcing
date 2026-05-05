@@ -27,7 +27,7 @@ export const getCurrentAffiliate = query({
 export const getAffiliateById = query({
   args: { id: v.string() },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
+    return await ctx.db.get(args.id as any);
   },
 });
 
@@ -254,7 +254,9 @@ export const seedAllData = mutation({
           fileType: "pdf",
           category: "catalog",
           isPublic: true,
+          isDraft: false,
           downloadCount: 0,
+          createdAt: Date.now(),
         });
       }
       
@@ -262,9 +264,9 @@ export const seedAllData = mutation({
       const existingLeads = await ctx.db.query("leads").take(1);
       if (existingLeads.length === 0) {
         const demoLeads = [
-          { companyName: "SolarTech SA", contactName: "John Smith", email: "john@solartech.co.za", phone: "+27 82 111 2222", companySize: "50-200", productInterest: "Solar panels", budgetRange: "R100k-R500k" },
-          { companyName: "EcoBuild Contractors", contactName: "Maria van der Merwe", email: "maria@ecobuild.co.za", phone: "+27 83 222 3333", companySize: "10-50", productInterest: "Building materials", budgetRange: "R50k-R150k" },
-          { companyName: "TechStart Incubator", contactName: "David Chen", email: "david@techstart.co.za", phone: "+27 84 333 4444", companySize: "10-50", productInterest: "Office supplies", budgetRange: "R10k-R50k" },
+          { companyName: "SolarTech SA", contactName: "John Smith", email: "john@solartech.co.za", phone: "+27 82 111 2222", companySize: "50-200", productInterest: ["Solar panels"], budgetRange: "R100k-R500k" },
+          { companyName: "EcoBuild Contractors", contactName: "Maria van der Merwe", email: "maria@ecobuild.co.za", phone: "+27 83 222 3333", companySize: "10-50", productInterest: ["Building materials"], budgetRange: "R50k-R150k" },
+          { companyName: "TechStart Incubator", contactName: "David Chen", email: "david@techstart.co.za", phone: "+27 84 333 4444", companySize: "10-50", productInterest: ["Office supplies"], budgetRange: "R10k-R50k" },
         ];
         for (const lead of demoLeads) {
           await ctx.db.insert("leads", {
@@ -377,7 +379,7 @@ export const updateAffiliate = mutation({
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
-    await ctx.db.patch(id, updates);
+    await ctx.db.patch(id as any, updates);
     return id;
   },
 });
@@ -386,7 +388,7 @@ export const updateAffiliate = mutation({
 export const approveToSell = mutation({
   args: { affiliateId: v.string() },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.affiliateId, {
+    await ctx.db.patch(args.affiliateId as any, {
       isApprovedToSell: true,
       trainingCompleted: true,
     });
@@ -401,12 +403,12 @@ export const updateAffiliateTier = mutation({
     newTier: v.union(v.literal("bronze"), v.literal("silver"), v.literal("gold"), v.literal("platinum")),
   },
   handler: async (ctx, args) => {
-    const affiliate = await ctx.db.get(args.affiliateId);
+    const affiliate = await ctx.db.get(args.affiliateId as any) as any;
     if (!affiliate) {
       throw new Error("Affiliate not found");
     }
 
-    await ctx.db.patch(args.affiliateId, {
+    await ctx.db.patch(args.affiliateId as any, {
       tier: args.newTier,
     });
 

@@ -190,6 +190,33 @@ function SortableDealCard({ deal, onClick, searchQuery }: { deal: any; onClick: 
         )}
       </div>
       
+      {/* Commission status badges for Closed Won deals */}
+      {deal.status === "closed_won" && (
+        <div className="flex flex-wrap gap-1 mt-2 ml-5">
+          {!deal.orderSubmitted && (
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-xs rounded-full animate-pulse">
+              <span className="w-1.5 h-1.5 bg-amber-400 rounded-full" />
+              Submit Order
+            </span>
+          )}
+          {deal.orderSubmitted && deal.commissionStatus === "pending" && (
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded-full">
+              Awaiting Approval
+            </span>
+          )}
+          {deal.commissionStatus === "approved" && (
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded-full">
+              Approved
+            </span>
+          )}
+          {deal.commissionStatus === "paid" && (
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-green-500/20 text-green-400 text-xs rounded-full">
+              Commission Paid
+            </span>
+          )}
+        </div>
+      )}
+      
       {deal.productCategory && deal.productCategory.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-2 ml-5">
           {deal.productCategory.slice(0, 2).map((cat: string) => (
@@ -1016,6 +1043,64 @@ export default function DealsPage() {
                           </button>
                         </div>
                       )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Commission Status - Show for Closed Won deals */}
+                {selectedDeal.status === "closed_won" && (
+                  <div className="border-t border-white/10 pt-6">
+                    <div className="text-gray-500 text-sm mb-3">Commission Status</div>
+                    <div className="bg-[#0a0a0b] rounded-xl p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        {(() => {
+                          // Determine commission status label
+                          let statusLabel = "";
+                          let statusClass = "";
+                          let statusBg = "";
+                          
+                          if (!selectedDeal.orderSubmitted) {
+                            statusLabel = " Deal Closed — No Order";
+                            statusClass = "text-gray-400";
+                            statusBg = "bg-gray-500/20";
+                          } else if (selectedDeal.commissionStatus === "pending") {
+                            statusLabel = " Pending Approval";
+                            statusClass = "text-amber-400";
+                            statusBg = "bg-amber-500/20";
+                          } else if (selectedDeal.commissionStatus === "approved") {
+                            statusLabel = " Approved";
+                            statusClass = "text-blue-400";
+                            statusBg = "bg-blue-500/20";
+                          } else if (selectedDeal.commissionStatus === "paid") {
+                            statusLabel = " Paid";
+                            statusClass = "text-green-400";
+                            statusBg = "bg-green-500/20";
+                          }
+                          
+                          return (
+                            <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${statusBg} ${statusClass}`}>
+                              {statusLabel}
+                            </span>
+                          );
+                        })()}
+                        <span className="text-white font-medium">{formatCurrency(selectedDeal.commissionAmount)}</span>
+                      </div>
+                      
+                      {/* Next steps messaging */}
+                      <div className="text-sm text-gray-400">
+                        {!selectedDeal.orderSubmitted && (
+                          <p>Submit your order below to start the commission approval process.</p>
+                        )}
+                        {selectedDeal.orderSubmitted && selectedDeal.commissionStatus === "pending" && (
+                          <p>Your order has been submitted. Roventis will verify and approve your commission within 2–3 business days.</p>
+                        )}
+                        {selectedDeal.commissionStatus === "approved" && (
+                          <p>Your commission has been approved and will be paid within 8–10 business days.</p>
+                        )}
+                        {selectedDeal.commissionStatus === "paid" && (
+                          <p>Commission paid. Reference: {selectedDeal.paymentReference || "N/A"}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}

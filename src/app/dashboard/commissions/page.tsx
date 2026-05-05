@@ -1,32 +1,55 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   DollarSign, 
   Clock, 
   CheckCircle, 
-  XCircle,
   TrendingUp,
   ArrowUpRight,
-  ArrowDownRight,
-  Wallet,
-  Building,
   Send,
-  X
+  X,
+  Package,
+  AlertCircle,
 } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useAuth } from "@clerk/nextjs";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 export default function CommissionsPage() {
+  const { userId } = useAuth();
   const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate);
-  const myPayoutRequests = useQuery(api.commissions.getMyPayoutRequests, { affiliateId: currentAffiliate?._id as string });
+  
+  // Use stable arguments for all useQuery hooks - always pass something
+  const affiliateId = currentAffiliate?._id;
+  const myOrders = useQuery(
+    api.orders.getMyOrders, 
+    affiliateId ? { affiliateId } : "skip"
+  );
+  const myPayoutRequests = useQuery(
+    api.commissions.getMyPayoutRequests, 
+    affiliateId ? { affiliateId } : "skip"
+  );
+  const commissionSummary = useQuery(
+    api.admin.getCommissionSummary, 
+    affiliateId ? { affiliateId } : "skip"
+  );
   const requestPayout = useMutation(api.commissions.requestPayout);
+  
+  // Get deals for breakdown table - use skip pattern too
+  const dealsQuery = useQuery(
+    api.deals.getDealsByAffiliate, 
+    affiliateId ? { affiliateId } : "skip"
+  );
   
   const [showPayoutModal, setShowPayoutModal] = useState(false);
   const [payoutAmount, setPayoutAmount] = useState("");
   const [requesting, setRequesting] = useState(false);
+  const [toast, setToast] = useState<{message: string; type: "success" | "error"} | null>(null);
+
+  const deals = (dealsQuery || []) as any[];
 
   if (!currentAffiliate) {
     return (
@@ -36,59 +59,111 @@ export default function CommissionsPage() {
     );
   }
 
+  const userOrders = (myOrders || []) as any[];
   const userPayouts = (myPayoutRequests || []) as any[];
   
-  const totalPaid = userPayouts.filter((p) => p.status === "paid").reduce((sum, p) => sum + p.amount, 0);
-  const totalPending = currentAffiliate.pendingCommission || 0;
-  const totalProcessing = userPayouts.filter((p) => p.status === "processing" || p.status === "requested").reduce((sum, p) => sum + p.amount, 0);
-  
-  const availablePayout = totalPending;
-  const maxPayout = availablePayout;
+  // Get summary from the new query first, fallback to affiliate fields
+  const summary = commissionSummary || {
+    pendingApproval: 0,
+    approved: 0,
+    paidThisMonth: 0,
+    totalEarned: currentAffiliate?.totalCommissionEarned || 0,
+    totalPaid: currentAffiliate?.totalCommissionPaid || 0,
+    pendingBalance: currentAffiliate?.pendingCommission || 0,
+  };
+
+  const closedWonDeals = deals.filter((d: any) => d.status === "closed_won");
+
+  // Build commission breakdown
+  const breakdown = closedWonDeals.map((deal: any) => {
+    const order = userOrders.find((o: any) => o.dealId === deal._id);
+    let status: string;
+    let label: string;
+    
+    if (!order) {
+      status = "no_order";
+      label = "Deal Closed — No Order";
+    } else if (order.commissionStatus === "pending") {
+      status = "pending";
+      label = "Pending Approval";
+    } else if (order.commissionStatus === "approved") {
+      status = "approved";
+      label = "Approved";
+    } else if (order.commissionStatus === "paid") {
+      status = "paid";
+      label = "Paid";
+    } else {
+      status = "unknown";
+      label = order.commissionStatus || "Unknown";
+    }
+    
+    return {
+      dealId: deal._id,
+      deal: deal,
+      order: order,
+      clientName: deal.clientName,
+      clientCompany: deal.clientCompany,
+      dealValue: deal.dealValue,
+      commissionRate: deal.commissionRate,
+      commissionAmount: deal.commissionAmount,
+      status,
+      label,
+      orderId: order?._id,
+    };
+  }).sort((a, b) => b.deal.createdAt - a.deal.createdAt);
+
+  // Calculate breakdown counts
+  const noOrderCount = breakdown.filter(b => b.status === "no_order").length;
+  const pendingCount = breakdown.filter(b => b.status === "pending").length;
+  const approvedCount = breakdown.filter(b => b.status === "approved").length;
+  const paidCount = breakdown.filter(b => b.status === "paid").length;
 
   const stats = [
     {
-      label: "Total Paid",
-      value: formatCurrency(totalPaid),
-      icon: CheckCircle,
-      color: "from-emerald-500 to-teal-600",
-      bgColor: "bg-emerald-500/10",
-      iconColor: "text-emerald-400"
+      label: "Total Earned",
+      value: formatCurrency(summary.totalEarned),
+      subtext: "All time",
+      icon: DollarSign,
+      color: "from-purple-500 to-pink-600",
+      bgColor: "bg-purple-500/10",
+      iconColor: "text-purple-400"
     },
     {
-      label: "Pending",
-      value: formatCurrency(totalPending),
+      label: "Pending Approval",
+      value: formatCurrency(summary.pendingApproval),
+      subtext: `${pendingCount} order${pendingCount !== 1 ? 's' : ''}`,
       icon: Clock,
       color: "from-amber-500 to-orange-600",
       bgColor: "bg-amber-500/10",
       iconColor: "text-amber-400"
     },
     {
-      label: "Processing",
-      value: formatCurrency(totalProcessing),
-      icon: TrendingUp,
+      label: "Approved",
+      value: formatCurrency(summary.approved),
+      subtext: "Awaiting payment",
+      icon: CheckCircle,
       color: "from-blue-500 to-indigo-600",
       bgColor: "bg-blue-500/10",
       iconColor: "text-blue-400"
     },
     {
-      label: "Total Earned",
-      value: formatCurrency(totalPaid + totalPending + totalProcessing),
-      icon: DollarSign,
-      color: "from-purple-500 to-pink-600",
-      bgColor: "bg-purple-500/10",
-      iconColor: "text-purple-400"
-    }
+      label: "Total Paid",
+      value: formatCurrency(summary.totalPaid),
+      subtext: "All time",
+      icon: TrendingUp,
+      color: "from-emerald-500 to-teal-600",
+      bgColor: "bg-emerald-500/10",
+      iconColor: "text-emerald-400"
+    },
   ];
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "paid": return { bg: "bg-emerald-500/10", text: "text-emerald-400", icon: CheckCircle };
-      case "pending": return { bg: "bg-amber-500/10", text: "text-amber-400", icon: Clock };
-      case "requested": return { bg: "bg-amber-500/10", text: "text-amber-400", icon: Clock };
-      case "processing": return { bg: "bg-blue-500/10", text: "text-blue-400", icon: TrendingUp };
-      case "failed": return { bg: "bg-red-500/10", text: "text-red-400", icon: XCircle };
-      case "rejected": return { bg: "bg-red-500/10", text: "text-red-400", icon: XCircle };
-      default: return { bg: "bg-slate-500/10", text: "text-slate-400", icon: Clock };
+      case "paid": return { bg: "bg-green-500/20", text: "text-green-400", label: "Paid" };
+      case "approved": return { bg: "bg-blue-500/20", text: "text-blue-400", label: "Approved" };
+      case "pending": return { bg: "bg-amber-500/20", text: "text-amber-400", label: "Pending Approval" };
+      case "no_order": return { bg: "bg-gray-500/20", text: "text-gray-400", label: "Deal Closed — No Order" };
+      default: return { bg: "bg-gray-500/20", text: "text-gray-400", label: status };
     }
   };
 
@@ -96,11 +171,11 @@ export default function CommissionsPage() {
     if (!currentAffiliate?._id || !payoutAmount) return;
     const amount = parseFloat(payoutAmount);
     if (amount < 500) {
-      alert("Minimum payout amount is R500");
+      setToast({ message: "Minimum payout amount is R500", type: "error" });
       return;
     }
-    if (amount > availablePayout) {
-      alert("Amount exceeds available balance");
+    if (amount > summary.pendingBalance) {
+      setToast({ message: "Amount exceeds available balance", type: "error" });
       return;
     }
     setRequesting(true);
@@ -115,15 +190,37 @@ export default function CommissionsPage() {
       });
       setShowPayoutModal(false);
       setPayoutAmount("");
-    } catch (error) {
-      console.error("Failed to request payout:", error);
-      alert("Failed to request payout. Make sure you have pending commission.");
+      setToast({ message: "Payout requested successfully!", type: "success" });
+    } catch (error: any) {
+      setToast({ message: error.message || "Failed to request payout", type: "error" });
     }
     setRequesting(false);
+    setTimeout(() => setToast(null), 3000);
   };
+
+  // Determine what message to show
+  const showPayoutMessage = summary.pendingBalance === 0;
+  const hasApprovedCommissions = summary.approved > 0;
+  const hasAnyCommissions = summary.totalEarned > 0;
 
   return (
     <div className="space-y-6">
+      {/* Toast */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className={`fixed top-4 right-4 px-4 py-3 rounded-xl z-50 ${
+              toast.type === "success" ? "bg-emerald-600" : "bg-red-600"
+            } text-white shadow-xl`}
+          >
+            {toast.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -132,16 +229,8 @@ export default function CommissionsPage() {
       >
         <div>
           <h1 className="text-2xl font-semibold text-white">Commissions</h1>
-          <p className="text-gray-500 mt-1">Track your commission payouts and earnings</p>
+          <p className="text-gray-500 mt-1">Track your commission earnings and payouts</p>
         </div>
-        <button 
-          onClick={() => setShowPayoutModal(true)}
-          disabled={availablePayout < 500}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-colors"
-        >
-          <Send className="w-4 h-4" />
-          Request Payout
-        </button>
       </motion.div>
 
       {/* Stats Grid */}
@@ -154,7 +243,7 @@ export default function CommissionsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="group bg-[#141417] rounded-2xl border border-white/5 p-6 hover:border-white/10 transition-all"
+              className="group bg-[#141417] rounded-2xl border border-white/5 p-6 hover:border-white/10 transition-all relative overflow-hidden"
             >
               <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${stat.color} opacity-5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2`} />
               <div className="flex items-start justify-between relative">
@@ -165,17 +254,117 @@ export default function CommissionsPage() {
               <div className="mt-4">
                 <div className="text-2xl font-semibold text-white">{stat.value}</div>
                 <div className="text-sm text-gray-500 mt-1">{stat.label}</div>
+                <div className="text-xs text-gray-600 mt-0.5">{stat.subtext}</div>
               </div>
             </motion.div>
           );
         })}
       </div>
 
-      {/* Payouts Table */}
+      {/* Commission Breakdown Table */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
+        className="bg-[#141417] rounded-2xl border border-white/5 overflow-hidden"
+      >
+        <div className="p-6 border-b border-white/5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-white">Commission Breakdown</h2>
+            <button 
+              onClick={() => setShowPayoutModal(true)}
+              disabled={showPayoutMessage}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-colors text-sm"
+            >
+              <Send className="w-4 h-4" />
+              Request Payout
+            </button>
+          </div>
+          {showPayoutMessage && (
+            <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+              {hasApprovedCommissions ? (
+                <p className="text-blue-400 text-sm flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Your commission has been approved. Payment will be processed within 8–10 business days.
+                </p>
+              ) : hasAnyCommissions ? (
+                <p className="text-blue-400 text-sm flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  All commissions have been paid out.
+                </p>
+              ) : (
+                <p className="text-blue-400 text-sm flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4" />
+                  No commissions ready for payout yet. Close a deal and submit your order to get started.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-[#0a0a0b]">
+              <tr>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deal / Client</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deal Value</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rate</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Commission</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {breakdown.map((item: any) => {
+                const badge = getStatusBadge(item.status);
+                return (
+                  <tr key={item.dealId} className="hover:bg-white/5 transition-colors">
+                    <td className="px-6 py-4">
+                      <div>
+                        <p className="text-white font-medium">{item.clientName}</p>
+                        {item.clientCompany && (
+                          <p className="text-gray-500 text-sm">{item.clientCompany}</p>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-white">
+                      {formatCurrency(item.dealValue)}
+                    </td>
+                    <td className="px-6 py-4 text-gray-400">
+                      {item.commissionRate}%
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-emerald-400 font-medium">
+                        {formatCurrency(item.commissionAmount)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium ${badge.bg} ${badge.text}`}>
+                        {item.status === "paid" && <CheckCircle className="w-3.5 h-3.5" />}
+                        {item.status === "approved" && <CheckCircle className="w-3.5 h-3.5" />}
+                        {item.status === "pending" && <Clock className="w-3.5 h-3.5" />}
+                        {item.status === "no_order" && <Package className="w-3.5 h-3.5" />}
+                        {badge.label}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+              {breakdown.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                    No closed deals yet. Start closing deals to earn commissions!
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </motion.div>
+
+      {/* Payout History */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
         className="bg-[#141417] rounded-2xl border border-white/5 overflow-hidden"
       >
         <div className="p-6 border-b border-white/5">
@@ -185,47 +374,41 @@ export default function CommissionsPage() {
           <table className="w-full">
             <thead className="bg-[#0a0a0b]">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Requested</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reference</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
               {userPayouts.map((payout: any) => {
-                const status = getStatusBadge(payout.status);
-                const StatusIcon = status.icon;
+                let statusLabel = payout.status;
+                let statusClass = "text-gray-400";
+                if (payout.status === "paid") statusClass = "text-green-400";
+                if (payout.status === "processing" || payout.status === "requested") statusClass = "text-amber-400";
+                if (payout.status === "rejected") statusClass = "text-red-400";
                 
                 return (
                   <tr key={payout._id} className="hover:bg-white/5 transition-colors">
                     <td className="px-6 py-4 text-gray-400">
-                      {formatDate(payout.createdAt)}
+                      {formatDate(payout.requestedAt)}
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-white font-semibold">{formatCurrency(payout.amount)}</span>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium ${status.bg} ${status.text}`}>
-                        <StatusIcon className="w-3.5 h-3.5" />
-                        {payout.status}
-                      </span>
+                    <td className={`px-6 py-4 capitalize ${statusClass}`}>
+                      {statusLabel}
                     </td>
-                    <td className="px-6 py-4 text-gray-400 capitalize">
-                      {payout.paymentMethod || "-"}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-gray-500 font-mono text-sm">
-                        {payout.referenceNumber || "-"}
-                      </span>
+                    <td className="px-6 py-4 text-gray-500 font-mono text-sm">
+                      {payout.referenceNumber || "-"}
                     </td>
                   </tr>
                 );
               })}
               {userPayouts.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                    No commission payouts yet. Start closing deals to earn commissions!
+                  <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
+                    No payout requests yet.
                   </td>
                 </tr>
               )}
@@ -264,7 +447,7 @@ export default function CommissionsPage() {
               <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl mb-6">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-400">Available Balance</span>
-                  <span className="text-white font-bold text-xl">{formatCurrency(availablePayout)}</span>
+                  <span className="text-white font-bold text-xl">{formatCurrency(summary.pendingBalance)}</span>
                 </div>
               </div>
 

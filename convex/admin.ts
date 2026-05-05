@@ -37,11 +37,11 @@ export const getAllDealsAdmin = query({
     const deals = await ctx.db.query("deals").collect();
     // Enrich with affiliate info
     const affiliates = await ctx.db.query("affiliates").collect();
-    const affiliateMap = new Map(affiliates.map((a) => [a._id, a]));
+    const affiliateMap = new Map(affiliates.map((a) => [String(a._id), a]));
     
     return deals.map((deal) => ({
       ...deal,
-      affiliate: affiliateMap.get(deal.affiliateId),
+      affiliate: affiliateMap.get(String(deal.affiliateId)),
     }));
   },
 });
@@ -53,11 +53,11 @@ export const getAllSupportTicketsAdmin = query({
     const tickets = await ctx.db.query("supportTickets").collect();
     // Enrich with affiliate info
     const affiliates = await ctx.db.query("affiliates").collect();
-    const affiliateMap = new Map(affiliates.map((a) => [a._id, a]));
+    const affiliateMap = new Map(affiliates.map((a) => [String(a._id), a]));
     
     return tickets.map((ticket) => ({
       ...ticket,
-      affiliate: affiliateMap.get(ticket.affiliateId),
+      affiliate: affiliateMap.get(String(ticket.affiliateId)),
     }));
   },
 });
@@ -69,11 +69,11 @@ export const getAllOrdersAdmin = query({
     const orders = await ctx.db.query("orders").collect();
     // Enrich with affiliate info
     const affiliates = await ctx.db.query("affiliates").collect();
-    const affiliateMap = new Map(affiliates.map((a) => [a._id, a]));
+    const affiliateMap = new Map(affiliates.map((a) => [String(a._id), a]));
     
     return orders.map((order) => ({
       ...order,
-      affiliate: affiliateMap.get(order.affiliateId),
+      affiliate: affiliateMap.get(String(order.affiliateId)),
     }));
   },
 });
@@ -85,11 +85,11 @@ export const getAllPayoutRequestsAdmin = query({
     const requests = await ctx.db.query("payoutRequests").collect();
     // Enrich with affiliate info
     const affiliates = await ctx.db.query("affiliates").collect();
-    const affiliateMap = new Map(affiliates.map((a) => [a._id, a]));
+    const affiliateMap = new Map(affiliates.map((a) => [String(a._id), a]));
     
     return requests.map((req) => ({
       ...req,
-      affiliate: affiliateMap.get(req.affiliateId),
+      affiliate: affiliateMap.get(String(req.affiliateId)),
     }));
   },
 });
@@ -178,7 +178,7 @@ export const replyToSupportTicket = mutation({
     message: v.string(),
   },
   handler: async (ctx, args) => {
-    const ticket = await ctx.db.get(args.ticketId);
+    const ticket = await ctx.db.get(args.ticketId as any) as any;
     if (!ticket) {
       throw new Error("Ticket not found");
     }
@@ -196,7 +196,7 @@ export const replyToSupportTicket = mutation({
       newStatus = "in_progress";
     }
     
-    await ctx.db.patch(args.ticketId, {
+    await ctx.db.patch(args.ticketId as any, {
       messages,
       updatedAt: Date.now(),
       status: newStatus,
@@ -229,7 +229,7 @@ export const updateSupportTicketStatus = mutation({
       updateData.closedAt = Date.now();
     }
     
-    await ctx.db.patch(args.ticketId, updateData);
+    await ctx.db.patch(args.ticketId as any, updateData);
     return { success: true };
   },
 });
@@ -240,7 +240,7 @@ export const resolveAndCloseTicket = mutation({
     ticketId: v.string(),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.ticketId, {
+    await ctx.db.patch(args.ticketId as any, {
       status: "closed",
       resolvedAt: Date.now(),
       closedAt: Date.now(),
@@ -256,7 +256,7 @@ export const deleteClosedTicket = mutation({
     ticketId: v.string(),
   },
   handler: async (ctx, args) => {
-    const ticket = await ctx.db.get(args.ticketId);
+    const ticket = await ctx.db.get(args.ticketId as any) as any;
     if (!ticket) {
       throw new Error("Ticket not found");
     }
@@ -266,7 +266,7 @@ export const deleteClosedTicket = mutation({
       throw new Error("Can only delete closed tickets");
     }
     
-    await ctx.db.delete(args.ticketId);
+    await ctx.db.delete(args.ticketId as any);
     return { success: true };
   },
 });
@@ -281,7 +281,7 @@ export const updateOrderStatus = mutation({
   },
   handler: async (ctx, args) => {
     const { orderId, ...updates } = args;
-    await ctx.db.patch(orderId, updates);
+    await ctx.db.patch(orderId as any, updates);
     return { success: true };
   },
 });
@@ -293,7 +293,7 @@ export const updateOrderCommission = mutation({
     commissionStatus: v.union(v.literal("pending"), v.literal("approved"), v.literal("paid")),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.orderId, {
+    await ctx.db.patch(args.orderId as any, {
       commissionStatus: args.commissionStatus,
     });
     return { success: true };
@@ -310,7 +310,7 @@ export const updatePayoutRequestStatus = mutation({
   },
   handler: async (ctx, args) => {
     const { requestId, ...updates } = args;
-    await ctx.db.patch(requestId, {
+    await ctx.db.patch(requestId as any, {
       ...updates,
       processedAt: updates.status === "paid" ? Date.now() : undefined,
     });
@@ -353,7 +353,7 @@ export const updateResource = mutation({
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
-    await ctx.db.patch(id, {
+    await ctx.db.patch(id as any, {
       ...updates,
       updatedAt: Date.now(),
     });
@@ -365,7 +365,7 @@ export const updateResource = mutation({
 export const publishResource = mutation({
   args: { id: v.string() },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.id, {
+    await ctx.db.patch(args.id as any, {
       isDraft: false,
       isPublic: true,
       updatedAt: Date.now(),
@@ -378,7 +378,7 @@ export const publishResource = mutation({
 export const unpublishResource = mutation({
   args: { id: v.string() },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.id, {
+    await ctx.db.patch(args.id as any, {
       isDraft: true,
       updatedAt: Date.now(),
     });
@@ -390,7 +390,7 @@ export const unpublishResource = mutation({
 export const deleteResource = mutation({
   args: { id: v.string() },
   handler: async (ctx, args) => {
-    await ctx.db.delete(args.id);
+    await ctx.db.delete(args.id as any);
     return { success: true };
   },
 });
@@ -415,7 +415,7 @@ export const updateAffiliateAdmin = mutation({
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
-    await ctx.db.patch(id, updates);
+    await ctx.db.patch(id as any, updates);
     return { success: true };
   },
 });
@@ -434,14 +434,14 @@ export const updateDealAdmin = mutation({
     
     // If deal value changed, recalculate commission
     if (updates.dealValue) {
-      const deal = await ctx.db.get(id);
+      const deal = await ctx.db.get(id as any) as any;
       if (deal) {
         const newCommissionAmount = Math.round(deal.dealValue * (deal.commissionRate / 100) * 100) / 100;
-        updates.commissionAmount = newCommissionAmount as any;
+        (updates as any).commissionAmount = newCommissionAmount;
       }
     }
     
-    await ctx.db.patch(id, updates);
+    await ctx.db.patch(id as any, updates);
     return { success: true };
   },
 });
@@ -479,5 +479,186 @@ export const getLeaderboard = query({
     
     // Sort by total sales
     return leaderboard.sort((a, b) => b.totalSales - a.totalSales);
+  },
+});
+
+// ============================================
+// COMMISSION APPROVAL FLOW (NEW)
+// ============================================
+
+// Approve commission for an order - credits affiliate's pendingCommission
+export const approveOrderCommission = mutation({
+  args: {
+    orderId: v.string(),
+    adminClerkUserId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const ADMIN_IDS = ["user_3B7OeXBrhE04XG6KNSbtEE5UD1H"];
+    if (!ADMIN_IDS.includes(args.adminClerkUserId)) {
+      throw new Error("Admin access required");
+    }
+    
+    const order = await ctx.db.get(args.orderId as any) as any;
+    if (!order) {
+      throw new Error("Order not found");
+    }
+    
+    if (order.commissionStatus === "approved" || order.commissionStatus === "paid") {
+      throw new Error("Commission already processed");
+    }
+    
+    if (order.commissionStatus !== "pending") {
+      throw new Error(`Cannot approve commission with status: ${order.commissionStatus}`);
+    }
+    
+    const commissionAmount = order.commissionAmount || 0;
+    if (commissionAmount <= 0) {
+      throw new Error("No commission amount to approve");
+    }
+    
+    await ctx.db.patch(args.orderId as any, { commissionStatus: "approved" });
+    
+    const affiliate = await ctx.db.get(order.affiliateId as any) as any;
+    if (affiliate) {
+      await ctx.db.patch(affiliate._id, {
+        pendingCommission: (affiliate.pendingCommission || 0) + commissionAmount,
+        totalCommissionEarned: (affiliate.totalCommissionEarned || 0) + commissionAmount,
+      });
+    }
+    
+    if (order.dealId) {
+      await ctx.db.patch(order.dealId as any, { commissionStatus: "approved" });
+    }
+    
+    await ctx.db.insert("activityLogs", {
+      affiliateId: order.affiliateId,
+      action: "commission_approved",
+      metadata: JSON.stringify({ orderId: args.orderId, amount: commissionAmount }),
+      createdAt: Date.now(),
+    });
+    
+    return { success: true, orderId: args.orderId, commissionAmount, affiliateId: order.affiliateId };
+  },
+});
+
+export const markCommissionPaid = mutation({
+  args: {
+    orderId: v.string(),
+    paymentReference: v.string(),
+    adminClerkUserId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const ADMIN_IDS = ["user_3B7OeXBrhE04XG6KNSbtEE5UD1H"];
+    if (!ADMIN_IDS.includes(args.adminClerkUserId)) {
+      throw new Error("Admin access required");
+    }
+    
+    const order = await ctx.db.get(args.orderId as any) as any;
+    if (!order) {
+      throw new Error("Order not found");
+    }
+    
+    if (order.commissionStatus !== "approved") {
+      throw new Error("Commission must be approved before marking as paid");
+    }
+    
+    const commissionAmount = order.commissionAmount || 0;
+    
+    await ctx.db.patch(args.orderId as any, {
+      commissionStatus: "paid",
+      paymentReference: args.paymentReference,
+      paidAt: Date.now(),
+    } as any);
+    
+    const affiliate = await ctx.db.get(order.affiliateId as any) as any;
+    if (affiliate) {
+      const currentPending = affiliate.pendingCommission || 0;
+      await ctx.db.patch(affiliate._id, {
+        pendingCommission: Math.max(0, currentPending - commissionAmount),
+        totalCommissionPaid: (affiliate.totalCommissionPaid || 0) + commissionAmount,
+      });
+    }
+    
+    if (order.dealId) {
+      await ctx.db.patch(order.dealId as any, { commissionStatus: "paid" });
+    }
+    
+    await ctx.db.insert("activityLogs", {
+      affiliateId: order.affiliateId,
+      action: "commission_paid",
+      metadata: JSON.stringify({ orderId: args.orderId, amount: commissionAmount, reference: args.paymentReference }),
+      createdAt: Date.now(),
+    });
+    
+    return { success: true, orderId: args.orderId, paymentReference: args.paymentReference };
+  },
+});
+
+export const getCommissionSummary = query({
+  args: { affiliateId: v.string() },
+  handler: async (ctx, args) => {
+    const orders = await ctx.db
+      .query("orders")
+      .withIndex("by_affiliate")
+      .filter((q) => q.eq(q.field("affiliateId"), args.affiliateId))
+      .collect() as any;
+    
+    const affiliate = await ctx.db.get(args.affiliateId as any) as any;
+    if (!affiliate) {
+      return null;
+    }
+    
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    const startOfMonthMs = startOfMonth.getTime();
+    
+    const pendingApproval = orders.filter((o: any) => o.commissionStatus === "pending").reduce((sum: number, o: any) => sum + (o.commissionAmount || 0), 0);
+    const approved = orders.filter((o: any) => o.commissionStatus === "approved").reduce((sum: number, o: any) => sum + (o.commissionAmount || 0), 0);
+    const paidThisMonth = orders.filter((o: any) => o.commissionStatus === "paid" && (o.paidAt || 0) >= startOfMonthMs).reduce((sum: number, o: any) => sum + (o.commissionAmount || 0), 0);
+    
+    return {
+      pendingApproval,
+      approved,
+      paidThisMonth,
+      totalEarned: affiliate.totalCommissionEarned || 0,
+      totalPaid: affiliate.totalCommissionPaid || 0,
+      pendingBalance: affiliate.pendingCommission || 0,
+    };
+  },
+});
+
+export const recalculateAffiliateCommissions = mutation({
+  args: { adminClerkUserId: v.string() },
+  handler: async (ctx, args) => {
+    const ADMIN_IDS = ["user_3B7OeXBrhE04XG6KNSbtEE5UD1H"];
+    if (!ADMIN_IDS.includes(args.adminClerkUserId)) {
+      throw new Error("Admin access required");
+    }
+    
+    const affiliates = await ctx.db.query("affiliates").collect();
+    const orders = await ctx.db.query("orders").collect();
+    
+    let updated = 0;
+    
+    for (const affiliate of affiliates) {
+      const affiliateOrders = orders.filter((o) => String(o.affiliateId) === String(affiliate._id));
+      
+      const totalEarned = affiliateOrders.filter((o) => o.commissionStatus === "approved" || o.commissionStatus === "paid").reduce((sum, o) => sum + (o.commissionAmount || 0), 0);
+      const totalPaid = affiliateOrders.filter((o) => o.commissionStatus === "paid").reduce((sum, o) => sum + (o.commissionAmount || 0), 0);
+      const pendingBalance = affiliateOrders.filter((o) => o.commissionStatus === "approved").reduce((sum, o) => sum + (o.commissionAmount || 0), 0);
+      const totalSales = affiliateOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+      
+      await ctx.db.patch(affiliate._id, {
+        totalCommissionEarned: totalEarned,
+        totalCommissionPaid: totalPaid,
+        pendingCommission: pendingBalance,
+        totalSales,
+      });
+      
+      updated++;
+    }
+    
+    return { success: true, affiliatesUpdated: updated };
   },
 });

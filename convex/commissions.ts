@@ -52,15 +52,23 @@ export const requestPayout = mutation({
     accountType: v.string(),
   },
   handler: async (ctx, args) => {
-    const affiliate = await ctx.db.get(args.affiliateId);
+    const affiliate = await ctx.db.get(args.affiliateId as any) as any;
     if (!affiliate) {
       throw new Error("Affiliate not found");
     }
 
-    // Check if they have enough pending commission
+    // Check if they have pending commission (valid balance)
     const pendingCommission = affiliate.pendingCommission || 0;
-    if (pendingCommission < args.amount) {
-      throw new Error("Insufficient pending commission. Available: R" + pendingCommission.toLocaleString());
+    if (pendingCommission <= 0) {
+      throw new Error("No pending commission available to request.");
+    }
+    
+    // Validate amount
+    if (args.amount < 500) {
+      throw new Error("Minimum payout amount is R500");
+    }
+    if (args.amount > pendingCommission) {
+      throw new Error(`Amount exceeds available balance of R${pendingCommission.toLocaleString()}`);
     }
 
     // Generate reference number
@@ -78,10 +86,9 @@ export const requestPayout = mutation({
       requestedAt: Date.now(),
     });
 
-    // Deduct from pending commission
-    await ctx.db.patch(args.affiliateId, {
-      pendingCommission: pendingCommission - args.amount,
-    });
+    // Note: We do NOT deduct pendingCommission here anymore
+    // Deduction happens when admin marks as paid (in updatePayoutStatus)
+    // This is the "signal only" pattern as per task requirements
 
     return payoutId;
   },
@@ -95,7 +102,7 @@ export const updatePayoutStatus = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const payout = await ctx.db.get(args.payoutId);
+    const payout = await ctx.db.get(args.payoutId as any) as any;
     if (!payout) {
       throw new Error("Payout not found");
     }
@@ -104,21 +111,25 @@ export const updatePayoutStatus = mutation({
       status: args.status,
     };
 
+    // When marking as paid, update affiliate's paid/pending commissions
     if (args.status === "paid") {
       updates.processedAt = Date.now();
       
-      // Update affiliate's paid commission
-      const affiliate = await ctx.db.get(payout.affiliateId);
+      // Get affiliate and update
+      const affiliate = await ctx.db.get(payout.affiliateId as any) as any;
       if (affiliate) {
+        // Deduct from pending, add to paid
+        const currentPending = affiliate.pendingCommission || 0;
         await ctx.db.patch(affiliate._id, {
-          totalCommissionPaid: affiliate.totalCommissionPaid + payout.amount,
+          pendingCommission: Math.max(0, currentPending - payout.amount),
+          totalCommissionPaid: (affiliate.totalCommissionPaid || 0) + payout.amount,
         });
       }
     }
 
+    // When rejecting, return amount to pending commission
     if (args.status === "rejected") {
-      // Return amount to pending commission
-      const affiliate = await ctx.db.get(payout.affiliateId);
+      const affiliate = await ctx.db.get(payout.affiliateId as any) as any;
       if (affiliate) {
         await ctx.db.patch(affiliate._id, {
           pendingCommission: (affiliate.pendingCommission || 0) + payout.amount,
@@ -130,7 +141,7 @@ export const updatePayoutStatus = mutation({
       updates.notes = args.notes;
     }
 
-    await ctx.db.patch(args.payoutId, updates);
+    await ctx.db.patch(args.payoutId as any, updates);
     return { success: true };
   },
 });
@@ -160,7 +171,7 @@ export const updateLegacyPayoutStatus = mutation({
     paidAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.id, args);
+    await ctx.db.patch(args.id as any, args);
     return args.id;
   },
 });

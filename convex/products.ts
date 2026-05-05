@@ -1,5 +1,5 @@
 import { query, mutation } from "./_generated/server";
-import { v, Id } from "convex/values";
+import { v } from "convex/values";
 
 // Get all products (for both admin and user pages - show everything)
 export const getAllProducts = query({
@@ -25,7 +25,7 @@ export const getAllProductsAdmin = query({
 export const getProductById = query({
   args: { id: v.string() },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id as Id<"products">);
+    return await ctx.db.get(args.id as any);
   },
 });
 
@@ -83,7 +83,7 @@ export const updateProduct = mutation({
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
-    return await ctx.db.patch(id as Id<"products">, {
+    return await ctx.db.patch(id as any, {
       ...updates,
       updatedAt: Date.now(),
     });
@@ -94,7 +94,7 @@ export const updateProduct = mutation({
 export const deleteProduct = mutation({
   args: { id: v.string() },
   handler: async (ctx, args) => {
-    return await ctx.db.patch(args.id as Id<"products">, {
+    return await ctx.db.patch(args.id as any, {
       isActive: false,
       updatedAt: Date.now(),
     });

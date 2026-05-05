@@ -1,5 +1,5 @@
 import { query, mutation } from "./_generated/server";
-import { v, Id } from "convex/values";
+import { v } from "convex/values";
 
 export const getAllInvoices = query({
   handler: async (ctx) => {
@@ -24,7 +24,7 @@ export const getInvoicesByAffiliate = query({
 export const getInvoiceById = query({
   args: { invoiceId: v.string() },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.invoiceId as Id<"invoices">);
+    return await ctx.db.get(args.invoiceId as any);
   },
 });
 
@@ -111,7 +111,7 @@ export const updateInvoice = mutation({
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
-    const invoiceId = id as Id<"invoices">;
+    const invoiceId = id as any;
     const invoice = await ctx.db.get(invoiceId);
 
     if (!invoice) {
@@ -128,7 +128,7 @@ export const updateInvoice = mutation({
 export const deleteInvoice = mutation({
   args: { id: v.string() },
   handler: async (ctx, args) => {
-    const invoiceId = args.id as Id<"invoices">;
+    const invoiceId = args.id as any;
     const invoice = await ctx.db.get(invoiceId);
 
     if (!invoice) {
@@ -146,7 +146,7 @@ export const deleteInvoice = mutation({
 export const getDealForInvoice = query({
   args: { dealId: v.string() },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.dealId as Id<"deals">);
+    return await ctx.db.get(args.dealId as any);
   },
 });
 
@@ -222,7 +222,7 @@ export const updateInvoiceSettings = mutation({
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
-    return await ctx.db.patch(id as Id<"invoiceSettings">, {
+    return await ctx.db.patch(id as any, {
       ...updates,
       updatedAt: Date.now(),
     });
