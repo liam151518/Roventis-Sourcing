@@ -113,8 +113,8 @@ export default function ResourcesPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-2xl font-semibold text-white">Resources</h1>
-        <p className="text-gray-500 mt-1">Download sales materials and resources</p>
+        <span className="rs-overline">Resources</span>
+        <h1 className="rs-page-title">Download sales materials and resources</h1>
       </motion.div>
 
       {/* Search */}
@@ -125,7 +125,7 @@ export default function ResourcesPage() {
           placeholder="Search resources..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-12 pr-4 py-3 bg-[#141417] border border-white/5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          className="w-full pl-12 pr-4 py-3 bg-[#141417] border border-white/5 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
         />
       </div>
 
@@ -138,7 +138,7 @@ export default function ResourcesPage() {
               setSelectedCategory(cat.id);
               setSearchQuery("");
             }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-[14px] text-sm font-medium whitespace-nowrap transition-all ${
               selectedCategory === cat.id
                 ? "bg-orange-600 text-white"
                 : "bg-[#141417] text-gray-400 hover:text-white border border-white/5 hover:border-white/10"
@@ -155,7 +155,7 @@ export default function ResourcesPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-[#141417] rounded-2xl border border-white/5 overflow-hidden"
+          className="rs-card-[14px] border border-white/5 overflow-hidden"
         >
           <table className="w-full">
             <thead>
@@ -210,7 +210,7 @@ export default function ResourcesPage() {
           {filteredProducts.map((product: any) => (
             <div
               key={product.id}
-              className="bg-[#141417] rounded-xl border border-white/5 overflow-hidden"
+              className="rs-card-xl border border-white/5 overflow-hidden"
             >
               {/* Product Header - Click to expand */}
               <button
@@ -289,11 +289,11 @@ export default function ResourcesPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="group bg-[#141417] rounded-2xl border border-white/5 p-6 hover:border-white/10 transition-all hover:shadow-lg hover:shadow-black/20 cursor-pointer"
+                className="group rs-card-[14px] border border-white/5 p-6 hover:border-white/10 transition-all hover:shadow-lg hover:shadow-black/20 cursor-pointer"
                 onClick={() => setPreviewResource(resource)}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
+                  <div className={`w-14 h-14 rounded-[14px] flex items-center justify-center ${
                     resource.fileType === "pdf" ? "bg-red-500/10" :
                     resource.fileType === "video" ? "bg-purple-500/10" :
                     resource.fileType === "image" ? "bg-pink-500/10" :
@@ -348,7 +348,7 @@ export default function ResourcesPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="bg-[#141417] rounded-2xl border border-white/10 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="rs-card-[14px] border border-white/10 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between p-6 border-b border-white/5">
@@ -368,7 +368,7 @@ export default function ResourcesPage() {
               <a
                 href={previewResource.fileUrl}
                 download
-                className="mt-6 flex items-center justify-center gap-2 w-full py-3 bg-orange-600 text-white rounded-xl hover:bg-orange-700 transition-colors"
+                className="mt-6 flex items-center justify-center gap-2 w-full py-3 bg-orange-600 text-white rounded-[14px] hover:bg-orange-700 transition-colors"
               >
                 <Download className="w-5 h-5" />
                 Download

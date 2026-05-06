@@ -163,7 +163,7 @@ export default function CommissionsPage() {
       subtext: "All time",
       icon: TrendingUp,
       color: "from-emerald-500 to-teal-600",
-      bgColor: "bg-emerald-500/10",
+      bgColor: "bg-[var(--rs-success)]",
       iconColor: "text-emerald-400"
     },
   ];
@@ -224,7 +224,7 @@ export default function CommissionsPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className={`fixed top-4 right-4 px-4 py-3 rounded-xl z-50 ${
-              toast.type === "success" ? "bg-emerald-600" : "bg-red-600"
+              toast.type === "success" ? "bg-[var(--rs-success)]" : "bg-[var(--rs-danger)]"
             } text-white shadow-xl`}
           >
             {toast.message}
@@ -239,8 +239,9 @@ export default function CommissionsPage() {
         className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
       >
         <div>
-          <h1 className="text-2xl font-semibold text-white tracking-tight">Commissions</h1>
-          <p className="text-gray-500 mt-1">Track your commission earnings and payouts</p>
+          <span className="rs-overline">Finance</span>
+          <h1 className="rs-page-title">Commissions</h1>
+          <p className="text-[var(--rs-text-muted)] mt-1">Track your commission earnings and payouts</p>
         </div>
       </motion.div>
 
@@ -254,7 +255,7 @@ export default function CommissionsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="group bg-[#141417] rounded-2xl border border-white/5 p-6 hover:border-white/10 transition-all relative overflow-hidden"
+              className="group rs-card rounded-2xl border border-white/5 p-6 hover:border-white/10 transition-all relative overflow-hidden"
             >
               <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${stat.color} opacity-5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2`} />
               <div className="flex items-start justify-between relative">
@@ -277,7 +278,7 @@ export default function CommissionsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="bg-[#141417] rounded-2xl border border-white/5 overflow-hidden"
+        className="rs-card rounded-2xl border border-white/5 overflow-hidden"
       >
         <div className="p-6 border-b border-white/5">
           <div className="flex items-center justify-between">
@@ -285,7 +286,7 @@ export default function CommissionsPage() {
             <button 
               onClick={() => setShowPayoutModal(true)}
               disabled={showPayoutMessage}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-colors text-sm"
+              className="inline-flex items-center gap-2 rs-btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Send className="w-4 h-4" />
               Request Payout
@@ -372,7 +373,7 @@ export default function CommissionsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="bg-[#141417] rounded-2xl border border-white/5 overflow-hidden"
+        className="rs-card rounded-2xl border border-white/5 overflow-hidden"
       >
         <div className="p-6 border-b border-white/5">
           <h2 className="text-lg font-semibold text-white">Payout History</h2>
@@ -439,7 +440,7 @@ export default function CommissionsPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-[#111113] rounded-2xl p-6 max-w-md w-full border border-white/10"
+              className="rs-card rounded-2xl p-6 max-w-md w-full border border-[var(--rs-border)]"
             >
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-white">Request Payout</h3>
@@ -451,7 +452,7 @@ export default function CommissionsPage() {
                 </button>
               </div>
 
-              <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl mb-6">
+              <div className="p-4 bg-[var(--rs-info)]/10 border border-[var(--rs-info)]/20 rounded-xl mb-6">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-400">Available Balance</span>
                   <span className="text-white font-bold text-xl">{formatCurrency(summary.pendingBalance)}</span>

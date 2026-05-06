@@ -164,10 +164,10 @@ export default function ProfilePage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-[#141417] rounded-2xl border border-white/5 p-6"
+        className="rs-card p-6"
       >
         <div className="flex flex-col md:flex-row md:items-center gap-6">
-          <div className={`w-24 h-24 bg-gradient-to-br ${tierColors[currentAffiliate.tier] || "from-gray-500 to-gray-600"} rounded-2xl flex items-center justify-center text-3xl font-bold text-white shadow-lg`}>
+          <div className={`w-24 h-24 bg-gradient-to-br ${tierColors[currentAffiliate.tier] || "from-gray-500 to-gray-600"} rounded-[14px] flex items-center justify-center text-3xl font-bold text-white shadow-lg`}>
             {currentAffiliate.firstName?.[0]}{currentAffiliate.lastName?.[0]}
           </div>
           <div className="flex-1">
@@ -182,9 +182,9 @@ export default function ProfilePage() {
             <p className="text-gray-500 mt-1">{currentAffiliate.email}</p>
             <div className="flex items-center gap-4 mt-3">
               <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${
-                currentAffiliate.status === "approved" ? "bg-emerald-500/10 text-emerald-400" :
-                currentAffiliate.status === "pending" ? "bg-amber-500/10 text-amber-400" :
-                "bg-red-500/10 text-red-400"
+                currentAffiliate.status === "approved" ? "bg-[var(--rs-success)]/10 text-[var(--rs-success)]" :
+                currentAffiliate.status === "pending" ? "bg-[var(--rs-warning)]/10 text-[var(--rs-warning)]" :
+                "bg-[var(--rs-danger)]/10 text-[var(--rs-danger)]"
               }`}>
                 {currentAffiliate.status}
               </span>
@@ -195,10 +195,10 @@ export default function ProfilePage() {
           </div>
           <button
             onClick={() => setIsEditing(!isEditing)}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-colors ${
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-[14px] font-medium transition-colors ${
               isEditing 
-                ? "bg-red-500/10 text-red-400 hover:bg-red-500/20" 
-                : "bg-blue-600 hover:bg-blue-500 text-white"
+                ? "bg-[var(--rs-danger)]/10 text-[var(--rs-danger)] hover:bg-[var(--rs-danger)]/20" 
+                : "rs-btn-primary"
             }`}
           >
             {isEditing ? (
@@ -244,7 +244,7 @@ export default function ProfilePage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="bg-[#141417] rounded-2xl border border-white/5 p-6"
+        className="rs-card p-6"
       >
         {activeTab === "personal" && (
           <div className="grid md:grid-cols-2 gap-6">
@@ -256,7 +256,7 @@ export default function ProfilePage() {
                   type="text"
                   defaultValue={currentAffiliate.firstName}
                   disabled={!isEditing}
-                  className="w-full pl-12 pr-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full pl-12 pr-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-[14px] text-white placeholder-gray-500 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                 />
               </div>
             </div>
@@ -268,7 +268,7 @@ export default function ProfilePage() {
                   type="text"
                   defaultValue={currentAffiliate.lastName}
                   disabled={!isEditing}
-                  className="w-full pl-12 pr-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full pl-12 pr-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-[14px] text-white placeholder-gray-500 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                 />
               </div>
             </div>
@@ -280,7 +280,7 @@ export default function ProfilePage() {
                   type="email"
                   defaultValue={currentAffiliate.email}
                   disabled={!isEditing}
-                  className="w-full pl-12 pr-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full pl-12 pr-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-[14px] text-white placeholder-gray-500 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                 />
               </div>
             </div>
@@ -292,7 +292,7 @@ export default function ProfilePage() {
                   type="tel"
                   defaultValue={currentAffiliate.phone || ""}
                   disabled={!isEditing}
-                  className="w-full pl-12 pr-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full pl-12 pr-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-[14px] text-white placeholder-gray-500 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                 />
               </div>
             </div>
@@ -304,7 +304,7 @@ export default function ProfilePage() {
                   type="text"
                   defaultValue={currentAffiliate.city || ""}
                   disabled={!isEditing}
-                  className="w-full pl-12 pr-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full pl-12 pr-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-[14px] text-white placeholder-gray-500 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                 />
               </div>
             </div>
@@ -316,7 +316,7 @@ export default function ProfilePage() {
                   type="url"
                   defaultValue={currentAffiliate.linkedinUrl || ""}
                   disabled={!isEditing}
-                  className="w-full pl-12 pr-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-xl text-white placeholder-gray-500 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full pl-12 pr-4 py-3 bg-[#0a0a0b] border border-white/10 rounded-[14px] text-white placeholder-gray-500 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                 />
               </div>
             </div>
@@ -331,10 +331,10 @@ export default function ProfilePage() {
                 <h3 className="text-xl font-semibold text-white">Payment Details</h3>
                 <p className="text-gray-500 mt-1">Your bank details for commission payouts</p>
               </div>
-              <div className={`px-4 py-2 rounded-xl text-sm font-medium ${
+              <div className={`px-4 py-2 rounded-[14px] text-sm font-medium ${
                 currentAffiliate.bankName 
-                  ? "bg-emerald-500/10 text-emerald-400" 
-                  : "bg-amber-500/10 text-amber-400"
+                  ? "bg-[var(--rs-success)]/10 text-[var(--rs-success)]" 
+                  : "bg-[var(--rs-warning)]/10 text-[var(--rs-warning)]"
               }`}>
                 {currentAffiliate.bankName ? "Verified" : "Pending"}
               </div>
@@ -343,9 +343,9 @@ export default function ProfilePage() {
             {/* Banking Cards */}
             <div className="grid md:grid-cols-2 gap-6">
               {/* Bank Name */}
-              <div className="bg-[#0a0a0b] rounded-2xl p-6 border border-white/5 hover:border-white/10 transition-colors">
+              <div className="bg-[#0a0a0b] rounded-[14px] p-6 border border-white/5 hover:border-white/10 transition-colors">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-blue-500/10 rounded-[14px] flex items-center justify-center">
                     <Building className="w-5 h-5 text-blue-400" />
                   </div>
                   <div>
@@ -358,16 +358,16 @@ export default function ProfilePage() {
                     type="text"
                     name="bankName"
                     defaultValue={currentAffiliate.bankName || ""}
-                    className="w-full mt-3 px-4 py-2.5 bg-[#141417] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    className="w-full mt-3 px-4 py-2.5 bg-[#141417] border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                     placeholder="e.g., FNB, Standard Bank"
                   />
                 )}
               </div>
 
               {/* Account Number */}
-              <div className="bg-[#0a0a0b] rounded-2xl p-6 border border-white/5 hover:border-white/10 transition-colors">
+              <div className="bg-[#0a0a0b] rounded-[14px] p-6 border border-white/5 hover:border-white/10 transition-colors">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-purple-500/10 rounded-[14px] flex items-center justify-center">
                     <CreditCard className="w-5 h-5 text-purple-400" />
                   </div>
                   <div>
@@ -384,16 +384,16 @@ export default function ProfilePage() {
                     type="text"
                     name="accountNumber"
                     defaultValue={currentAffiliate.accountNumber || ""}
-                    className="w-full mt-3 px-4 py-2.5 bg-[#141417] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                    className="w-full mt-3 px-4 py-2.5 bg-[#141417] border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                     placeholder="Your account number"
                   />
                 )}
               </div>
 
               {/* Account Type */}
-              <div className="bg-[#0a0a0b] rounded-2xl p-6 border border-white/5 hover:border-white/10 transition-colors">
+              <div className="bg-[#0a0a0b] rounded-[14px] p-6 border border-white/5 hover:border-white/10 transition-colors">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-emerald-500/10 rounded-[14px] flex items-center justify-center">
                     <Lock className="w-5 h-5 text-emerald-400" />
                   </div>
                   <div>
@@ -405,7 +405,7 @@ export default function ProfilePage() {
                   <select
                     name="accountType"
                     defaultValue={currentAffiliate.accountType || "savings"}
-                    className="w-full mt-3 px-4 py-2.5 bg-[#141417] border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                    className="w-full mt-3 px-4 py-2.5 bg-[#141417] border border-white/10 rounded-[14px] text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                   >
                     <option value="savings">Savings</option>
                     <option value="checking">Checking</option>
@@ -415,9 +415,9 @@ export default function ProfilePage() {
               </div>
 
               {/* Branch Code */}
-              <div className="bg-[#0a0a0b] rounded-2xl p-6 border border-white/5 hover:border-white/10 transition-colors">
+              <div className="bg-[#0a0a0b] rounded-[14px] p-6 border border-white/5 hover:border-white/10 transition-colors">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-amber-500/10 rounded-[14px] flex items-center justify-center">
                     <MapPin className="w-5 h-5 text-amber-400" />
                   </div>
                   <div>
@@ -430,7 +430,7 @@ export default function ProfilePage() {
                     type="text"
                     name="branchCode"
                     defaultValue={(currentAffiliate as any)?.branchCode || ""}
-                    className="w-full mt-3 px-4 py-2.5 bg-[#141417] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                    className="w-full mt-3 px-4 py-2.5 bg-[#141417] border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                     placeholder="e.g., 250655"
                   />
                 )}
@@ -438,7 +438,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Info Box */}
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-[14px] p-4">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
                   <ChevronRight className="w-4 h-4 text-blue-400" />
@@ -461,7 +461,7 @@ export default function ProfilePage() {
             {/* Affiliate Code - Only show after training is completed */}
             {currentAffiliate.trainingCompleted ? (
               <>
-                <div className="bg-[#0a0a0b] rounded-xl p-4">
+                <div className="bg-[#0a0a0b] rounded-[14px] p-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-gray-400 mb-1">Your Affiliate Code</p>
@@ -469,7 +469,7 @@ export default function ProfilePage() {
                     </div>
                     <button
                       onClick={() => copyToClipboard(currentAffiliate.affiliateCode)}
-                      className="p-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
+                      className="p-3 rs-btn-primary rounded-lg transition-colors"
                     >
                       {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
                     </button>
@@ -477,7 +477,7 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Referral Link */}
-                <div className="bg-[#0a0a0b] rounded-xl p-4">
+                <div className="bg-[#0a0a0b] rounded-[14px] p-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-gray-400 mb-1">Referral Link</p>
@@ -493,7 +493,7 @@ export default function ProfilePage() {
                 </div>
               </>
             ) : (
-              <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4">
+              <div className="bg-amber-500/10 border border-amber-500/20 rounded-[14px] p-4">
                 <p className="text-amber-400 text-sm">
                   Complete your training to unlock your affiliate code and referral link.
                 </p>
@@ -502,15 +502,15 @@ export default function ProfilePage() {
 
             {/* Stats */}
             <div className="grid md:grid-cols-3 gap-4">
-              <div className="bg-[#0a0a0b] rounded-xl p-4">
+              <div className="bg-[#0a0a0b] rounded-[14px] p-4">
                 <p className="text-sm text-gray-400 mb-1">Experience Level</p>
                 <p className="text-white font-medium capitalize">{currentAffiliate.experienceLevel || "Beginner"}</p>
               </div>
-              <div className="bg-[#0a0a0b] rounded-xl p-4">
+              <div className="bg-[#0a0a0b] rounded-[14px] p-4">
                 <p className="text-sm text-gray-400 mb-1">Total Sales</p>
                 <p className="text-white font-medium">R{currentAffiliate.totalSales?.toLocaleString() || 0}</p>
               </div>
-              <div className="bg-[#0a0a0b] rounded-xl p-4">
+              <div className="bg-[#0a0a0b] rounded-[14px] p-4">
                 <p className="text-sm text-gray-400 mb-1">Commission Earned</p>
                 <p className="text-emerald-400 font-medium">R{currentAffiliate.totalCommissionEarned?.toLocaleString() || 0}</p>
               </div>
@@ -535,7 +535,7 @@ export default function ProfilePage() {
                   <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
                     {/* Left - Current Tier Info */}
                     <div className="flex items-center gap-6">
-                      <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${currentTier.color} flex items-center justify-center shadow-lg shadow-black/20`}>
+                      <div className={`w-20 h-20 rounded-[14px] bg-gradient-to-br ${currentTier.color} flex items-center justify-center shadow-lg shadow-black/20`}>
                         <Icon className="w-10 h-10 text-white" />
                       </div>
                       <div>
@@ -586,7 +586,7 @@ export default function ProfilePage() {
                   return (
                     <div 
                       key={tier.id}
-                      className={`relative overflow-hidden bg-[#0a0a0b] rounded-2xl p-6 border transition-all duration-300 hover:scale-[1.02] ${
+                      className={`relative overflow-hidden bg-[#0a0a0b] rounded-[14px] p-6 border transition-all duration-300 hover:scale-[1.02] ${
                         isCurrentTier 
                           ? "border-white/30 shadow-lg shadow-black/20" 
                           : "border-white/5 hover:border-white/10"
@@ -598,7 +598,7 @@ export default function ProfilePage() {
                         </div>
                       )}
                       
-                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${tier.color} flex items-center justify-center mb-4 shadow-lg`}>
+                      <div className={`w-12 h-12 rounded-[14px] bg-gradient-to-br ${tier.color} flex items-center justify-center mb-4 shadow-lg`}>
                         <Icon className="w-6 h-6 text-white" />
                       </div>
                       
@@ -655,7 +655,7 @@ export default function ProfilePage() {
                       </div>
                     </div>
                   </div>
-                  <button className="flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold rounded-2xl hover:from-violet-700 hover:to-purple-700 transition-all hover:scale-105 shadow-lg shadow-violet-500/25">
+                  <button className="flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold rounded-[14px] hover:from-violet-700 hover:to-purple-700 transition-all hover:scale-105 shadow-lg shadow-violet-500/25">
                     Upgrade - R899.69/mo
                     <ArrowRight className="w-5 h-5" />
                   </button>
@@ -667,7 +667,7 @@ export default function ProfilePage() {
 
         {isEditing && (
           <div className="flex justify-end mt-8 pt-6 border-t border-white/5">
-            <button className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition-colors">
+            <button className="flex items-center gap-2 px-6 py-3 rs-btn-primary font-medium transition-colors">
               <Save className="w-5 h-5" />
               Save Changes
             </button>

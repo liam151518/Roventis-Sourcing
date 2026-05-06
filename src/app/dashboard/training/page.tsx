@@ -52,8 +52,8 @@ export default function TrainingPage() {
         className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
       >
         <div>
-          <h1 className="text-2xl font-semibold text-white">Training Center</h1>
-          <p className="text-gray-500 mt-1">Complete training modules to boost your sales</p>
+          <span className="rs-overline">Training Center</span>
+          <h1 className="rs-page-title">Complete training modules to boost your sales</h1>
         </div>
       </motion.div>
 
@@ -62,11 +62,11 @@ export default function TrainingPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-[#141417] rounded-2xl border border-white/5 p-6"
+        className="rs-card p-6"
       >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center">
+            <div className="w-16 h-16 bg-blue-500/10 rounded-[14px] flex items-center justify-center">
               <GraduationCap className="w-8 h-8 text-blue-400" />
             </div>
             <div>
@@ -80,7 +80,7 @@ export default function TrainingPage() {
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
                 transition={{ duration: 1, delay: 0.3 }}
-                className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
+                className="h-full bg-gradient-to-r from-[var(--rs-info)] to-purple-500 rounded-full"
               />
             </div>
             <span className="text-2xl font-bold text-white">{progress}%</span>
@@ -101,22 +101,22 @@ export default function TrainingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
               onClick={() => setSelectedModule(module)}
-              className={`group bg-[#141417] rounded-2xl border border-white/5 p-6 cursor-pointer hover:border-white/10 transition-all hover:shadow-lg hover:shadow-black/20 ${
+              className={`group rs-card p-6 cursor-pointer hover:border-white/10 transition-all hover:shadow-lg hover:shadow-black/20 ${
                 isCompleted ? "opacity-75" : ""
               }`}
             >
               <div className="flex items-start justify-between mb-4">
-                <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
-                  isCompleted ? "bg-emerald-500/10" : "bg-blue-500/10"
+                <div className={`w-14 h-14 rounded-[14px] flex items-center justify-center ${
+                  isCompleted ? "bg-[var(--rs-success)]/10" : "bg-[var(--rs-info)]/10"
                 }`}>
                   {isCompleted ? (
-                    <CheckCircle className="w-7 h-7 text-emerald-400" />
+                    <CheckCircle className="w-7 h-7 text-[var(--rs-success)]" />
                   ) : (
-                    <Icon className="w-7 h-7 text-blue-400" />
+                    <Icon className="w-7 h-7 text-[var(--rs-info)]" />
                   )}
                 </div>
                 {module.isRequired && (
-                  <span className="px-2 py-1 bg-red-500/10 text-red-400 text-xs rounded-full">Required</span>
+                  <span className="px-2 py-1 bg-[var(--rs-danger)]/10 text-[var(--rs-danger)] text-xs rounded-full">Required</span>
                 )}
               </div>
               
@@ -155,7 +155,7 @@ export default function TrainingPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="bg-[#141417] rounded-2xl border border-white/10 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="rs-card border-white/10 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6 border-b border-white/5">
@@ -187,9 +187,9 @@ export default function TrainingPage() {
                 <p className="text-gray-300">{selectedModule.description}</p>
               </div>
               
-              <div className="bg-[#0a0a0b] rounded-xl p-6">
+              <div className="bg-[#0a0a0b] rounded-[14px] p-6">
                 <div className="flex items-center justify-center gap-4">
-                  <button className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition-colors">
+                  <button className="flex items-center gap-2 px-6 py-3 rs-btn-primary font-medium transition-colors">
                     <Play className="w-5 h-5" />
                     Start Module
                   </button>
@@ -197,11 +197,11 @@ export default function TrainingPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="bg-[#0a0a0b] rounded-xl p-4">
+                <div className="bg-[#0a0a0b] rounded-[14px] p-4">
                   <div className="text-gray-500 mb-1">Module</div>
                   <div className="text-white font-medium">#{selectedModule.orderIndex + 1}</div>
                 </div>
-                <div className="bg-[#0a0a0b] rounded-xl p-4">
+                <div className="bg-[#0a0a0b] rounded-[14px] p-4">
                   <div className="text-gray-500 mb-1">Type</div>
                   <div className="text-white font-medium">Video & Quiz</div>
                 </div>

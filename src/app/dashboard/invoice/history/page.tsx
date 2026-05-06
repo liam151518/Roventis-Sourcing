@@ -9,8 +9,8 @@ import { FileText, Plus, Eye, Download, Edit, Trash2, ArrowLeft } from "lucide-r
 
 const statusColors: Record<string, string> = {
   draft: "bg-white/5 text-gray-400",
-  sent: "bg-blue-500/10 text-blue-400",
-  paid: "bg-emerald-500/10 text-emerald-400",
+  sent: "bg-[var(--rs-info)]/10 text-[var(--rs-info)]",
+  paid: "bg-[var(--rs-success)]/10 text-[var(--rs-success)]",
 };
 
 const statusLabels: Record<string, string> = {
@@ -62,8 +62,8 @@ export default function InvoiceHistoryPage() {
             <ArrowLeft className="w-4 h-4" />
             Back to Invoice Generator
           </Link>
-          <h1 className="text-2xl font-bold text-white">Invoice History</h1>
-          <p className="text-gray-500">View and manage your saved invoices</p>
+          <span className="rs-overline">Invoice History</span>
+          <h1 className="rs-page-title">View and manage your saved invoices</h1>
         </div>
         <Link
           href="/dashboard/invoice"
@@ -75,7 +75,7 @@ export default function InvoiceHistoryPage() {
       </div>
 
       {/* Invoices Table */}
-      <div className="bg-[#0a0a0b] rounded-xl border border-white/5 overflow-hidden">
+      <div className="bg-[#0a0a0b] rounded-[14px] border border-white/5 overflow-hidden">
         {!activeInvoices || activeInvoices.length === 0 ? (
           <div className="p-12 text-center">
             <FileText className="w-12 h-12 mx-auto mb-4 text-gray-600" />

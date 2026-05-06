@@ -137,21 +137,21 @@ export default function AdminPayoutsPage() {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      submitted: "bg-blue-500/20 text-blue-400",
+      submitted: "bg-[var(--rs-info)]/20 text-[var(--rs-info)]",
       supplier_confirmed: "bg-purple-500/20 text-purple-400",
-      in_transit: "bg-amber-500/20 text-amber-400",
-      delivered: "bg-green-500/20 text-green-400",
-      installed: "bg-emerald-500/20 text-emerald-400",
+      in_transit: "bg-[var(--rs-warning)]/20 text-[var(--rs-warning)]",
+      delivered: "bg-[var(--rs-success)]/20 text-[var(--rs-success)]",
+      installed: "bg-[var(--rs-success)]/20 text-[var(--rs-success)]",
     };
     return colors[status] || "bg-gray-500/20 text-gray-400";
   };
 
   const getPayoutStatusColor = (status: string) => {
     switch (status) {
-      case "paid": return "bg-green-500/20 text-green-400";
-      case "processing": return "bg-blue-500/20 text-blue-400";
-      case "requested": return "bg-amber-500/20 text-amber-400";
-      case "rejected": return "bg-red-500/20 text-red-400";
+      case "paid": return "bg-[var(--rs-success)]/20 text-[var(--rs-success)]";
+      case "processing": return "bg-[var(--rs-info)]/20 text-[var(--rs-info)]";
+      case "requested": return "bg-[var(--rs-warning)]/20 text-[var(--rs-warning)]";
+      case "rejected": return "bg-[var(--rs-danger)]/20 text-[var(--rs-danger)]";
       default: return "bg-gray-500/20 text-gray-400";
     }
   };
@@ -180,7 +180,7 @@ export default function AdminPayoutsPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className={`fixed top-4 right-4 px-4 py-3 rounded-xl z-50 ${
-              toast.type === "success" ? "bg-emerald-600" : "bg-red-600"
+              toast.type === "success" ? "bg-[var(--rs-success)]" : "bg-[var(--rs-danger)]"
             } text-white shadow-xl`}
           >
             {toast.message}
@@ -190,7 +190,8 @@ export default function AdminPayoutsPage() {
 
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-white tracking-tight">Commission Approvals & Payouts</h1>
+          <p className="rs-overline">Admin</p>
+          <h1 className="rs-page-title">Commission Approvals & Payouts</h1>
           <p className="text-gray-500 mt-1">Validate orders and manage affiliate commission payments</p>
         </div>
         <button
@@ -241,10 +242,10 @@ export default function AdminPayoutsPage() {
         <>
           {/* Summary Strip */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-[#141417] rounded-2xl border border-amber-500/20 p-6">
+            <div className="rs-card p-6" style={{ borderColor: 'var(--rs-warning)', borderWidth: 1 }}>
               <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-amber-500/10">
-                  <Clock className="w-6 h-6 text-amber-400" />
+                <div className="p-3 rounded-xl bg-[var(--rs-warning)]/10">
+                  <Clock className="w-6 h-6 text-[var(--rs-warning)]" />
                 </div>
                 <div>
                   <p className="text-gray-400 text-sm">Pending Approval</p>
@@ -252,7 +253,7 @@ export default function AdminPayoutsPage() {
                 </div>
               </div>
             </div>
-            <div className="bg-[#141417] rounded-2xl border border-blue-500/20 p-6">
+            <div className="rs-card p-6">
               <div className="flex items-center gap-3">
                 <div className="p-3 rounded-xl bg-blue-500/10">
                   <CheckCircle className="w-6 h-6 text-blue-400" />
@@ -263,10 +264,10 @@ export default function AdminPayoutsPage() {
                 </div>
               </div>
             </div>
-            <div className="bg-[#141417] rounded-2xl border border-green-500/20 p-6">
+            <div className="rs-card p-6" style={{ borderColor: 'var(--rs-success)', borderWidth: 1 }}>
               <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-green-500/10">
-                  <DollarSign className="w-6 h-6 text-green-400" />
+                <div className="p-3 rounded-xl bg-[var(--rs-success)]/10">
+                  <DollarSign className="w-6 h-6 text-[var(--rs-success)]" />
                 </div>
                 <div>
                   <p className="text-gray-400 text-sm">Paid This Month</p>
@@ -305,7 +306,7 @@ export default function AdminPayoutsPage() {
           </div>
 
           {/* Orders Table */}
-          <div className="bg-[#141417] rounded-2xl border border-white/5 overflow-hidden">
+          <div className="rs-card p-6">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -339,9 +340,9 @@ export default function AdminPayoutsPage() {
                       <td className="p-4 text-white font-medium">{formatCurrency(order.totalAmount)}</td>
                       <td className="p-4">
                         <p className={`font-medium ${
-                          order.commissionStatus === "paid" ? "text-green-400" :
+                          order.commissionStatus === "paid" ? "text-[var(--rs-success)]" :
                           order.commissionStatus === "approved" ? "text-blue-400" :
-                          "text-amber-400"
+                          "text-[var(--rs-warning)]"
                         }`}>
                           {formatCurrency(order.commissionAmount || 0)}
                         </p>
@@ -413,10 +414,10 @@ export default function AdminPayoutsPage() {
         <>
           {/* Summary Strip */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-[#141417] rounded-2xl border border-amber-500/20 p-6">
+            <div className="rs-card p-6" style={{ borderColor: 'var(--rs-warning)', borderWidth: 1 }}>
               <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-amber-500/10">
-                  <Clock className="w-6 h-6 text-amber-400" />
+                <div className="p-3 rounded-xl bg-[var(--rs-warning)]/10">
+                  <Clock className="w-6 h-6 text-[var(--rs-warning)]" />
                 </div>
                 <div>
                   <p className="text-gray-400 text-sm">Pending Payout Requests</p>
@@ -425,10 +426,10 @@ export default function AdminPayoutsPage() {
                 </div>
               </div>
             </div>
-            <div className="bg-[#141417] rounded-2xl border border-green-500/20 p-6">
+            <div className="rs-card p-6" style={{ borderColor: 'var(--rs-success)', borderWidth: 1 }}>
               <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-green-500/10">
-                  <DollarSign className="w-6 h-6 text-green-400" />
+                <div className="p-3 rounded-xl bg-[var(--rs-success)]/10">
+                  <DollarSign className="w-6 h-6 text-[var(--rs-success)]" />
                 </div>
                 <div>
                   <p className="text-gray-400 text-sm">Total Paid Out</p>
@@ -440,7 +441,7 @@ export default function AdminPayoutsPage() {
           </div>
 
           {/* Payout Requests Table */}
-          <div className="bg-[#141417] rounded-2xl border border-white/5 overflow-hidden">
+          <div className="rs-card p-6">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -495,7 +496,7 @@ export default function AdminPayoutsPage() {
                             <>
                               <button
                                 onClick={() => handlePayoutStatusChange(payout._id, "processing")}
-                                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg"
+                                className="px-3 py-1.5 rs-btn-primary text-xs font-medium rounded-lg"
                               >
                                 Process
                               </button>
@@ -550,7 +551,7 @@ export default function AdminPayoutsPage() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-[#141417] rounded-2xl border border-white/10 max-w-lg w-full max-h-[90vh] overflow-y-auto"
+              className="bg-[#141417] rounded-[14px] border border-white/10 max-w-lg w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between p-6 border-b border-white/5">
@@ -629,11 +630,11 @@ export default function AdminPayoutsPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">Pending Balance</span>
-                      <span className="text-amber-400">{formatCurrency(selectedPayout.affiliate?.pendingCommission || 0)}</span>
+                      <span className="text-[var(--rs-warning)]">{formatCurrency(selectedPayout.affiliate?.pendingCommission || 0)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">Total Paid</span>
-                      <span className="text-green-400">{formatCurrency(selectedPayout.affiliate?.totalCommissionPaid || 0)}</span>
+                      <span className="text-[var(--rs-success)]">{formatCurrency(selectedPayout.affiliate?.totalCommissionPaid || 0)}</span>
                     </div>
                   </div>
                 </div>
@@ -652,7 +653,7 @@ export default function AdminPayoutsPage() {
                         handlePayoutStatusChange(selectedPayout._id, "processing");
                         setSelectedPayout(null);
                       }}
-                      className="flex-1 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+                      className="flex-1 py-3 rs-btn-primary"
                     >
                       Process Payment
                     </button>

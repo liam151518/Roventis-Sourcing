@@ -112,29 +112,29 @@ export default function ClaimedLeadsPage() {
       <div className="flex items-center gap-4">
         <button
           onClick={() => router.push("/dashboard/leads")}
-          className="p-2 hover:bg-white/5 rounded-xl transition-colors"
+          className="p-2 hover:bg-white/5 rounded-[14px] transition-colors"
         >
           <ChevronLeft className="w-5 h-5 text-gray-400" />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-white">My Claimed Leads</h1>
-          <p className="text-gray-400">Manage your active leads</p>
+          <span className="rs-overline">My Claimed Leads</span>
+          <h1 className="rs-page-title">Manage your active leads</h1>
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-[#141417] rounded-xl p-4 border border-white/5">
+        <div className="rs-card p-4">
           <p className="text-gray-400 text-sm">Active Claims</p>
           <p className="text-2xl font-bold text-white">{claimedLeads.length}</p>
         </div>
-        <div className="bg-[#141417] rounded-xl p-4 border border-white/5">
+        <div className="rs-card p-4">
           <p className="text-gray-400 text-sm">Expiring Soon</p>
           <p className="text-2xl font-bold text-amber-400">
             {claimedLeads.filter(l => l.claimExpiresAt && l.claimExpiresAt - Date.now() < 24 * 60 * 60 * 1000).length}
           </p>
         </div>
-        <div className="bg-[#141417] rounded-xl p-4 border border-white/5">
+        <div className="rs-card p-4">
           <p className="text-gray-400 text-sm">Total Budget</p>
           <p className="text-2xl font-bold text-emerald-400">
             {formatCurrency(claimedLeads.reduce((sum, l) => sum + (l.estimatedBudget || 0), 0))}
@@ -151,14 +151,14 @@ export default function ClaimedLeadsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="bg-[#141417] rounded-2xl border border-white/5 overflow-hidden"
+              className="bg-[#141417] rounded-[14px] border border-white/5 overflow-hidden"
             >
               <div className="p-5">
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                   {/* Lead Info */}
                   <div className="flex-1">
                     <div className="flex items-start gap-4 mb-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-[14px] flex items-center justify-center text-white font-bold text-lg">
                         {lead.companyName.charAt(0)}
                       </div>
                       <div>
@@ -233,7 +233,7 @@ export default function ClaimedLeadsPage() {
                           setSelectedLead(lead);
                           setShowConvertModal(true);
                         }}
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-medium transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[14px] text-sm font-medium transition-colors"
                       >
                         <CheckCircle className="w-4 h-4" />
                         Convert
@@ -243,7 +243,7 @@ export default function ClaimedLeadsPage() {
                           setSelectedLead(lead);
                           setShowReleaseModal(true);
                         }}
-                        className="p-2 border border-red-500/20 text-red-400 hover:bg-red-500/10 rounded-xl transition-colors"
+                        className="p-2 border border-red-500/20 text-red-400 hover:bg-red-500/10 rounded-[14px] transition-colors"
                       >
                         <XCircle className="w-5 h-5" />
                       </button>
@@ -255,7 +255,7 @@ export default function ClaimedLeadsPage() {
           ))}
         </div>
       ) : (
-        <div className="bg-[#141417] rounded-2xl p-12 border border-white/5 text-center">
+        <div className="bg-[#141417] rounded-[14px] p-12 border border-white/5 text-center">
           <Clock className="w-16 h-16 text-gray-600 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-white mb-2">No Claimed Leads</h3>
           <p className="text-gray-400 mb-6">
@@ -263,7 +263,7 @@ export default function ClaimedLeadsPage() {
           </p>
           <button
             onClick={() => router.push("/dashboard/leads")}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-[14px] transition-colors"
           >
             Browse Available Leads
           </button>
@@ -285,7 +285,7 @@ export default function ClaimedLeadsPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-[#111113] rounded-2xl p-6 max-w-md w-full border border-white/10"
+              className="bg-[#111113] rounded-[14px] p-6 max-w-md w-full border border-white/10"
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-white">Release Lead</h3>
@@ -297,7 +297,7 @@ export default function ClaimedLeadsPage() {
                 </button>
               </div>
 
-              <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl mb-6">
+              <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-[14px] mb-6">
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="w-5 h-5 text-amber-400 mt-0.5" />
                   <div>
@@ -314,7 +314,7 @@ export default function ClaimedLeadsPage() {
                 <select
                   value={releaseReason}
                   onChange={(e) => setReleaseReason(e.target.value)}
-                  className="w-full px-4 py-2 bg-[#0a0a0b] border border-white/10 rounded-xl text-white"
+                  className="w-full px-4 py-2 bg-[#0a0a0b] border border-white/10 rounded-[14px] text-white"
                 >
                   <option value="">Select a reason...</option>
                   <option value="not_interested">Not interested</option>
@@ -328,14 +328,14 @@ export default function ClaimedLeadsPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowReleaseModal(false)}
-                  className="flex-1 py-3 border border-white/10 text-gray-300 rounded-xl hover:bg-white/5 transition-colors"
+                  className="flex-1 py-3 border border-white/10 text-gray-300 rounded-[14px] hover:bg-white/5 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleRelease}
                   disabled={processingId !== null}
-                  className="flex-1 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white font-medium rounded-[14px] transition-colors flex items-center justify-center gap-2"
                 >
                   {processingId ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -367,7 +367,7 @@ export default function ClaimedLeadsPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-[#111113] rounded-2xl p-6 max-w-md w-full border border-white/10"
+              className="bg-[#111113] rounded-[14px] p-6 max-w-md w-full border border-white/10"
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-white">Convert to Deal</h3>
@@ -380,7 +380,7 @@ export default function ClaimedLeadsPage() {
               </div>
 
               <div className="space-y-3 mb-6">
-                <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
+                <div className="flex items-center gap-3 p-3 bg-white/5 rounded-[14px]">
                   <Building className="w-5 h-5 text-blue-400" />
                   <div>
                     <p className="text-white font-medium">{selectedLead.companyName}</p>
@@ -388,7 +388,7 @@ export default function ClaimedLeadsPage() {
                   </div>
                 </div>
                 {selectedLead.estimatedBudget && (
-                  <div className="flex items-center gap-3 p-3 bg-emerald-500/10 rounded-xl">
+                  <div className="flex items-center gap-3 p-3 bg-emerald-500/10 rounded-[14px]">
                     <DollarSign className="w-5 h-5 text-emerald-400" />
                     <span className="text-emerald-400">
                       Estimated value: {formatCurrency(selectedLead.estimatedBudget)}
@@ -397,7 +397,7 @@ export default function ClaimedLeadsPage() {
                 )}
               </div>
 
-              <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl mb-6">
+              <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-[14px] mb-6">
                 <p className="text-blue-400 text-sm">
                   A new deal will be created and marked as "Qualified". You can then add more details in the deals section.
                 </p>
@@ -406,14 +406,14 @@ export default function ClaimedLeadsPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowConvertModal(false)}
-                  className="flex-1 py-3 border border-white/10 text-gray-300 rounded-xl hover:bg-white/5 transition-colors"
+                  className="flex-1 py-3 border border-white/10 text-gray-300 rounded-[14px] hover:bg-white/5 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleConvert}
                   disabled={processingId !== null}
-                  className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-600 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-600 text-white font-medium rounded-[14px] transition-colors flex items-center justify-center gap-2"
                 >
                   {processingId ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

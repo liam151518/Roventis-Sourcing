@@ -206,12 +206,14 @@ export default function AdminLeadsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Lead Management</h1>
+          <div>
+          <p className="rs-overline">Admin</p>
+          <h1 className="rs-page-title">Lead Management</h1>
           <p className="text-gray-400">Manage leads, bulk upload, and track activity</p>
         </div>
         <button
           onClick={handleSeedDemo}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-medium transition-colors"
+          className="px-4 py-2 rs-btn-primary text-sm font-medium transition-colors"
         >
           Seed Demo Leads
         </button>
@@ -235,7 +237,7 @@ export default function AdminLeadsPage() {
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--rs-accent)]"
                 />
               )}
             </button>
@@ -254,7 +256,7 @@ export default function AdminLeadsPage() {
             className="space-y-6"
           >
             {/* Template download */}
-            <div className="bg-[#141417] rounded-2xl p-6 border border-white/5">
+            <div className="rs-card p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-white font-semibold">CSV Template</h3>
@@ -275,7 +277,7 @@ export default function AdminLeadsPage() {
             {/* File drop zone */}
             <div
               onClick={() => document.getElementById("fileInput")?.click()}
-              className="bg-[#141417] rounded-2xl p-12 border-2 border-dashed border-white/10 hover:border-blue-500/50 transition-colors cursor-pointer text-center"
+              className="rs-card border-2 border-dashed border-white/10 hover:border-[var(--rs-accent)]/50 transition-colors cursor-pointer text-center"
             >
               <input
                 id="fileInput"
@@ -329,7 +331,7 @@ export default function AdminLeadsPage() {
                   </button>
                 </div>
 
-                <div className="bg-[#141417] rounded-2xl border border-white/5 overflow-hidden">
+                <div className="rs-card overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
@@ -356,9 +358,9 @@ export default function AdminLeadsPage() {
                               <span
                                 className={`px-2 py-1 rounded text-xs font-medium ${
                                   lead.poolTier === "premium"
-                                    ? "bg-purple-500/10 text-purple-400"
+                                    ? "bg-[var(--rs-info)]/10 text-[var(--rs-info)]"
                                     : lead.poolTier === "priority"
-                                    ? "bg-blue-500/10 text-blue-400"
+                                    ? "bg-[var(--rs-info)]/10 text-[var(--rs-info)]"
                                     : "bg-gray-500/10 text-gray-400"
                                 }`}
                               >
@@ -384,7 +386,7 @@ export default function AdminLeadsPage() {
 
             {/* Result */}
             {uploadResult && (
-              <div className="bg-[#141417] rounded-2xl p-6 border border-green-500/20">
+              <div className="rs-card p-6" style={{ borderColor: 'var(--rs-success)', borderWidth: 1 }}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-green-500/10 rounded-xl flex items-center justify-center">
                     <Check className="w-5 h-5 text-green-400" />
@@ -449,29 +451,29 @@ export default function AdminLeadsPage() {
 
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="bg-[#141417] rounded-xl p-4 border border-white/5">
+              <div className="rs-card p-4">
                 <p className="text-gray-400 text-sm">Total</p>
                 <p className="text-2xl font-bold text-white">{allLeads?.length || 0}</p>
               </div>
-              <div className="bg-[#141417] rounded-xl p-4 border border-white/5">
+              <div className="rs-card p-4">
                 <p className="text-gray-400 text-sm">Available</p>
                 <p className="text-2xl font-bold text-emerald-400">
                   {allLeads?.filter((l) => l.status === "available").length || 0}
                 </p>
               </div>
-              <div className="bg-[#141417] rounded-xl p-4 border border-white/5">
+              <div className="rs-card p-4">
                 <p className="text-gray-400 text-sm">Claimed</p>
                 <p className="text-2xl font-bold text-blue-400">
                   {allLeads?.filter((l) => l.status === "claimed").length || 0}
                 </p>
               </div>
-              <div className="bg-[#141417] rounded-xl p-4 border border-white/5">
+              <div className="rs-card p-4">
                 <p className="text-gray-400 text-sm">Converted</p>
                 <p className="text-2xl font-bold text-purple-400">
                   {allLeads?.filter((l) => l.status === "converted").length || 0}
                 </p>
               </div>
-              <div className="bg-[#141417] rounded-xl p-4 border border-white/5">
+              <div className="rs-card p-4">
                 <p className="text-gray-400 text-sm">Retired</p>
                 <p className="text-2xl font-bold text-gray-400">
                   {allLeads?.filter((l) => l.status === "retired").length || 0}
@@ -480,7 +482,7 @@ export default function AdminLeadsPage() {
             </div>
 
             {/* Table */}
-            <div className="bg-[#141417] rounded-2xl border border-white/5 overflow-hidden">
+            <div className="rs-card overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
@@ -510,9 +512,9 @@ export default function AdminLeadsPage() {
                           <span
                             className={`px-2 py-1 rounded text-xs font-medium ${
                               lead.poolTier === "premium"
-                                ? "bg-purple-500/10 text-purple-400"
+                                ? "bg-[var(--rs-info)]/10 text-[var(--rs-info)]"
                                 : lead.poolTier === "priority"
-                                ? "bg-blue-500/10 text-blue-400"
+                                ? "bg-[var(--rs-info)]/10 text-[var(--rs-info)]"
                                 : "bg-gray-500/10 text-gray-400"
                             }`}
                           >
@@ -523,14 +525,14 @@ export default function AdminLeadsPage() {
                           <span
                             className={`px-2 py-1 rounded text-xs font-medium ${
                               lead.status === "available"
-                                ? "bg-emerald-500/10 text-emerald-400"
+                                ? "bg-[var(--rs-success)]/10 text-[var(--rs-success)]"
                                 : lead.status === "claimed"
-                                ? "bg-blue-500/10 text-blue-400"
+                                ? "bg-[var(--rs-info)]/10 text-[var(--rs-info)]"
                                 : lead.status === "converted"
-                                ? "bg-purple-500/10 text-purple-400"
+                                ? "bg-[var(--rs-info)]/10 text-[var(--rs-info)]"
                                 : lead.status === "retired"
                                 ? "bg-gray-500/10 text-gray-400"
-                                : "bg-red-500/10 text-red-400"
+                                : "bg-[var(--rs-danger)]/10 text-[var(--rs-danger)]"
                             }`}
                           >
                             {lead.status}
@@ -549,7 +551,7 @@ export default function AdminLeadsPage() {
                                     adminClerkUserId: currentUserId,
                                   })
                                 }
-                                className="p-2 text-gray-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors"
+                                className="p-2 text-gray-400 hover:text-[var(--rs-warning)] hover:bg-[var(--rs-warning)]/10 rounded-lg transition-colors"
                                 title="Force Release"
                               >
                                 <RefreshCw className="w-4 h-4" />
@@ -574,7 +576,7 @@ export default function AdminLeadsPage() {
                                   adminClerkUserId: currentUserId,
                                 })
                               }
-                              className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                              className="p-2 text-gray-400 hover:text-[var(--rs-danger)] hover:bg-[var(--rs-danger)]/10 rounded-lg transition-colors"
                               title="Delete"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -603,7 +605,7 @@ export default function AdminLeadsPage() {
             exit={{ opacity: 0, y: -10 }}
             className="space-y-4"
           >
-            <div className="bg-[#141417] rounded-2xl border border-white/5 overflow-hidden">
+            <div className="rs-card overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
@@ -626,12 +628,12 @@ export default function AdminLeadsPage() {
                               activity.action === "uploaded"
                                 ? "bg-green-500/10 text-green-400"
                                 : activity.action === "claimed"
-                                ? "bg-blue-500/10 text-blue-400"
+                                ? "bg-[var(--rs-info)]/10 text-[var(--rs-info)]"
                                 : activity.action === "converted"
-                                ? "bg-purple-500/10 text-purple-400"
+                                ? "bg-[var(--rs-info)]/10 text-[var(--rs-info)]"
                                 : activity.action === "released" ||
                                   activity.action === "expired"
-                                ? "bg-amber-500/10 text-amber-400"
+                                ? "bg-[var(--rs-warning)]/10 text-[var(--rs-warning)]"
                                 : activity.action === "retired"
                                 ? "bg-gray-500/10 text-gray-400"
                                 : "bg-orange-500/10 text-orange-400"

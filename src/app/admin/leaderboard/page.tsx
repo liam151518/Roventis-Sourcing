@@ -17,18 +17,12 @@ export default function AdminLeaderboardPage() {
     );
   }
 
-  const getTierColor = (tier: string) => {
+  const getTierBorder = (tier: string) => {
     switch (tier) {
-      case "platinum":
-        return "from-indigo-500/20 to-indigo-600/10 border-indigo-500/30 text-indigo-400";
-      case "gold":
-        return "from-yellow-500/20 to-yellow-600/10 border-yellow-500/30 text-yellow-400";
-      case "silver":
-        return "from-gray-400/20 to-gray-500/10 border-gray-400/30 text-gray-300";
-      case "bronze":
-        return "from-amber-600/20 to-amber-700/10 border-amber-600/30 text-amber-500";
-      default:
-        return "from-gray-500/20 to-gray-600/10 border-gray-500/30 text-gray-400";
+      case "platinum": return "border-violet-500/30";
+      case "gold": return "border-amber-400/30";
+      case "silver": return "border-white/10";
+      default: return "border-white/5";
     }
   };
 
@@ -42,12 +36,13 @@ export default function AdminLeaderboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-white">Leaderboard</h1>
-        <p className="text-gray-500 mt-1">Top performing affiliates by sales</p>
-      </div>
+          <p className="rs-overline">Admin</p>
+          <h1 className="rs-page-title">Leaderboard</h1>
+          <p className="text-gray-500 mt-1">Top performing affiliates by sales</p>
+        </div>
 
       {leaderboard.length === 0 ? (
-        <div className="bg-[#141417] rounded-2xl border border-white/5 p-12 text-center">
+        <div className="bg-[#141417] rounded-[14px] border border-white/5 p-12 text-center">
           <Trophy className="w-16 h-16 text-gray-600 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-white mb-2">No Data Yet</h3>
           <p className="text-gray-500">Complete some deals to see the leaderboard</p>
@@ -60,7 +55,7 @@ export default function AdminLeaderboardPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className={`bg-gradient-to-br ${getTierColor(entry.affiliate.tier)} border rounded-2xl p-6`}
+              className={`rs-card p-6 ${getTierBorder(entry.affiliate.tier)} border`}
             >
               <div className="flex items-center gap-6">
                 <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-black/30 rounded-xl">

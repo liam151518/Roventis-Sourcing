@@ -29,9 +29,8 @@ const tiers = [
   {
     id: "bronze",
     name: "Bronze",
-    color: "from-orange-700 to-orange-900",
-    accentColor: "text-orange-400",
-    borderColor: "border-orange-500/30",
+    borderAccent: "border-orange-500/20",
+    iconColor: "text-orange-400",
     icon: Award,
     commission: "5%",
     subscription: "Free",
@@ -50,9 +49,8 @@ const tiers = [
   {
     id: "silver",
     name: "Silver",
-    color: "from-gray-400 to-gray-600",
-    accentColor: "text-gray-300",
-    borderColor: "border-gray-400/30",
+    borderAccent: "border-white/10",
+    iconColor: "text-[var(--rs-text-secondary)]",
     icon: Star,
     commission: "10%",
     subscription: "Free",
@@ -71,9 +69,8 @@ const tiers = [
   {
     id: "gold",
     name: "Gold",
-    color: "from-yellow-500 to-amber-600",
-    accentColor: "text-yellow-400",
-    borderColor: "border-yellow-500/30",
+    borderAccent: "border-amber-400/30",
+    iconColor: "text-amber-300",
     icon: TrendingUp,
     commission: "15%",
     subscription: "Free",
@@ -92,9 +89,8 @@ const tiers = [
   {
     id: "platinum",
     name: "Platinum",
-    color: "from-violet-600 to-purple-800",
-    accentColor: "text-violet-400",
-    borderColor: "border-violet-500/30",
+    borderAccent: "border-violet-500/30",
+    iconColor: "text-violet-300",
     icon: Crown,
     commission: "12-15%",
     subscription: "R899.69/mo",
@@ -161,7 +157,8 @@ export default function TierPage() {
     <div className="space-y-8">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-white mb-2">Tier & Upgrade</h1>
+        <span className="rs-overline">Your Account</span>
+        <h1 className="rs-page-title">Tier & Upgrade</h1>
         <p className="text-gray-400">View your current tier and unlock premium benefits</p>
       </div>
 
@@ -169,12 +166,11 @@ export default function TierPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-[#111113] rounded-3xl p-8 border border-white/5 relative overflow-hidden"
+        className="rs-card !border-[var(--rs-accent-soft)] rounded-3xl p-8 relative overflow-hidden"
       >
-        <div className={`absolute inset-0 bg-gradient-to-br ${currentTier?.color} opacity-10`} />
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${currentTier?.color} flex items-center justify-center`}>
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-600 to-purple-700 flex items-center justify-center">
               {currentAffiliate?.tier === "platinum" ? (
                 <Crown className="w-10 h-10 text-white" />
               ) : currentAffiliate?.tier === "gold" ? (
@@ -187,7 +183,7 @@ export default function TierPage() {
             </div>
             <div>
               <p className="text-gray-400 text-sm">Current Tier</p>
-              <h2 className={`text-3xl font-bold ${currentTier?.accentColor}`}>{currentTier?.name}</h2>
+              <h2 className={`text-3xl font-bold ${currentTier?.iconColor}`}>{currentTier?.name}</h2>
               <p className="text-gray-400">{currentTier?.commission} commission rate</p>
             </div>
           </div>
@@ -231,12 +227,12 @@ export default function TierPage() {
             </div>
           </div>
           
-          <div className="h-3 bg-white/10 rounded-full overflow-hidden">
+          <div className="h-3 bg-[var(--rs-bg-overlay)] rounded-full overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progress.percent}%` }}
               transition={{ duration: 1, ease: "easeOut" }}
-              className={`h-full bg-gradient-to-r ${nextTier.color}`}
+              className="h-full bg-gradient-to-r from-violet-500 to-violet-400 rounded-full"
             />
           </div>
 
@@ -264,28 +260,26 @@ export default function TierPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className={`bg-[#111113] rounded-2xl p-5 border ${
-                  isCurrentTier ? tier.borderColor : "border-white/5"
-                } relative overflow-hidden ${isCurrentTier ? "ring-2 ring-offset-2 ring-offset-[#0a0a0b]" : ""}`}
-                style={isCurrentTier ? { 
-                  } : {}}
+                className={`rs-card p-5 ${
+                  isCurrentTier ? '!border-[var(--rs-accent)] shadow-[0_0_0_1px_var(--rs-accent),0_0_24px_var(--rs-accent-glow)]' : tier.borderAccent
+                } relative overflow-hidden`}
               >
                 {isCurrentTier && (
                   <div className="absolute top-3 right-3">
-                    <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs font-medium rounded-full">
+                    <span className="px-2 py-1 bg-[var(--rs-accent-soft)] text-[var(--rs-accent)] text-xs font-medium rounded-full">
                       Current
                     </span>
                   </div>
                 )}
 
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${tier.color} flex items-center justify-center mb-4`}>
-                  <Icon className="w-6 h-6 text-white" />
+                <div className={`w-12 h-12 rounded-xl bg-[var(--rs-accent-soft)] flex items-center justify-center mb-4`}>
+                  <Icon className={`w-6 h-6 ${tier.iconColor}`} />
                 </div>
 
-                <h3 className={`text-xl font-bold ${tier.accentColor} mb-1`}>{tier.name}</h3>
+                <h3 className={`text-xl font-bold ${tier.iconColor} mb-1`}>{tier.name}</h3>
                 
                 <div className="mb-4">
-                  <p className="text-2xl font-bold text-white">{tier.commission}</p>
+                  <p className="rs-stat text-2xl font-bold text-white">{tier.commission}</p>
                   <p className="text-gray-400 text-sm">commission</p>
                 </div>
 
@@ -310,7 +304,7 @@ export default function TierPage() {
                 </div>
 
                 {tier.id === "platinum" && currentAffiliate?.tier !== "platinum" && (
-                  <button className="w-full mt-4 py-3 bg-gradient-to-r from-violet-600 to-purple-700 hover:from-violet-700 hover:to-purple-800 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2">
+                  <button className="w-full mt-4 py-3 rs-btn-primary">
                     <Zap className="w-4 h-4" />
                     Upgrade Now
                   </button>
@@ -333,10 +327,10 @@ export default function TierPage() {
           {tiers.map((tier) => (
             <div key={tier.id} className="p-4 bg-white/5 rounded-xl">
               <div className="flex items-center gap-2 mb-2">
-                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${tier.color} flex items-center justify-center`}>
-                  <tier.icon className="w-4 h-4 text-white" />
+                <div className={`w-8 h-8 rounded-lg bg-[var(--rs-accent-soft)] flex items-center justify-center`} style={{ color: tier.iconColor }}>
+                  <tier.icon className={`w-4 h-4 ${tier.iconColor}`} />
                 </div>
-                <span className={`font-semibold ${tier.accentColor}`}>{tier.name}</span>
+                <span className={`font-semibold ${tier.iconColor}`}>{tier.name}</span>
               </div>
               <p className="text-gray-400 text-sm">{tier.requirements[0]}</p>
             </div>
@@ -369,7 +363,7 @@ export default function TierPage() {
                 <li>+ Exclusive lead pool</li>
                 <li>+ Priority support</li>
               </ul>
-              <button className="px-8 py-3 bg-gradient-to-r from-violet-600 to-purple-700 hover:from-violet-700 hover:to-purple-800 text-white font-semibold rounded-xl transition-all flex items-center gap-2 mx-auto md:mx-0">
+              <button className="rs-btn-primary flex items-center gap-2 mx-auto md:mx-0">
                 <Zap className="w-5 h-5" />
                 Upgrade to Platinum
                 <ArrowRight className="w-4 h-4" />

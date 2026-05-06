@@ -29,13 +29,13 @@ const fileTypes = [
 ];
 
 const categoryColors: Record<string, string> = {
-  coaching_sheet: "bg-blue-500/20 text-blue-400",
-  catalog: "bg-purple-500/20 text-purple-400",
-  price_list: "bg-emerald-500/20 text-emerald-400",
-  products: "bg-orange-500/20 text-orange-400",
-  script: "bg-amber-500/20 text-amber-400",
-  creative: "bg-pink-500/20 text-pink-400",
-  legal: "bg-slate-500/20 text-slate-400",
+  coaching_sheet: "bg-[var(--rs-accent-soft)] text-violet-400",
+  catalog: "bg-[var(--rs-accent-soft)] text-violet-400",
+  price_list: "bg-[var(--rs-accent-soft)] text-violet-400",
+  products: "bg-[var(--rs-accent-soft)] text-violet-400",
+  script: "bg-[var(--rs-accent-soft)] text-violet-400",
+  creative: "bg-[var(--rs-accent-soft)] text-violet-400",
+  legal: "bg-[var(--rs-accent-soft)] text-violet-400",
 };
 
 const statusFilters = [
@@ -256,12 +256,13 @@ export default function AdminResourcesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-white">Resources</h1>
+          <p className="rs-overline">Admin</p>
+          <h1 className="rs-page-title">Resources</h1>
           <p className="text-gray-500 mt-1">Manage and publish resources for affiliates</p>
         </div>
         <button
           onClick={() => handleOpenModal()}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition-colors"
+          className="flex items-center gap-2 px-4 py-2 rs-btn-primary transition-colors"
         >
           <Plus className="w-5 h-5" />
           Add Resource
@@ -269,15 +270,15 @@ export default function AdminResourcesPage() {
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-[#141417] rounded-2xl border border-white/5 p-4">
+        <div className="rs-card p-4">
           <p className="text-gray-400 text-sm">Total Resources</p>
           <p className="text-2xl font-semibold text-white">{stats.total}</p>
         </div>
-        <div className="bg-[#141417] rounded-2xl border border-green-500/20 p-4">
+        <div className="rs-card p-4" style={{ borderColor: 'var(--rs-success)', borderWidth: 1 }}>
           <p className="text-gray-400 text-sm">Published</p>
           <p className="text-2xl font-semibold text-green-400">{stats.published}</p>
         </div>
-        <div className="bg-[#141417] rounded-2xl border border-yellow-500/20 p-4">
+        <div className="rs-card p-4" style={{ borderColor: 'var(--rs-warning)', borderWidth: 1 }}>
           <p className="text-gray-400 text-sm">Drafts</p>
           <p className="text-2xl font-semibold text-yellow-400">{stats.drafts}</p>
         </div>
@@ -343,7 +344,7 @@ export default function AdminResourcesPage() {
               {filteredProducts.map((product: any) => (
                 <motion.div
                   key={product.id}
-                  className="bg-[#141417] rounded-xl border border-white/5 overflow-hidden"
+                  className="rs-card overflow-hidden"
                 >
                   <div className="flex items-center gap-4 p-4">
                     <div className="w-16 h-16 rounded-lg overflow-hidden bg-white/5 flex-shrink-0">
@@ -391,7 +392,7 @@ export default function AdminResourcesPage() {
               <p className="text-gray-500">No resources found</p>
               <button
                 onClick={() => handleOpenModal()}
-                className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition-colors"
+                className="mt-4 px-4 py-2 rs-btn-primary transition-colors"
               >
                 Add Your First Resource
               </button>
@@ -404,7 +405,7 @@ export default function AdminResourcesPage() {
                   layout
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className={`bg-[#141417] rounded-2xl border p-6 hover:border-white/10 transition-colors ${
+                  className={`bg-[#141417] rounded-[14px] border p-6 hover:border-white/10 transition-colors ${
                     resource.isDraft ? "border-yellow-500/30" : "border-white/5"
                   }`}
                 >
@@ -497,7 +498,7 @@ export default function AdminResourcesPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-[#141417] border border-white/10 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              className="bg-[#141417] border border-white/10 rounded-[14px] w-full max-w-2xl max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between p-6 border-b border-white/5">
                 <h2 className="text-xl font-semibold text-white">
@@ -607,7 +608,7 @@ export default function AdminResourcesPage() {
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition-colors"
+                    className="px-6 py-2 rs-btn-primary transition-colors"
                   >
                     {editingResource ? "Save Changes" : "Create Resource"}
                   </button>
@@ -632,7 +633,7 @@ export default function AdminResourcesPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-[#141417] border border-white/10 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              className="bg-[#141417] border border-white/10 rounded-[14px] w-full max-w-2xl max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between p-6 border-b border-white/5">
                 <h2 className="text-xl font-semibold text-white">

@@ -59,6 +59,7 @@ export default function LeadsPage() {
   const [claimingLeadId, setClaimingLeadId] = useState<string | null>(null);
   const [showClaimModal, setShowClaimModal] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [activeTab, setActiveTab] = useState<"standard" | "priority" | "premium">("standard");
 
   // Queries - pass empty object to match Convex args
   const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate, {});
@@ -114,9 +115,9 @@ export default function LeadsPage() {
     return "Soon";
   };
 
-  // Filter leads by active pool tab
+  // Filter leads by active tab
   const availableLeads = (availableLeadsData?.leads || []).filter((lead: Lead) => 
-    (lead.poolTier || "standard") === activePool
+    (lead.poolTier || "standard") === activeTab
   );
 
   // Check if tier can access pool
@@ -163,11 +164,11 @@ export default function LeadsPage() {
       )}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Lead Pool</h1>
-          <p className="text-gray-400">Fresh leads sourced and verified by Roventis</p>
+          <span className="rs-overline">Lead Pool</span>
+          <h1 className="rs-page-title">Fresh leads sourced and verified by Roventis</h1>
         </div>
         <div className="flex items-center gap-4">
-          <div className="px-4 py-2 bg-[#111113] rounded-xl border border-white/5">
+          <div className="rs-card">
             <div className="flex items-center gap-2">
               <Target className="w-4 h-4 text-blue-400" />
               <span className="text-gray-400 text-sm">This week:</span>
@@ -199,20 +200,24 @@ export default function LeadsPage() {
         </div>
       </div>
 
-      {/* Pool Tabs */}
-      <div className="flex gap-2 border-b border-white/10">
+      {/* Pool Tabs - Pill Tab System */}
+      <div className="flex gap-1 p-1 bg-[#0a0a0b] rounded-[14px]">
         {(["standard", "priority", "premium"] as const).map((pool) => {
           const isLocked = !canAccessPool(pool);
-          const isActive = activePool === pool;
+          const isActive = activeTab === pool;
           const count = leadStats?.byPool?.[pool] || 0;
 
           return (
             <button
               key={pool}
-              onClick={() => !isLocked && setActivePool(pool)}
+              onClick={() => !isLocked && setActiveTab(pool as any)}
               disabled={isLocked}
-              className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors relative ${
-                isLocked ? "text-gray-600 cursor-not-allowed" : isActive ? "text-white" : "text-gray-400 hover:text-white"
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 font-medium transition-all rounded-xl ${
+                isLocked 
+                  ? "text-gray-600 cursor-not-allowed" 
+                  : isActive 
+                    ? "bg-[#1a1a1d] text-white shadow-sm" 
+                    : "text-gray-400 hover:text-white hover:bg-[#1a1a1d]/50"
               }`}
             >
               {isLocked && <Lock className="w-4 h-4" />}
@@ -226,41 +231,35 @@ export default function LeadsPage() {
                   {count}
                 </span>
               )}
-              {isActive && (
-                <motion.div
-                  layoutId="activePool"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500"
-                />
-              )}
             </button>
           );
         })}
       </div>
 
       {/* Locked state for higher tiers */}
-      {!canAccessPool(activePool) && (
+      {!canAccessPool(activeTab) && (
         <div className="flex flex-col items-center justify-center py-16">
           <Lock className="w-16 h-16 text-gray-600 mb-4" />
           <h3 className="text-xl font-semibold text-white mb-2">
-            Upgrade to {activePool === "priority" ? "Gold" : "Platinum"}
+            Upgrade to {activeTab === "priority" ? "Gold" : "Platinum"}
           </h3>
           <p className="text-gray-400 text-center max-w-md mb-6">
-            {activePool === "priority" 
+            {activeTab === "priority" 
               ? "Gold affiliates get access to Priority leads with higher budgets." 
               : "Platinum affiliates get unlimited leads and access to Premium enterprise accounts."}
           </p>
           <a
             href="/dashboard/tier"
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold rounded-xl hover:from-amber-600 hover:to-orange-700 transition-all"
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold rounded-[14px] hover:from-amber-600 hover:to-orange-700 transition-all"
           >
             <Zap className="w-5 h-5" />
-            Upgrade to {activePool === "priority" ? "Gold" : "Platinum"}
+            Upgrade to {activeTab === "priority" ? "Gold" : "Platinum"}
           </a>
         </div>
       )}
 
       {/* Available Leads Grid */}
-      {canAccessPool(activePool) && (
+      {canAccessPool(activeTab) && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -274,7 +273,7 @@ export default function LeadsPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="bg-[#111113] rounded-2xl p-5 border border-white/5 hover:border-white/10 transition-colors"
+                  className="rs-card hover:border-white/10"
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div>
@@ -332,7 +331,7 @@ export default function LeadsPage() {
                       setShowClaimModal(true);
                     }}
                     disabled={isTrainingRequired || (tier !== "platinum" && weeklyUsed >= weeklyLimit)}
-                    className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-2.5 rs-btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     <UserPlus className="w-4 h-4" />
                     {isTrainingRequired ? "Training Required" : tier !== "platinum" && weeklyUsed >= weeklyLimit ? "Weekly Limit Reached" : "Claim Lead"}
@@ -341,7 +340,7 @@ export default function LeadsPage() {
               ))}
             </div>
           ) : (
-            <div className="bg-[#111113] rounded-2xl p-12 border border-white/5 text-center">
+            <div className="rs-card p-12 text-center">
               <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-white mb-2">No Leads Available</h3>
               <p className="text-gray-400 mb-4">
@@ -367,7 +366,7 @@ export default function LeadsPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-[#111113] rounded-2xl p-6 max-w-md w-full border border-white/10"
+              className="rs-card p-6 max-w-md w-full border-white/10"
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-white">Claim Lead</h3>
@@ -380,7 +379,7 @@ export default function LeadsPage() {
               </div>
 
               <div className="space-y-3 mb-6">
-                <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
+                <div className="flex items-center gap-3 p-3 bg-white/5 rounded-[14px]">
                   <Building className="w-5 h-5 text-blue-400" />
                   <div>
                     <p className="text-white font-medium">{selectedLead.companyName}</p>
@@ -388,7 +387,7 @@ export default function LeadsPage() {
                   </div>
                 </div>
                 {selectedLead.contactPhone && (
-                  <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
+                  <div className="flex items-center gap-3 p-3 bg-white/5 rounded-[14px]">
                     <Phone className="w-5 h-5 text-gray-400" />
                     <span className="text-gray-300">{selectedLead.contactPhone}</span>
                   </div>
@@ -404,14 +403,14 @@ export default function LeadsPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowClaimModal(false)}
-                  className="flex-1 py-3 border border-white/10 text-gray-300 rounded-xl hover:bg-white/5 transition-colors"
+                  className="flex-1 py-3 border border-white/10 text-gray-300 rounded-[14px] hover:bg-white/5 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={() => handleClaim(selectedLead)}
                   disabled={claimingLeadId !== null}
-                  className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 py-3 rs-btn-primary disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {claimingLeadId ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

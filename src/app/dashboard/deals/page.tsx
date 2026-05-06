@@ -53,9 +53,9 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 const columns = [
-  { id: "prospect", label: "Prospect", color: "bg-slate-500" },
-  { id: "qualified", label: "Qualified", color: "bg-blue-500" },
-  { id: "proposal_sent", label: "Proposal", color: "bg-amber-500" },
+  { id: "prospect", label: "Prospect", color: "bg-white/20" },
+  { id: "qualified", label: "Qualified", color: "bg-white/20" },
+  { id: "proposal_sent", label: "Proposal", color: "bg-white/20" },
   { id: "negotiation", label: "Negotiation", color: "bg-orange-500" },
   { id: "closed_won", label: "Closed Won", color: "bg-emerald-500" },
   { id: "closed_lost", label: "Closed Lost", color: "bg-red-500" },
@@ -572,12 +572,13 @@ export default function DealsPage() {
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
       >
         <div>
-          <h1 className="text-2xl font-semibold text-white">Deals Pipeline</h1>
-          <p className="text-gray-500 mt-1">Track and manage your sales opportunities</p>
+          <span className="rs-overline">Pipeline</span>
+          <h1 className="rs-page-title">Deals Pipeline</h1>
+          <p className="text-[var(--rs-text-muted)] mt-1">Track and manage your sales opportunities</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition-colors"
+          className="rs-btn-primary flex items-center gap-2"
         >
           <Plus className="w-5 h-5" />
           New Deal
@@ -600,7 +601,7 @@ export default function DealsPage() {
               placeholder="Search by client name or company..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-10 py-2.5 bg-[#141417] border border-white/5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+              className="w-full pl-12 pr-10 py-2.5 rs-card rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
             />
             {searchQuery && (
               <button
@@ -735,7 +736,7 @@ export default function DealsPage() {
                 transition={{ delay: colIndex * 0.05 }}
                 className="flex-shrink-0 w-64 sm:w-72"
               >
-                <div className="bg-[#141417] rounded-2xl p-3 border border-white/5">
+                <div className="bg-[#141417] rounded-[14px] p-3 border border-white/5">
                   {/* Column Header - Drop Target */}
                   <DroppableColumn columnId={column.id}>
                     <div className="flex items-center justify-between mb-3">
@@ -814,7 +815,7 @@ export default function DealsPage() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#141417] rounded-2xl border border-white/10 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-[#141417] rounded-[14px] border border-white/10 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between p-6 border-b border-white/5">
@@ -1238,7 +1239,7 @@ export default function DealsPage() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#141417] rounded-2xl border border-white/10 max-w-xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-[#141417] rounded-[14px] border border-white/10 max-w-xl w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between p-6 border-b border-white/5">
@@ -1375,7 +1376,7 @@ export default function DealsPage() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#141417] rounded-2xl border border-white/10 w-full max-w-4xl max-h-[90vh] overflow-y-auto my-8"
+              className="bg-[#141417] rounded-[14px] border border-white/10 w-full max-w-4xl max-h-[90vh] overflow-y-auto my-8"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between p-6 border-b border-white/5 sticky top-0 bg-[#141417]">

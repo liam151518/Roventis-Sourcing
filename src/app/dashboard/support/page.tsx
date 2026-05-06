@@ -102,15 +102,15 @@ const categoryIcons: Record<string, any> = {
 
 const priorityColors: Record<string, string> = {
   low: "bg-gray-500/10 text-gray-400",
-  medium: "bg-blue-500/10 text-blue-400",
-  high: "bg-amber-500/10 text-amber-400",
-  urgent: "bg-red-500/10 text-red-400",
+  medium: "bg-[var(--rs-info)]/10 text-[var(--rs-info)]",
+  high: "bg-[var(--rs-warning)]/10 text-[var(--rs-warning)]",
+  urgent: "bg-[var(--rs-danger)]/10 text-[var(--rs-danger)]",
 };
 
 const statusColors: Record<string, string> = {
-  open: "bg-blue-500/10 text-blue-400",
-  in_progress: "bg-amber-500/10 text-amber-400",
-  resolved: "bg-emerald-500/10 text-emerald-400",
+  open: "bg-[var(--rs-info)]/10 text-[var(--rs-info)]",
+  in_progress: "bg-[var(--rs-warning)]/10 text-[var(--rs-warning)]",
+  resolved: "bg-[var(--rs-success)]/10 text-[var(--rs-success)]",
   closed: "bg-gray-500/10 text-gray-400",
 };
 
@@ -219,12 +219,12 @@ export default function SupportPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Support</h1>
-          <p className="text-gray-400">Get help and view your tickets</p>
+          <span className="rs-overline">Support</span>
+          <h1 className="rs-page-title">Get help and view your tickets</h1>
         </div>
         <button 
           onClick={() => setShowTicketModal(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rs-btn-primary"
         >
           <Plus className="w-4 h-4" />
           New Ticket
@@ -236,10 +236,10 @@ export default function SupportPage() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-[#111113] rounded-2xl p-5 border border-white/5"
+          className="rs-card p-5"
         >
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-[14px] bg-blue-500/10 flex items-center justify-center">
               <MessageCircle className="w-5 h-5 text-blue-400" />
             </div>
             <span className="text-gray-400 text-sm">Open Tickets</span>
@@ -251,10 +251,10 @@ export default function SupportPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-[#111113] rounded-2xl p-5 border border-white/5"
+          className="rs-card p-5"
         >
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-[14px] bg-emerald-500/10 flex items-center justify-center">
               <CheckCircle className="w-5 h-5 text-emerald-400" />
             </div>
             <span className="text-gray-400 text-sm">Resolved</span>
@@ -268,10 +268,10 @@ export default function SupportPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-[#111113] rounded-2xl p-5 border border-white/5"
+          className="rs-card p-5"
         >
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-[14px] bg-amber-500/10 flex items-center justify-center">
               <Clock className="w-5 h-5 text-amber-400" />
             </div>
             <span className="text-gray-400 text-sm">Avg Response</span>
@@ -419,12 +419,12 @@ export default function SupportPage() {
                     value={replyMessage}
                     onChange={(e) => setReplyMessage(e.target.value)}
                     onKeyPress={(e) => e.key === "Enter" && handleReply()}
-                    className="flex-1 px-4 py-3 bg-black border border-white/5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    className="flex-1 px-4 py-3 bg-black border border-white/5 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                   />
                   <button
                     onClick={handleReply}
                     disabled={!replyMessage.trim()}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                    className="px-6 py-3 bg-blue-600 text-white rounded-[14px] hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
                   >
                     <Send className="w-5 h-5" />
                   </button>
@@ -457,7 +457,7 @@ export default function SupportPage() {
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-start gap-4">
-                          <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                          <div className="w-10 h-10 rounded-[14px] bg-white/5 flex items-center justify-center">
                             <CategoryIcon className="w-5 h-5 text-gray-400" />
                           </div>
                           <div>
@@ -519,7 +519,7 @@ export default function SupportPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="bg-[#111113] rounded-xl border border-white/5 overflow-hidden"
+                  className="bg-[#111113] rounded-[14px] border border-white/5 overflow-hidden"
                 >
                   <button
                     onClick={() => setExpandedFaq(isExpanded ? null : faqId)}
@@ -588,7 +588,7 @@ export default function SupportPage() {
                     placeholder="Brief description of your issue"
                     value={newTicket[0].subject}
                     onChange={(e) => newTicket[1]({ ...newTicket[0], subject: e.target.value })}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                   />
                 </div>
                 <div>
@@ -596,7 +596,7 @@ export default function SupportPage() {
                   <select
                     value={newTicket[0].category}
                     onChange={(e) => newTicket[1]({ ...newTicket[0], category: e.target.value as any })}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white focus:outline-none focus:border-blue-500"
                   >
                     <option value="deal">Deal Related</option>
                     <option value="product">Product</option>
@@ -610,7 +610,7 @@ export default function SupportPage() {
                   <select
                     value={newTicket[0].priority}
                     onChange={(e) => newTicket[1]({ ...newTicket[0], priority: e.target.value as any })}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white focus:outline-none focus:border-blue-500"
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -625,7 +625,7 @@ export default function SupportPage() {
                     placeholder="Describe your issue in detail..."
                     value={newTicket[0].description}
                     onChange={(e) => newTicket[1]({ ...newTicket[0], description: e.target.value })}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-none"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-none"
                   />
                 </div>
               </div>
@@ -633,14 +633,14 @@ export default function SupportPage() {
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => setShowTicketModal(false)}
-                  className="flex-1 py-3 border border-white/10 text-gray-300 rounded-xl hover:bg-white/5 transition-colors"
+                  className="flex-1 py-3 border border-white/10 text-gray-300 rounded-[14px] hover:bg-white/5 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSubmitTicket}
                   disabled={submitting || !newTicket[0].subject || !newTicket[0].description}
-                  className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium rounded-[14px] transition-colors flex items-center justify-center gap-2"
                 >
                   {submitting ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

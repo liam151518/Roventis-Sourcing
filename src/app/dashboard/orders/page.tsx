@@ -36,18 +36,18 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 
 const statusConfig = {
   draft: { label: "Draft", color: "bg-gray-500/10 text-gray-400", icon: Edit },
-  submitted: { label: "Submitted", color: "bg-blue-500/10 text-blue-400", icon: Clock },
+  submitted: { label: "Submitted", color: "bg-[var(--rs-info)]/10 text-[var(--rs-info)]", icon: Clock },
   supplier_confirmed: { label: "Supplier Confirmed", color: "bg-purple-500/10 text-purple-400", icon: CheckCircle },
-  in_transit: { label: "In Transit", color: "bg-amber-500/10 text-amber-400", icon: Truck },
-  delivered: { label: "Delivered", color: "bg-emerald-500/10 text-emerald-400", icon: CheckCircle },
+  in_transit: { label: "In Transit", color: "bg-[var(--rs-warning)]/10 text-[var(--rs-warning)]", icon: Truck },
+  delivered: { label: "Delivered", color: "bg-[var(--rs-success)]/10 text-[var(--rs-success)]", icon: CheckCircle },
   installed: { label: "Installed", color: "bg-green-500/10 text-green-400", icon: CheckCircle },
-  cancelled: { label: "Cancelled", color: "bg-red-500/10 text-red-400", icon: XCircle },
+  cancelled: { label: "Cancelled", color: "bg-[var(--rs-danger)]/10 text-[var(--rs-danger)]", icon: XCircle },
 };
 
 const commissionStatusConfig = {
-  pending: { label: "Pending", color: "bg-amber-500/10 text-amber-400" },
-  approved: { label: "Approved", color: "bg-emerald-500/10 text-emerald-400" },
-  paid: { label: "Paid", color: "bg-blue-500/10 text-blue-400" },
+  pending: { label: "Pending", color: "bg-[var(--rs-warning)]/10 text-[var(--rs-warning)]" },
+  approved: { label: "Approved", color: "bg-[var(--rs-success)]/10 text-[var(--rs-success)]" },
+  paid: { label: "Paid", color: "bg-[var(--rs-info)]/10 text-[var(--rs-info)]" },
 };
 
 interface OrderItem {
@@ -273,12 +273,12 @@ export default function OrdersPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Orders</h1>
-          <p className="text-gray-400">Track and manage your orders</p>
+          <span className="rs-overline">Orders</span>
+          <h1 className="rs-page-title">Track and manage your orders</h1>
         </div>
         <button 
           onClick={() => setShowNewOrderModal(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rs-btn-primary"
         >
           <Plus className="w-4 h-4" />
           New Order
@@ -293,10 +293,10 @@ export default function OrdersPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="bg-[#111113] rounded-2xl p-5 border border-white/5"
+            className="rs-card"
           >
             <div className="flex items-center gap-3 mb-2">
-              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
+              <div className={`w-10 h-10 rounded-[14px] bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
                 <stat.icon className="w-5 h-5 text-white" />
               </div>
             </div>
@@ -315,13 +315,13 @@ export default function OrdersPage() {
             placeholder="Search orders..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-[#111113] border border-white/5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+            className="w-full pl-10 pr-4 py-3 rs-card text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
           />
         </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-3 bg-[#111113] border border-white/5 rounded-xl text-white focus:outline-none focus:border-blue-500"
+          className="px-4 py-3 rs-card text-white focus:outline-none focus:border-blue-500"
         >
           <option value="all">All Status</option>
           <option value="draft">Draft</option>
@@ -349,11 +349,11 @@ export default function OrdersPage() {
                   setSelectedOrder(order);
                   setShowOrderModal(true);
                 }}
-                className="bg-[#111113] rounded-2xl p-5 border border-white/5 hover:border-white/10 cursor-pointer transition-all"
+                className="rs-card hover:border-white/10 cursor-pointer transition-all"
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-[14px] bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
                       <Package className="w-6 h-6 text-blue-400" />
                     </div>
                     <div>
@@ -407,7 +407,7 @@ export default function OrdersPage() {
                         e.stopPropagation();
                         handleSubmitToAdmin(order._id);
                       }}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 rs-btn-primary rounded-lg text-sm transition-colors"
                     >
                       <Send className="w-4 h-4" />
                       Submit for Approval
@@ -418,7 +418,7 @@ export default function OrdersPage() {
             );
           })
         ) : (
-          <div className="bg-[#111113] rounded-2xl p-12 border border-white/5 text-center">
+          <div className="rs-card p-12 text-center">
             <Package className="w-16 h-16 text-gray-600 mx-auto mb-4" />
             <p className="text-gray-400 mb-2">No orders found</p>
             <p className="text-gray-500 text-sm">Create your first order or adjust your filters</p>
@@ -441,7 +441,7 @@ export default function OrdersPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-[#111113] rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              className="rs-card max-w-2xl w-full max-h-[90vh] overflow-y-auto"
             >
               <div className="sticky top-0 bg-[#111113] border-b border-white/5 p-6 flex items-center justify-between">
                 <div>
@@ -482,14 +482,14 @@ export default function OrdersPage() {
 
                 {/* Client Info */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="p-4 bg-white/5 rounded-xl">
+                  <div className="p-4 bg-white/5 rounded-[14px]">
                     <p className="text-gray-400 text-xs mb-1">Client</p>
                     <p className="text-white font-medium">{selectedOrder.clientName}</p>
                     {selectedOrder.clientCompany && (
                       <p className="text-gray-400 text-sm">{selectedOrder.clientCompany}</p>
                     )}
                   </div>
-                  <div className="p-4 bg-white/5 rounded-xl">
+                  <div className="p-4 bg-white/5 rounded-[14px]">
                     <p className="text-gray-400 text-xs mb-1">Contact</p>
                     <p className="text-white font-medium">{selectedOrder.clientEmail}</p>
                     {selectedOrder.clientPhone && (
@@ -500,7 +500,7 @@ export default function OrdersPage() {
 
                 {/* Company Details */}
                 {selectedOrder.companyName && (
-                  <div className="p-4 bg-white/5 rounded-xl mb-6">
+                  <div className="p-4 bg-white/5 rounded-[14px] mb-6">
                     <p className="text-gray-400 text-xs mb-3 flex items-center gap-2">
                       <Building2 className="w-4 h-4" /> Company Details
                     </p>
@@ -527,7 +527,7 @@ export default function OrdersPage() {
 
                 {/* Delivery Address */}
                 {selectedOrder.deliveryAddress && (
-                  <div className="mb-6 p-4 bg-white/5 rounded-xl">
+                  <div className="mb-6 p-4 bg-white/5 rounded-[14px]">
                     <p className="text-gray-400 text-xs mb-2">Delivery Address</p>
                     <div className="flex items-start gap-2">
                       <MapPin className="w-4 h-4 text-gray-500 mt-0.5" />
@@ -541,7 +541,7 @@ export default function OrdersPage() {
                   <p className="text-gray-400 text-sm mb-3">Order Items</p>
                   <div className="space-y-2">
                     {selectedOrder.items?.map((item: any, i: number) => (
-                      <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                      <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-[14px]">
                         <div>
                           <p className="text-white font-medium">{item.productName}</p>
                           <p className="text-gray-400 text-sm">Qty: {item.quantity} x {formatCurrency(item.unitPrice)}</p>
@@ -587,7 +587,7 @@ export default function OrdersPage() {
 
                 {/* Commission & Tracking */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-white/5 rounded-xl">
+                  <div className="p-4 bg-white/5 rounded-[14px]">
                     <p className="text-gray-400 text-xs mb-1">Commission Status</p>
                     <span className={`px-2 py-1 rounded text-xs font-medium ${commissionStatusConfig[selectedOrder.commissionStatus as keyof typeof commissionStatusConfig]?.color || "bg-gray-500/10 text-gray-400"}`}>
                       {commissionStatusConfig[selectedOrder.commissionStatus as keyof typeof commissionStatusConfig]?.label || selectedOrder.commissionStatus}
@@ -595,7 +595,7 @@ export default function OrdersPage() {
                     <p className="text-white font-semibold mt-1">{formatCurrency(selectedOrder.commissionAmount)}</p>
                   </div>
                   {selectedOrder.trackingNumber && (
-                    <div className="p-4 bg-white/5 rounded-xl">
+                    <div className="p-4 bg-white/5 rounded-[14px]">
                       <p className="text-gray-400 text-xs mb-1">Tracking</p>
                       <p className="text-white font-medium">{selectedOrder.trackingNumber}</p>
                       {selectedOrder.deliveryDate && (
@@ -627,7 +627,7 @@ export default function OrdersPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-[#111113] rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto my-8"
+              className="rs-card w-full max-w-4xl max-h-[90vh] overflow-y-auto my-8"
             >
               <div className="sticky top-0 bg-[#111113] border-b border-white/5 p-6 flex items-center justify-between">
                 <div>
@@ -655,7 +655,7 @@ export default function OrdersPage() {
                         type="text"
                         value={formData.clientName}
                         onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                         placeholder="John Doe"
                       />
                     </div>
@@ -665,7 +665,7 @@ export default function OrdersPage() {
                         type="text"
                         value={formData.clientCompany}
                         onChange={(e) => setFormData({ ...formData, clientCompany: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                         placeholder="Acme Corp"
                       />
                     </div>
@@ -675,7 +675,7 @@ export default function OrdersPage() {
                         type="email"
                         value={formData.clientEmail}
                         onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                         placeholder="john@example.com"
                       />
                     </div>
@@ -685,7 +685,7 @@ export default function OrdersPage() {
                         type="tel"
                         value={formData.clientPhone}
                         onChange={(e) => setFormData({ ...formData, clientPhone: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                         placeholder="+27 82 123 4567"
                       />
                     </div>
@@ -695,7 +695,7 @@ export default function OrdersPage() {
                         type="text"
                         value={formData.deliveryAddress}
                         onChange={(e) => setFormData({ ...formData, deliveryAddress: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                         placeholder="123 Main Street, City, 8001"
                       />
                     </div>
@@ -714,7 +714,7 @@ export default function OrdersPage() {
                         type="text"
                         value={formData.companyName}
                         onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                         placeholder="Acme Manufacturing"
                       />
                     </div>
@@ -724,7 +724,7 @@ export default function OrdersPage() {
                         type="text"
                         value={formData.companyRegistrationNumber}
                         onChange={(e) => setFormData({ ...formData, companyRegistrationNumber: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                         placeholder="2021/123456/07"
                       />
                     </div>
@@ -734,7 +734,7 @@ export default function OrdersPage() {
                         type="text"
                         value={formData.companyVATNumber}
                         onChange={(e) => setFormData({ ...formData, companyVATNumber: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                         placeholder="4120185361"
                       />
                     </div>
@@ -744,7 +744,7 @@ export default function OrdersPage() {
                         type="url"
                         value={formData.companyWebsite}
                         onChange={(e) => setFormData({ ...formData, companyWebsite: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                         placeholder="https://acme.co.za"
                       />
                     </div>
@@ -754,7 +754,7 @@ export default function OrdersPage() {
                         type="text"
                         value={formData.companyAddress}
                         onChange={(e) => setFormData({ ...formData, companyAddress: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                         placeholder="Factory Address for Manufacturing"
                       />
                     </div>
@@ -764,7 +764,7 @@ export default function OrdersPage() {
                         type="text"
                         value={formData.contactPersonName}
                         onChange={(e) => setFormData({ ...formData, contactPersonName: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                         placeholder="Jane Smith"
                       />
                     </div>
@@ -774,7 +774,7 @@ export default function OrdersPage() {
                         type="email"
                         value={formData.contactPersonEmail}
                         onChange={(e) => setFormData({ ...formData, contactPersonEmail: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                         placeholder="jane@acme.co.za"
                       />
                     </div>
@@ -784,7 +784,7 @@ export default function OrdersPage() {
                         type="tel"
                         value={formData.contactPersonPhone}
                         onChange={(e) => setFormData({ ...formData, contactPersonPhone: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                         placeholder="+27 82 987 6543"
                       />
                     </div>
@@ -807,7 +807,7 @@ export default function OrdersPage() {
                   </div>
                   <div className="space-y-2">
                     {orderItems.map((item, index) => (
-                      <div key={index} className="flex items-center gap-2 p-3 bg-white/5 rounded-xl">
+                      <div key={index} className="flex items-center gap-2 p-3 bg-white/5 rounded-[14px]">
                         <input
                           type="text"
                           value={item.productName}
@@ -864,7 +864,7 @@ export default function OrdersPage() {
                         type="url"
                         value={formData.invoiceDocument}
                         onChange={(e) => setFormData({ ...formData, invoiceDocument: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                         placeholder="https://storage.example.com/invoice.pdf"
                       />
                     </div>
@@ -874,7 +874,7 @@ export default function OrdersPage() {
                         type="url"
                         value={formData.legalDocument}
                         onChange={(e) => setFormData({ ...formData, legalDocument: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                         placeholder="https://storage.example.com/contract.pdf"
                       />
                     </div>
@@ -884,7 +884,7 @@ export default function OrdersPage() {
                         type="url"
                         value={formData.paymentProof}
                         onChange={(e) => setFormData({ ...formData, paymentProof: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                         placeholder="https://storage.example.com/payment.jpg"
                       />
                     </div>
@@ -894,7 +894,7 @@ export default function OrdersPage() {
                         type="url"
                         value={formData.customLogo}
                         onChange={(e) => setFormData({ ...formData, customLogo: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                         placeholder="https://storage.example.com/logo.png"
                       />
                     </div>
@@ -907,7 +907,7 @@ export default function OrdersPage() {
                       <input
                         type="url"
                         id="productImageUrl"
-                        className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                         placeholder="https://storage.example.com/product1.jpg"
                         onKeyPress={(e) => {
                           if (e.key === "Enter") {
@@ -924,7 +924,7 @@ export default function OrdersPage() {
                           handleAddUrl("productImages", input.value);
                           input.value = "";
                         }}
-                        className="px-4 py-2 bg-white/10 text-white rounded-xl hover:bg-white/20"
+                        className="px-4 py-2 bg-white/10 text-white rounded-[14px] hover:bg-white/20"
                       >
                         Add
                       </button>
@@ -949,7 +949,7 @@ export default function OrdersPage() {
                       <input
                         type="url"
                         id="mockupUrl"
-                        className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                         placeholder="https://storage.example.com/mockup1.jpg"
                         onKeyPress={(e) => {
                           if (e.key === "Enter") {
@@ -966,7 +966,7 @@ export default function OrdersPage() {
                           handleAddUrl("mockupPhotos", input.value);
                           input.value = "";
                         }}
-                        className="px-4 py-2 bg-white/10 text-white rounded-xl hover:bg-white/20"
+                        className="px-4 py-2 bg-white/10 text-white rounded-[14px] hover:bg-white/20"
                       >
                         Add
                       </button>
@@ -992,7 +992,7 @@ export default function OrdersPage() {
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     rows={3}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-none"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-none"
                     placeholder="Any special instructions..."
                   />
                 </div>
@@ -1009,7 +1009,7 @@ export default function OrdersPage() {
                 <button
                   onClick={handleCreateOrder}
                   disabled={submitting || !formData.clientName || !formData.clientEmail || orderItems.every(i => !i.productName)}
-                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-colors"
+                  className="flex items-center gap-2 px-6 py-3 rs-btn-primary disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
                 >
                   {submitting ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
