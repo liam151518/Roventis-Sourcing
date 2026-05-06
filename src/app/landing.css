@@ -1,0 +1,79 @@
+/* Landing Page Styles - Precision Terrain Dark Theme */
+
+.topo-bg {
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(139, 92, 246, 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 80% 60%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+    radial-gradient(circle, rgba(139, 92, 246, 0.04) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 32px 32px;
+  background-position: center;
+}
+
+.glow-pill {
+  box-shadow: 0 8px 32px -8px rgba(139, 92, 246, 0.4);
+}
+
+.glow-pill:hover {
+  box-shadow: 0 12px 40px -8px rgba(139, 92, 246, 0.6);
+}
+
+.ghost-pill {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.ghost-pill:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.browser-frame {
+  border-radius: 1rem 1rem 0 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+  background: #0d0d12;
+}
+
+.browser-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.browser-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.browser-url {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.hero-stat-number {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: white;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 768px) {
+  .hero-stat-number {
+    font-size: 2.5rem;
+  }
+}
+
+.step-number-ghost {
+  font-family: monospace;
+  font-size: 4.5rem;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.04);
+  line-height: 1;
+}
+
+@media (min-width: 768px) {
+  .step-number-ghost {
+    font-size: 5rem;
+  }
+}
