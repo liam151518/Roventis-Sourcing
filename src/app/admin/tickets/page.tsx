@@ -18,10 +18,10 @@ const ticketStatuses = [
 ];
 
 const priorityColors: Record<string, string> = {
-  low: "bg-blue-500/20 text-blue-400",
-  medium: "bg-yellow-500/20 text-yellow-400",
-  high: "bg-orange-500/20 text-orange-400",
-  urgent: "bg-red-500/20 text-red-400",
+  low: "bg-[var(--rs-info)]/10 text-[var(--rs-info)]",
+  medium: "bg-[var(--rs-warning)]/10 text-[var(--rs-warning)]",
+  high: "bg-[var(--rs-danger)]/10 text-[var(--rs-danger)]",
+  urgent: "bg-[var(--rs-danger)]/10 text-[var(--rs-danger)]",
 };
 
 const categoryLabels: Record<string, string> = {
@@ -138,7 +138,8 @@ export default function AdminTicketsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-white">Support Tickets</h1>
+          <span className="rs-overline">Admin</span>
+          <h1 className="rs-page-title">Support Tickets</h1>
           <p className="text-gray-500 mt-1">Manage and respond to affiliate support requests</p>
         </div>
         <div className="flex items-center gap-3">
@@ -174,7 +175,7 @@ export default function AdminTicketsPage() {
                 <status.icon className={`w-4 h-4 ${status.color.replace("bg-", "text-").replace("/20", "")}`} />
                 <span className="text-gray-400 text-sm">{status.label}</span>
               </div>
-              <p className="text-2xl font-semibold text-white mt-1">{count}</p>
+              <p className="rs-stat mt-1">{count}</p>
             </button>
           );
         })}
@@ -223,7 +224,7 @@ export default function AdminTicketsPage() {
                   <div
                     key={ticket._id}
                     className={`border-b border-white/5 ${
-                      isSelected ? "bg-blue-600/20" : "hover:bg-white/5"
+                      isSelected ? "bg-[var(--rs-accent-soft)]" : "hover:bg-white/5"
                     }`}
                   >
                     <div
@@ -389,7 +390,7 @@ export default function AdminTicketsPage() {
                 {/* Original Message */}
                 <div className="bg-white/5 rounded-2xl rounded-tl-sm p-4 max-w-[85%]">
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-xs font-medium text-white">
+                    <div className="w-6 h-6 rounded-full bg-[var(--rs-accent)] flex items-center justify-center text-xs font-medium text-white">
                       {selectedTicket.affiliate?.firstName?.[0]}{selectedTicket.affiliate?.lastName?.[0]}
                     </div>
                     <span className="text-gray-400 text-xs">
@@ -410,7 +411,7 @@ export default function AdminTicketsPage() {
                     >
                       <div className={`max-w-[85%] rounded-2xl p-4 ${
                         isAdmin 
-                          ? "bg-blue-600 text-white rounded-tr-sm" 
+                          ? "bg-[var(--rs-accent)] text-white rounded-tr-sm" 
                           : "bg-white/5 text-white rounded-tl-sm"
                       }`}>
                         <div className="flex items-center gap-2 mb-2">
@@ -421,7 +422,7 @@ export default function AdminTicketsPage() {
                             </>
                           ) : (
                             <>
-                              <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-xs font-medium text-white">
+                              <div className="w-6 h-6 rounded-full bg-[var(--rs-accent)] flex items-center justify-center text-xs font-medium text-white">
                                 {selectedTicket.affiliate?.firstName?.[0]}
                               </div>
                               <span className="text-gray-400 text-xs">
@@ -454,7 +455,7 @@ export default function AdminTicketsPage() {
                     <button
                       onClick={handleReply}
                       disabled={!replyMessage.trim()}
-                      className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                      className="px-6 py-3 bg-[var(--rs-accent)] text-white rounded-xl hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
                     >
                       <Send className="w-5 h-5" />
                       Send

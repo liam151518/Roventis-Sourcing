@@ -130,7 +130,7 @@ export default function LeadsPage() {
   if (currentAffiliate === null || availableLeadsData === null || leadStats === null) {
     return (
       <div className="min-h-screen bg-[#0a0a0b] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-violet-500"></div>
       </div>
     );
   }
@@ -168,9 +168,9 @@ export default function LeadsPage() {
           <h1 className="rs-page-title">Fresh leads sourced and verified by Roventis</h1>
         </div>
         <div className="flex items-center gap-4">
-          <div className="rs-card">
+          <div className="rs-card px-4 py-3">
             <div className="flex items-center gap-2">
-              <Target className="w-4 h-4 text-blue-400" />
+              <Target className="w-4 h-4 text-violet-400" />
               <span className="text-gray-400 text-sm">This week:</span>
               <span className="text-white font-semibold">
                 {tier === "platinum" ? "Unlimited" : `${weeklyUsed} / ${weeklyLimit}`}
@@ -180,7 +180,7 @@ export default function LeadsPage() {
               <div className="mt-1">
                 <div className="h-1.5 bg-[#0a0a0b] rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all"
+                    className="h-full bg-gradient-to-r from-violet-500 to-violet-400 rounded-full transition-all"
                     style={{ width: `${(weeklyUsed / weeklyLimit) * 100}%` }}
                   />
                 </div>
@@ -188,10 +188,10 @@ export default function LeadsPage() {
             )}
           </div>
           {tier !== "platinum" && (
-            <div className="px-3 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+            <div className="bg-[var(--rs-warning)]/10 border border-[var(--rs-warning)]/20 rounded-xl px-3 py-2">
               <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-amber-400" />
-                <span className="text-amber-400 text-sm">
+                <Clock className="w-4 h-4 text-[var(--rs-warning)]" />
+                <span className="text-[var(--rs-warning)] text-sm">
                   Resets in {getTimeUntilReset(resetAt)}
                 </span>
               </div>
@@ -224,9 +224,9 @@ export default function LeadsPage() {
               <span className="capitalize">{pool}</span>
               {!isLocked && (
                 <span className={`px-2 py-0.5 rounded text-xs ${
-                  pool === "premium" ? "bg-purple-500/10 text-purple-400" :
-                  pool === "priority" ? "bg-blue-500/10 text-blue-400" :
-                  "bg-gray-500/10 text-gray-400"
+                  pool === "premium" ? "bg-violet-500/10 text-violet-400" :
+                  pool === "priority" ? "bg-[var(--rs-info)]/10 text-[var(--rs-info)]" :
+                  "bg-[var(--rs-bg-overlay)] text-[var(--rs-text-muted)]"
                 }`}>
                   {count}
                 </span>
@@ -273,49 +273,54 @@ export default function LeadsPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="rs-card hover:border-white/10"
+                  className="rs-card p-4 flex flex-col hover:border-white/10 transition-colors"
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="text-white font-semibold">{lead.companyName}</h3>
-                      <p className="text-gray-400 text-sm">{lead.contactName}</p>
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-white font-semibold truncate">{lead.companyName}</h3>
+                      <p className="text-[var(--rs-text-secondary)] text-sm truncate">{lead.contactName}</p>
                     </div>
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      lead.poolTier === "premium" ? "bg-purple-500/10 text-purple-400" :
-                      lead.poolTier === "priority" ? "bg-blue-500/10 text-blue-400" :
-                      "bg-gray-500/10 text-gray-400"
+                    <span className={`flex-shrink-0 px-2 py-1 rounded text-xs font-medium ${
+                      lead.poolTier === "premium" ? "bg-violet-500/10 text-violet-400" :
+                      lead.poolTier === "priority" ? "bg-[var(--rs-info)]/10 text-[var(--rs-info)]" :
+                      "bg-[var(--rs-bg-overlay)] text-[var(--rs-text-muted)]"
                     }`}>
                       {lead.poolTier}
                     </span>
                   </div>
 
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Building className="w-4 h-4 text-gray-500" />
-                      <span className="text-gray-300">{lead.industry}</span>
+                  <div className="space-y-2 mb-3 flex-1">
+                    <div className="flex items-center gap-2 text-sm min-w-0">
+                      <Building className="w-4 h-4 text-[var(--rs-text-muted)] flex-shrink-0" />
+                      <span className="text-[var(--rs-text-secondary)] truncate">{lead.industry}</span>
                     </div>
                     {(lead.city || lead.province) && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <MapPin className="w-4 h-4 text-gray-500" />
-                        <span className="text-gray-300">
+                      <div className="flex items-center gap-2 text-sm min-w-0">
+                        <MapPin className="w-4 h-4 text-[var(--rs-text-muted)] flex-shrink-0" />
+                        <span className="text-[var(--rs-text-secondary)] truncate">
                           {[lead.city, lead.province].filter(Boolean).join(", ")}
                         </span>
                       </div>
                     )}
                     {lead.productInterest && lead.productInterest.length > 0 && (
                       <div className="flex flex-wrap gap-1">
-                        {lead.productInterest.map((interest, i) => (
-                          <span key={i} className="px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded text-xs">
+                        {lead.productInterest.slice(0, 3).map((interest, i) => (
+                          <span key={i} className="px-2 py-0.5 bg-[var(--rs-accent-soft)] text-[var(--rs-text-accent)] rounded text-xs">
                             {interest}
                           </span>
                         ))}
+                        {lead.productInterest.length > 3 && (
+                          <span className="px-2 py-0.5 bg-[var(--rs-bg-overlay)] text-[var(--rs-text-muted)] rounded text-xs">
+                            +{lead.productInterest.length - 3}
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-3">
                     {lead.estimatedBudget && (
-                      <div className="flex items-center gap-1 text-emerald-400">
+                      <div className="flex items-center gap-1 text-[var(--rs-success)]">
                         <DollarSign className="w-4 h-4" />
                         <span className="font-medium">{formatCurrency(lead.estimatedBudget)}</span>
                       </div>
@@ -331,7 +336,7 @@ export default function LeadsPage() {
                       setShowClaimModal(true);
                     }}
                     disabled={isTrainingRequired || (tier !== "platinum" && weeklyUsed >= weeklyLimit)}
-                    className="w-full py-2.5 rs-btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full rs-btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-auto"
                   >
                     <UserPlus className="w-4 h-4" />
                     {isTrainingRequired ? "Training Required" : tier !== "platinum" && weeklyUsed >= weeklyLimit ? "Weekly Limit Reached" : "Claim Lead"}
@@ -380,7 +385,7 @@ export default function LeadsPage() {
 
               <div className="space-y-3 mb-6">
                 <div className="flex items-center gap-3 p-3 bg-white/5 rounded-[14px]">
-                  <Building className="w-5 h-5 text-blue-400" />
+                  <Building className="w-5 h-5 text-violet-400" />
                   <div>
                     <p className="text-white font-medium">{selectedLead.companyName}</p>
                     <p className="text-gray-400 text-sm">{selectedLead.contactName}</p>
@@ -394,8 +399,8 @@ export default function LeadsPage() {
                 )}
               </div>
 
-              <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl mb-6">
-                <p className="text-blue-400 text-sm">
+              <div className="p-3 bg-[var(--rs-info)]/10 border border-[var(--rs-info)]/20 rounded-xl mb-6">
+                <p className="text-[var(--rs-info)] text-sm">
                   This lead will be assigned to you for 72 hours. After that, it will be returned to the pool.
                 </p>
               </div>
@@ -450,9 +455,9 @@ function CountdownBadge({ expiresAt }: { expiresAt: number }) {
   }, [expiresAt]);
 
   const urgency = expiresAt - Date.now();
-  const color = urgency < 6 * 60 * 60 * 1000 ? "text-red-400" : 
-               urgency < 24 * 60 * 60 * 1000 ? "text-amber-400" : 
-               "text-blue-400";
+  const color = urgency < 6 * 60 * 60 * 1000 ? "text-[var(--rs-danger)]" : 
+               urgency < 24 * 60 * 60 * 1000 ? "text-[var(--rs-warning)]" : 
+               "text-[var(--rs-info)]";
 
   return (
     <div className={`flex items-center gap-1 px-2 py-1 rounded-lg ${color} bg-current/10`}>

@@ -13,19 +13,19 @@ import { formatDate, formatCurrency } from "@/lib/utils";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 
 const orderStatuses = [
-  { value: "draft", label: "Draft", color: "bg-gray-500/20 text-gray-400" },
-  { value: "submitted", label: "Submitted", color: "bg-blue-500/20 text-blue-400" },
-  { value: "supplier_confirmed", label: "Supplier Confirmed", color: "bg-purple-500/20 text-purple-400" },
-  { value: "in_transit", label: "In Transit", color: "bg-amber-500/20 text-amber-400" },
-  { value: "delivered", label: "Delivered", color: "bg-green-500/20 text-green-400" },
-  { value: "installed", label: "Installed", color: "bg-emerald-500/20 text-emerald-400" },
-  { value: "cancelled", label: "Cancelled", color: "bg-red-500/20 text-red-400" },
+  { value: "draft", label: "Draft", color: "bg-[var(--rs-bg-overlay)] text-[var(--rs-text-muted)]" },
+  { value: "submitted", label: "Submitted", color: "bg-[var(--rs-info)]/10 text-[var(--rs-info)]" },
+  { value: "supplier_confirmed", label: "Supplier Confirmed", color: "bg-violet-500/10 text-violet-400" },
+  { value: "in_transit", label: "In Transit", color: "bg-[var(--rs-warning)]/10 text-[var(--rs-warning)]" },
+  { value: "delivered", label: "Delivered", color: "bg-[var(--rs-success)]/10 text-[var(--rs-success)]" },
+  { value: "installed", label: "Installed", color: "bg-[var(--rs-success)]/10 text-[var(--rs-success)]" },
+  { value: "cancelled", label: "Cancelled", color: "bg-[var(--rs-danger)]/10 text-[var(--rs-danger)]" },
 ];
 
 const commissionStatuses = [
-  { value: "pending", label: "Pending", color: "bg-yellow-500/20 text-yellow-400" },
-  { value: "approved", label: "Approved", color: "bg-blue-500/20 text-blue-400" },
-  { value: "paid", label: "Paid", color: "bg-green-500/20 text-green-400" },
+  { value: "pending", label: "Pending", color: "bg-[var(--rs-warning)]/10 text-[var(--rs-warning)]" },
+  { value: "approved", label: "Approved", color: "bg-[var(--rs-success)]/10 text-[var(--rs-success)]" },
+  { value: "paid", label: "Paid", color: "bg-[var(--rs-info)]/10 text-[var(--rs-info)]" },
 ];
 
 export default function AdminOrdersPage() {
@@ -111,12 +111,13 @@ export default function AdminOrdersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-white tracking-tight">Orders</h1>
+          <span className="rs-overline">Admin</span>
+          <h1 className="rs-page-title">Orders</h1>
           <p className="text-gray-500 mt-1">Manage all orders with full details and fulfillment</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="px-4 py-2 bg-blue-500/20 rounded-xl">
-            <span className="text-blue-400 font-medium">{stats.submitted} submitted</span>
+          <div className="px-4 py-2 bg-[var(--rs-warning)]/10 rounded-xl">
+            <span className="text-[var(--rs-warning)] font-medium">{stats.submitted} submitted</span>
           </div>
           <div className="px-4 py-2 bg-amber-500/20 rounded-xl">
             <span className="text-amber-400 font-medium">{stats.inProgress} in progress</span>
@@ -204,7 +205,7 @@ export default function AdminOrdersPage() {
                   <td className="p-4">
                     <button
                       onClick={() => { setSelectedOrder(order); setShowDetail(true); setAdminNotes(order.adminNotes || ""); setTrackingNumber(order.trackingNumber || ""); }}
-                      className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm transition-colors"
+                      className="px-3 py-1 rs-btn-primary text-sm"
                     >
                       View Details
                     </button>
@@ -556,7 +557,7 @@ export default function AdminOrdersPage() {
                   <div className="flex justify-end mt-3">
                     <button
                       onClick={handleSaveNotes}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
+                      className="flex items-center gap-2 rs-btn-primary"
                     >
                       <Save className="w-4 h-4" />
                       Save Notes

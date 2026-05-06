@@ -38,6 +38,8 @@ const tiers = [
     name: "Bronze",
     color: "from-orange-700 to-orange-900",
     accentColor: "text-orange-400",
+    borderAccent: "border-orange-500/20",
+    iconColor: "text-orange-400",
     borderColor: "border-orange-500/30",
     icon: Award,
     commission: "5%",
@@ -59,6 +61,8 @@ const tiers = [
     name: "Silver",
     color: "from-gray-400 to-gray-600",
     accentColor: "text-gray-300",
+    borderAccent: "border-white/10",
+    iconColor: "text-[var(--rs-text-secondary)]",
     borderColor: "border-gray-400/30",
     icon: Star,
     commission: "7.5%",
@@ -80,6 +84,8 @@ const tiers = [
     name: "Gold",
     color: "from-yellow-500 to-amber-600",
     accentColor: "text-yellow-400",
+    borderAccent: "border-amber-400/30",
+    iconColor: "text-amber-300",
     borderColor: "border-yellow-500/30",
     icon: TrendingUp,
     commission: "10%",
@@ -101,6 +107,8 @@ const tiers = [
     name: "Platinum",
     color: "from-violet-600 to-purple-800",
     accentColor: "text-violet-400",
+    borderAccent: "border-violet-500/30",
+    iconColor: "text-violet-300",
     borderColor: "border-violet-500/30",
     icon: Crown,
     commission: "12-15%",
@@ -131,10 +139,17 @@ export default function ProfilePage() {
   const [copied, setCopied] = useState(false);
 
   const tierColors: Record<string, string> = {
-    bronze: "from-amber-700 to-amber-900",
-    silver: "from-gray-400 to-gray-600",
-    gold: "from-yellow-500 to-amber-600",
-    platinum: "from-violet-600 to-purple-800",
+    bronze: "border-orange-500/20",
+    silver: "border-white/10",
+    gold: "border-amber-400/30",
+    platinum: "border-violet-500/30",
+  };
+
+  const tierIconColors: Record<string, string> = {
+    bronze: "text-orange-400",
+    silver: "text-[var(--rs-text-secondary)]",
+    gold: "text-amber-300",
+    platinum: "text-violet-300",
   };
 
   const tabs = [
@@ -167,7 +182,7 @@ export default function ProfilePage() {
         className="rs-card p-6"
       >
         <div className="flex flex-col md:flex-row md:items-center gap-6">
-          <div className={`w-24 h-24 bg-gradient-to-br ${tierColors[currentAffiliate.tier] || "from-gray-500 to-gray-600"} rounded-[14px] flex items-center justify-center text-3xl font-bold text-white shadow-lg`}>
+          <div className={`w-24 h-24 bg-[var(--rs-accent-soft)] ${tierIconColors[currentAffiliate.tier] || "text-violet-400"} rounded-[14px] flex items-center justify-center text-3xl font-bold text-white shadow-lg`}>
             {currentAffiliate.firstName?.[0]}{currentAffiliate.lastName?.[0]}
           </div>
           <div className="flex-1">
@@ -175,7 +190,7 @@ export default function ProfilePage() {
               <h1 className="text-2xl font-semibold text-white">
                 {currentAffiliate.firstName} {currentAffiliate.lastName}
               </h1>
-              <span className={`px-3 py-1 bg-gradient-to-r ${tierColors[currentAffiliate.tier]} text-white text-xs font-medium rounded-full capitalize`}>
+              <span className={`px-3 py-1 bg-[var(--rs-accent-soft)] text-violet-400 border border-[var(--rs-accent)]/20 text-xs font-medium rounded-full capitalize`}>
                 {currentAffiliate.tier} Tier
               </span>
             </div>
@@ -563,7 +578,7 @@ export default function ProfilePage() {
                             initial={{ width: 0 }}
                             animate={{ width: `${Math.min(100, ((currentAffiliate.totalSales || 0) / (nextTier.id === "gold" ? 150000 : 500000)) * 100)}%` }}
                             transition={{ duration: 1, delay: 0.3 }}
-                            className={`h-full bg-gradient-to-r ${nextTier.color} rounded-full`} 
+                            className="h-full bg-gradient-to-r from-violet-500 to-violet-400 rounded-full" 
                           />
                         </div>
                         <p className="text-xs text-gray-500 mt-2">
@@ -594,11 +609,11 @@ export default function ProfilePage() {
                     >
                       {isCurrentTier && (
                         <div className="absolute top-4 right-4">
-                          <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-xs font-medium rounded-full">Current</span>
+                          <span className="px-3 py-1 bg-[var(--rs-accent-soft)] text-violet-400 text-xs font-medium rounded-full">Current</span>
                         </div>
                       )}
                       
-                      <div className={`w-12 h-12 rounded-[14px] bg-gradient-to-br ${tier.color} flex items-center justify-center mb-4 shadow-lg`}>
+                      <div className={`w-12 h-12 rounded-[14px] bg-[var(--rs-accent-soft)] flex items-center justify-center mb-4 shadow-lg ${tier.iconColor}`}>
                         <Icon className="w-6 h-6 text-white" />
                       </div>
                       
