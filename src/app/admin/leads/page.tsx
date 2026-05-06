@@ -206,14 +206,13 @@ export default function AdminLeadsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div>
           <p className="rs-overline">Admin</p>
           <h1 className="rs-page-title">Lead Management</h1>
-          <p className="text-gray-400">Manage leads, bulk upload, and track activity</p>
+          <p className="text-[var(--rs-text-secondary)] text-sm mt-1">Manage leads, bulk upload, and track activity</p>
         </div>
         <button
           onClick={handleSeedDemo}
-          className="px-4 py-2 rs-btn-primary text-sm font-medium transition-colors"
+          className="rs-btn-primary text-sm"
         >
           Seed Demo Leads
         </button>
