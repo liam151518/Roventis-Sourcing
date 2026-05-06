@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useAuth } from "@clerk/nextjs";
 import { formatDate, formatRelativeTime } from "@/lib/utils";
 
 const faqs = [
@@ -121,7 +122,11 @@ const statusLabels: Record<string, string> = {
 };
 
 export default function SupportPage() {
-  const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate);
+  const { userId } = useAuth();
+  const currentAffiliate = useQuery(
+    api.affiliates.getCurrentAffiliate,
+    { clerkUserId: userId || undefined }
+  );
   const tickets = useQuery(api.support.getMyTickets, { 
     affiliateId: currentAffiliate?._id as string 
   });

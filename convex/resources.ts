@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { Id } from "./_generated/dataModel";
 
 export const getResources = query({
   args: { 
@@ -45,9 +46,9 @@ export const createResource = mutation({
 export const incrementDownloadCount = mutation({
   args: { id: v.string() },
   handler: async (ctx, args) => {
-    const resource = await ctx.db.get(args.id);
+    const resource = await ctx.db.get(args.id as Id<"resources">);
     if (resource) {
-      await ctx.db.patch(args.id, { downloadCount: resource.downloadCount + 1 });
+      await ctx.db.patch(args.id as Id<"resources">, { downloadCount: resource.downloadCount + 1 });
     }
     return args.id;
   },

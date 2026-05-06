@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useAuth } from "@clerk/nextjs";
 import { formatCurrency } from "@/lib/utils";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 
@@ -57,7 +58,11 @@ interface OrderItem {
 }
 
 export default function OrdersPage() {
-  const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate);
+  const { userId } = useAuth();
+  const currentAffiliate = useQuery(
+    api.affiliates.getCurrentAffiliate,
+    { clerkUserId: userId || undefined }
+  );
   const orders = useQuery(api.orders.getMyOrders, { 
     affiliateId: currentAffiliate?._id as string 
   });

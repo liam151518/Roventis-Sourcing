@@ -42,7 +42,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { userId, isLoaded, user } = useAuth();
+  const { userId, isLoaded } = useAuth();
+  const { user } = useUser();
   
   const userEmail = useMemo(() => {
     if (!user) return "";
@@ -210,7 +211,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
               )}
               {collapsed && (
                 <div className="w-8 h-8">
-                  <UserButton afterSignOutUrl="/" />
+                  <UserButton />
                 </div>
               )}
             </div>

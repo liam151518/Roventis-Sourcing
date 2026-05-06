@@ -130,7 +130,7 @@ export default function InvoiceHistoryPage() {
                     <span className="text-gray-300">{invoice.clientCompanyName}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-gray-500">{formatDate(invoice.invoiceDate)}</span>
+                    <span className="text-gray-500">{formatDate(Number(invoice.invoiceDate))}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="font-medium text-white">{ZAR(invoice.total)}</span>

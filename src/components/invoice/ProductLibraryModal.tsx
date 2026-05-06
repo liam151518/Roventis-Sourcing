@@ -185,7 +185,7 @@ export function ProductLibraryModal({
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {filteredProducts.map((product: Product) => (
                   <button
-                    key={product.id}
+                    key={(product as any).id}
                     onClick={() => handleProductClick(product)}
                     disabled={!targetLineItemId}
                     className="bg-white/5 rounded-xl border border-white/5 overflow-hidden hover:border-blue-500/50 hover:bg-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-left"
@@ -227,7 +227,7 @@ export function ProductLibraryModal({
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm text-gray-400">Select Quantity</span>
                     <span className="text-sm text-green-400 font-semibold">
-                      Current: {ZAR(selectedProduct.pricing[selectedQuantity as keyof typeof selectedProduct.pricing])}
+                      Current: {ZAR(Number((selectedProduct.pricing as any)?.[selectedQuantity] ?? 0))}
                     </span>
                   </div>
                   <div className="flex gap-2">
@@ -245,7 +245,7 @@ export function ProductLibraryModal({
                       >
                         {qty} pcs
                         <div className="text-xs opacity-80">
-                          {ZAR(selectedProduct.pricing[qty as keyof typeof selectedProduct.pricing])}
+                          {ZAR(Number((selectedProduct.pricing as any)?.[qty] ?? 0))}
                         </div>
                       </button>
                     ))}
@@ -266,13 +266,13 @@ export function ProductLibraryModal({
                 {selectedProduct.colors.map((color, index) => (
                   <button
                     key={index}
-                    onClick={() => handleColorSelect(color.name, colorimageUrl)}
+                    onClick={() => handleColorSelect(color.name, color.imageUrl)}
                     disabled={!targetLineItemId}
                     className="bg-white/5 rounded-xl border border-white/5 overflow-hidden hover:border-green-500/50 hover:bg-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <div className="h-32 bg-white/5 p-2">
                       <img
-                        src={colorimageUrl}
+                        src={color.imageUrl}
                         alt={`${selectedProduct.name} - ${color.name}`}
                         className="w-full h-full object-contain rounded-md"
                         crossOrigin="anonymous"
@@ -299,7 +299,7 @@ export function ProductLibraryModal({
                 ? "Select a line item first, then choose a product."
                 : selectedProduct
                   ? selectedProduct.pricing?.confirmed
-                    ? `Click a color to add ${selectedProduct.name} at ${ZAR(currentPrice)} per unit.`
+                    ? `Click a color to add ${selectedProduct.name} at ${ZAR(currentPrice ?? 0)} per unit.`
                     : "This product's price is not confirmed yet."
                   : "Select a product to see available colors."}
             </p>

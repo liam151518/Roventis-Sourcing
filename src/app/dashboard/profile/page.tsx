@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useAuth } from "@clerk/nextjs";
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 
@@ -120,7 +121,11 @@ const tiers = [
 ];
 
 export default function ProfilePage() {
-  const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate);
+  const { userId } = useAuth();
+  const currentAffiliate = useQuery(
+    api.affiliates.getCurrentAffiliate,
+    { clerkUserId: userId || undefined }
+  );
   const [activeTab, setActiveTab] = useState("personal");
   const [isEditing, setIsEditing] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -417,14 +422,14 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Branch Code</p>
-                    <p className="text-white font-medium">{currentAffiliate.branchCode || "Not set"}</p>
+                    <p className="text-white font-medium">{(currentAffiliate as any)?.branchCode || "Not set"}</p>
                   </div>
                 </div>
                 {isEditing && (
                   <input
                     type="text"
                     name="branchCode"
-                    defaultValue={currentAffiliate.branchCode || ""}
+                    defaultValue={(currentAffiliate as any)?.branchCode || ""}
                     className="w-full mt-3 px-4 py-2.5 bg-[#141417] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                     placeholder="e.g., 250655"
                   />

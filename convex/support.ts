@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { Id } from "./_generated/dataModel";
 
 // Get support tickets for current affiliate
 export const getMyTickets = query({
@@ -24,7 +25,7 @@ export const getAllTickets = query({
 export const getTicketById = query({
   args: { ticketId: v.string() },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.ticketId);
+    return await ctx.db.get(args.ticketId as Id<"supportTickets">);
   },
 });
 
@@ -62,7 +63,7 @@ export const addTicketMessage = mutation({
     content: v.string(),
   },
   handler: async (ctx, args) => {
-    const ticket = await ctx.db.get(args.ticketId);
+    const ticket = await ctx.db.get(args.ticketId as Id<"supportTickets">);
     if (!ticket) {
       throw new Error("Ticket not found");
     }
@@ -73,7 +74,7 @@ export const addTicketMessage = mutation({
       createdAt: Date.now(),
     };
 
-    await ctx.db.patch(args.ticketId, {
+    await ctx.db.patch(args.ticketId as Id<"supportTickets">, {
       messages: [...ticket.messages, newMessage],
       status: args.sender === "affiliate" ? "in_progress" : ticket.status,
       updatedAt: Date.now(),
@@ -90,7 +91,7 @@ export const updateTicketStatus = mutation({
     status: v.union(v.literal("open"), v.literal("in_progress"), v.literal("resolved"), v.literal("closed")),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.ticketId, {
+    await ctx.db.patch(args.ticketId as Id<"supportTickets">, {
       status: args.status,
       updatedAt: Date.now(),
     });

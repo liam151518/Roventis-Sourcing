@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { Id } from "./_generated/dataModel";
 
 // Get orders for current affiliate
 export const getMyOrders = query({
@@ -17,7 +18,7 @@ export const getMyOrders = query({
 export const getOrderById = query({
   args: { orderId: v.string() },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.orderId);
+    return await ctx.db.get(args.orderId as Id<"orders">);
   },
 });
 
@@ -80,7 +81,7 @@ export const createOrder = mutation({
 
     // If linked to a deal, update the deal status
     if (args.dealId) {
-      await ctx.db.patch(args.dealId, {
+      await ctx.db.patch(args.dealId as any, {
         status: "closed_won",
         actualCloseDate: Date.now(),
       });
@@ -102,36 +103,37 @@ export const updateOrderStatus = mutation({
   },
   handler: async (ctx, args) => {
     const { orderId, ...updates } = args;
-    const order = await ctx.db.get(orderId);
+    const order = await ctx.db.get(orderId as Id<"orders">);
     
     if (!order) {
       throw new Error("Order not found");
     }
 
-    await ctx.db.patch(orderId, updates);
+    await ctx.db.patch(orderId as Id<"orders">, updates);
 
     // When order is installed/delivered, approve commission
     if (args.status === "delivered" || args.status === "installed") {
-      const affiliate = await ctx.db.get(order.affiliateId);
+      const affiliate = await ctx.db.get(order.affiliateId as any);
       if (affiliate) {
+        const aff = affiliate as any;
         // Calculate commission based on tier
         let commissionRate = 0.05;
-        if (affiliate.tier === "silver") commissionRate = 0.10;
-        if (affiliate.tier === "gold") commissionRate = 0.15;
-        if (affiliate.tier === "platinum") commissionRate = 0.25;
+        if (aff.tier === "silver") commissionRate = 0.10;
+        if (aff.tier === "gold") commissionRate = 0.15;
+        if (aff.tier === "platinum") commissionRate = 0.25;
 
         const commissionAmount = order.totalAmount * commissionRate;
         
-        await ctx.db.patch(orderId, {
+        await ctx.db.patch(orderId as any, {
           commissionStatus: "approved",
           commissionAmount,
         });
 
         // Update affiliate stats
-        await ctx.db.patch(affiliate._id, {
-          totalSales: affiliate.totalSales + order.totalAmount,
-          totalCommissionEarned: affiliate.totalCommissionEarned + commissionAmount,
-          pendingCommission: (affiliate.pendingCommission || 0) + commissionAmount,
+        await ctx.db.patch(aff._id, {
+          totalSales: aff.totalSales + order.totalAmount,
+          totalCommissionEarned: aff.totalCommissionEarned + commissionAmount,
+          pendingCommission: (aff.pendingCommission || 0) + commissionAmount,
         });
       }
     }
@@ -160,7 +162,7 @@ export const updateOrder = mutation({
   },
   handler: async (ctx, args) => {
     const { orderId, ...updates } = args;
-    await ctx.db.patch(orderId, updates);
+    await ctx.db.patch(orderId as any, updates);
     return { success: true };
   },
 });
@@ -169,7 +171,7 @@ export const updateOrder = mutation({
 export const submitOrder = mutation({
   args: { orderId: v.string() },
   handler: async (ctx, args) => {
-    const order = await ctx.db.get(args.orderId);
+    const order = await ctx.db.get(args.orderId as Id<"orders">);
     if (!order) {
       throw new Error("Order not found");
     }
@@ -177,7 +179,7 @@ export const submitOrder = mutation({
       throw new Error("Only draft orders can be submitted");
     }
 
-    await ctx.db.patch(args.orderId, {
+    await ctx.db.patch(args.orderId as Id<"orders">, {
       status: "submitted",
     });
 
@@ -231,7 +233,7 @@ export const adminUpdateOrder = mutation({
   },
   handler: async (ctx, args) => {
     const { orderId, ...updates } = args;
-    await ctx.db.patch(orderId, updates);
+    await ctx.db.patch(orderId as any, updates);
     return { success: true };
   },
 });

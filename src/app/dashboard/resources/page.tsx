@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useAuth } from "@clerk/nextjs";
+import { formatDate } from "@/lib/utils";
 import productLibraryData from "@/data/productLibrary.json";
 
 const categories = [
@@ -59,8 +61,12 @@ const ZAR = (amount: number): string => {
 };
 
 export default function ResourcesPage() {
-  const resources = useQuery(api.resources.getResources);
-  const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate);
+  const { userId } = useAuth();
+  const resources = useQuery(api.resources.getResources, {});
+  const currentAffiliate = useQuery(
+    api.affiliates.getCurrentAffiliate,
+    { clerkUserId: userId || undefined }
+  );
   const products = productLibraryData.products || [];
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("coaching_sheet");

@@ -15,11 +15,16 @@ import {
 } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useAuth } from "@clerk/nextjs";
 
 export default function TrainingPage() {
+  const { userId } = useAuth();
   const trainingModules = useQuery(api.training.getTrainingModules);
-  const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate);
-  const [selectedModule, setSelectedModule] = useState<typeof trainingModules[0] | null>(null);
+  const currentAffiliate = useQuery(
+    api.affiliates.getCurrentAffiliate,
+    { clerkUserId: userId || undefined }
+  );
+  const [selectedModule, setSelectedModule] = useState<any>(null);
   
   if (!trainingModules || !currentAffiliate) {
     return (

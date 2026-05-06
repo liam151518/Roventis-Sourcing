@@ -1,5 +1,6 @@
 import { query, mutation, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
+import { Id } from "./_generated/dataModel";
 import { TIER_CONFIG, getNextMondayMidnightSAST, CLAIM_TTL_MS, MAX_RELEASES_DEFAULT, getAllowedPools, getWeeklyLimit, type PoolTier } from "./lib/tierConfig";
 import { isAdminClerkId, requireAdmin } from "./lib/auth";
 import { internal } from "./_generated/api";
@@ -41,7 +42,7 @@ function createDedupeKey(data: {
 export const getAvailableLeadsForAffiliate = query({
   args: { affiliateId: v.string() },
   handler: async (ctx, args) => {
-    const affiliate = await ctx.db.get(args.affiliateId as any);
+    const affiliate = await ctx.db.get(args.affiliateId as Id<"affiliates">);
     if (!affiliate) {
       throw new Error("Affiliate not found");
     }
@@ -74,7 +75,7 @@ export const getAvailableLeadsForAffiliate = query({
       .take(100);
 
     // Sort by createdAt desc
-    leads.sort((a, b) => b.createdAt - a.createdAt);
+    leads.sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
 
     // Remove sensitive fields
     const sanitizedLeads = leads.map(lead => ({
@@ -96,7 +97,7 @@ export const getAvailableLeadsForAffiliate = query({
 export const getMyClaimedLeads = query({
   args: { affiliateId: v.string() },
   handler: async (ctx, args) => {
-    const affiliate = await ctx.db.get(args.affiliateId as any);
+    const affiliate = await ctx.db.get(args.affiliateId as Id<"affiliates">);
     if (!affiliate) {
       return [];
     }
@@ -139,7 +140,7 @@ export const getAllLeadsAdmin = query({
     }
 
     // Sort by createdAt desc
-    leads.sort((a, b) => b.createdAt - a.createdAt);
+    leads.sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
 
     return leads;
   },
@@ -152,11 +153,11 @@ export const getLeadActivity = query({
     const activity = await ctx.db
       .query("leadActivity")
       .withIndex("by_leadId")
-      .filter((q) => q.eq(q.field("leadId"), args.leadId))
+      .filter((q) => q.eq(q.field("leadId"), args.leadId as Id<"leads">))
       .collect();
 
     // Sort by createdAt desc
-    activity.sort((a, b) => b.createdAt - a.createdAt);
+    activity.sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
     return activity;
   },
 });
@@ -166,7 +167,7 @@ export const getAllLeadActivity = query({
   handler: async (ctx) => {
     const activity = await ctx.db.query("leadActivity").collect();
     // Sort by createdAt desc, take 100
-    activity.sort((a, b) => b.createdAt - a.createdAt);
+    activity.sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
     return activity.slice(0, 100);
   },
 });
@@ -223,7 +224,7 @@ export const claimLead = mutation({
     const now = Date.now();
 
     // a) Load affiliate and verify status
-    const affiliate = await ctx.db.get(affiliateId);
+    const affiliate = await ctx.db.get(affiliateId as Id<"affiliates">);
     if (!affiliate) {
       throw new Error("Affiliate not found");
     }
@@ -239,7 +240,7 @@ export const claimLead = mutation({
     const weeklyLimit = getWeeklyLimit(tier);
 
     // b) Load lead and verify availability
-    const lead = await ctx.db.get(leadId);
+    const lead = await ctx.db.get(leadId as Id<"leads">);
     if (!lead) {
       throw new Error("Lead not found");
     }
@@ -248,8 +249,9 @@ export const claimLead = mutation({
     }
 
     // c) Verify pool tier is allowed for this affiliate
-    if (!allowedPools.includes(lead.poolTier)) {
-      throw new Error(`This lead is reserved for ${lead.poolTier.charAt(0).toUpperCase() + lead.poolTier.slice(1)} tier or higher.`);
+    const leadPoolTier = lead.poolTier;
+    if (!leadPoolTier || !allowedPools.includes(leadPoolTier as PoolTier)) {
+      throw new Error(`This lead is reserved for ${(leadPoolTier || 'standard').charAt(0).toUpperCase() + (leadPoolTier || 'standard').slice(1)} tier or higher.`);
     }
 
     // d) Reset weekly counter if past reset time
@@ -269,15 +271,15 @@ export const claimLead = mutation({
     }
 
     // f) Atomically patch the lead
-    await ctx.db.patch(leadId, {
+    await ctx.db.patch(leadId as Id<"leads">, {
       status: "claimed",
-      claimedBy: affiliateId,
+      claimedBy: affiliateId as Id<"affiliates">,
       claimedAt: now,
       claimExpiresAt: now + CLAIM_TTL_MS,
     });
 
     // g) Patch affiliate: increment counters
-    await ctx.db.patch(affiliateId, {
+    await ctx.db.patch(affiliateId as Id<"affiliates">, {
       weeklyClaimsUsed: weeklyClaimsUsed + 1,
       weeklyClaimsResetAt,
       totalLeadsClaimed: (affiliate.totalLeadsClaimed || 0) + 1,
@@ -303,22 +305,22 @@ export const claimLead = mutation({
       commissionRate,
       commissionAmount: dealValue * commissionRate,
       commissionStatus: "pending",
-      fromLeadId: leadId,
+      fromLeadId: leadId as any,
       leadClaimExpiresAt: now + CLAIM_TTL_MS,
       createdAt: now,
     });
 
     // i) Log activity
     await ctx.db.insert("leadActivity", {
-      leadId: leadId,
-      affiliateId: affiliateId,
+      leadId: leadId as any,
+      affiliateId: affiliateId as any,
       action: "claimed",
       meta: JSON.stringify({ tier, dealId }),
       createdAt: now,
     });
 
     // Return the full lead
-    return await ctx.db.get(leadId);
+    return await ctx.db.get(leadId as any);
   },
 });
 
@@ -329,7 +331,7 @@ export const releaseLead = mutation({
     const { affiliateId, leadId, reason } = args;
     const now = Date.now();
 
-    const lead = await ctx.db.get(leadId);
+    const lead = await ctx.db.get(leadId as Id<"leads">);
     if (!lead) {
       throw new Error("Lead not found");
     }
@@ -360,7 +362,7 @@ export const releaseLead = mutation({
     }
 
     // Update lead
-    await ctx.db.patch(leadId, {
+    await ctx.db.patch(leadId as Id<"leads">, {
       status: shouldRetire ? "retired" : "available",
       timesReleased: newTimesReleased,
       claimedBy: undefined,
@@ -370,8 +372,8 @@ export const releaseLead = mutation({
 
     // Log activity
     await ctx.db.insert("leadActivity", {
-      leadId: leadId,
-      affiliateId: affiliateId,
+      leadId: leadId as any,
+      affiliateId: affiliateId as any,
       action: shouldRetire ? "retired" : "released",
       meta: reason ? JSON.stringify({ reason }) : undefined,
       createdAt: now,
@@ -389,7 +391,7 @@ export const convertLeadToDeal = mutation({
     const now = Date.now();
 
     // Load lead
-    const lead = await ctx.db.get(leadId);
+    const lead = await ctx.db.get(leadId as Id<"leads">);
     if (!lead) {
       throw new Error("Lead not found");
     }
@@ -403,7 +405,7 @@ export const convertLeadToDeal = mutation({
     }
 
     // Load affiliate for commission rate
-    const affiliate = await ctx.db.get(affiliateId);
+    const affiliate = await ctx.db.get(affiliateId as Id<"affiliates">);
     if (!affiliate) {
       throw new Error("Affiliate not found");
     }
@@ -448,26 +450,26 @@ export const convertLeadToDeal = mutation({
         commissionRate,
         commissionAmount: dealValue * commissionRate,
         commissionStatus: "pending",
-        fromLeadId: leadId,
+        fromLeadId: leadId as any,
         leadClaimExpiresAt: lead.claimExpiresAt || undefined,
         createdAt: now,
       });
     }
 
     // Update lead status
-    await ctx.db.patch(leadId, {
+    await ctx.db.patch(leadId as Id<"leads">, {
       status: "converted",
     });
 
     // Update affiliate converted count
-    await ctx.db.patch(affiliateId, {
+    await ctx.db.patch(affiliateId as Id<"affiliates">, {
       totalLeadsConverted: (affiliate.totalLeadsConverted || 0) + 1,
     });
 
     // Log activity
     await ctx.db.insert("leadActivity", {
-      leadId: leadId,
-      affiliateId: affiliateId,
+      leadId: leadId as any,
+      affiliateId: affiliateId as any,
       action: "converted",
       meta: JSON.stringify({ dealId }),
       createdAt: now,
@@ -574,12 +576,12 @@ export const adminReassignLead = mutation({
       throw new Error("Admin access required");
     }
 
-    const lead = await ctx.db.get(args.leadId);
+    const lead = await ctx.db.get(args.leadId as Id<"leads">);
     if (!lead) {
       throw new Error("Lead not found");
     }
 
-    const newAffiliate = await ctx.db.get(args.newAffiliateId);
+    const newAffiliate = await ctx.db.get(args.newAffiliateId as Id<"affiliates">);
     if (!newAffiliate) {
       throw new Error("New affiliate not found");
     }
@@ -588,16 +590,16 @@ export const adminReassignLead = mutation({
     const oldAffiliateId = lead.claimedBy;
 
     // Update lead
-    await ctx.db.patch(args.leadId, {
-      claimedBy: args.newAffiliateId,
+    await ctx.db.patch(args.leadId as Id<"leads">, {
+      claimedBy: args.newAffiliateId as Id<"affiliates">,
       claimedAt: now,
       claimExpiresAt: now + CLAIM_TTL_MS,
     });
 
     // Log activity
     await ctx.db.insert("leadActivity", {
-      leadId: args.leadId,
-      affiliateId: args.newAffiliateId,
+      leadId: args.leadId as Id<"leads">,
+      affiliateId: args.newAffiliateId as Id<"affiliates">,
       action: "admin_reassigned",
       meta: JSON.stringify({ fromAffiliateId: oldAffiliateId }),
       createdAt: now,
@@ -616,7 +618,7 @@ export const adminReleaseLead = mutation({
       throw new Error("Admin access required");
     }
 
-    const lead = await ctx.db.get(args.leadId);
+    const lead = await ctx.db.get(args.leadId as Id<"leads">);
     if (!lead) {
       throw new Error("Lead not found");
     }
@@ -625,7 +627,7 @@ export const adminReleaseLead = mutation({
     const newTimesReleased = (lead.timesReleased || 0) + 1;
     const shouldRetire = newTimesReleased >= (lead.maxReleases || MAX_RELEASES_DEFAULT);
 
-    await ctx.db.patch(args.leadId, {
+    await ctx.db.patch(args.leadId as Id<"leads">, {
       status: shouldRetire ? "retired" : "available",
       timesReleased: newTimesReleased,
       claimedBy: undefined,
@@ -634,7 +636,7 @@ export const adminReleaseLead = mutation({
     });
 
     await ctx.db.insert("leadActivity", {
-      leadId: args.leadId,
+      leadId: args.leadId as Id<"leads">,
       affiliateId: lead.claimedBy,
       action: shouldRetire ? "retired" : "released",
       meta: JSON.stringify({ by: "admin" }),
@@ -654,14 +656,14 @@ export const adminRetireLead = mutation({
       throw new Error("Admin access required");
     }
 
-    const lead = await ctx.db.get(args.leadId);
+    const lead = await ctx.db.get(args.leadId as Id<"leads">);
     if (!lead) {
       throw new Error("Lead not found");
     }
 
     const now = Date.now();
 
-    await ctx.db.patch(args.leadId, {
+    await ctx.db.patch(args.leadId as Id<"leads">, {
       status: "retired",
       claimedBy: undefined,
       claimedAt: undefined,
@@ -669,7 +671,7 @@ export const adminRetireLead = mutation({
     });
 
     await ctx.db.insert("leadActivity", {
-      leadId: args.leadId,
+      leadId: args.leadId as Id<"leads">,
       affiliateId: undefined,
       action: "retired",
       meta: JSON.stringify({ by: "admin" }),
@@ -689,12 +691,12 @@ export const adminDeleteLead = mutation({
       throw new Error("Admin access required");
     }
 
-    const lead = await ctx.db.get(args.leadId);
+    const lead = await ctx.db.get(args.leadId as Id<"leads">);
     if (!lead) {
       throw new Error("Lead not found");
     }
 
-    await ctx.db.delete(args.leadId);
+    await ctx.db.delete(args.leadId as Id<"leads">);
     return { success: true };
   },
 });

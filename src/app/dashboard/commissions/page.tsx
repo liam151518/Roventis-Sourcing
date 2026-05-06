@@ -22,7 +22,10 @@ import { SkeletonBlock } from "@/components/ui/SkeletonBlock";
 
 export default function CommissionsPage() {
   const { userId } = useAuth();
-  const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate);
+  const currentAffiliate = useQuery(
+    api.affiliates.getCurrentAffiliate,
+    { clerkUserId: userId || undefined }
+  );
   
   // Use stable arguments for all useQuery hooks - always pass something
   const affiliateId = currentAffiliate?._id;

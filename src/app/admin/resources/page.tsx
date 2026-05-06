@@ -155,9 +155,9 @@ export default function AdminResourcesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingResource) {
-      await updateResource({ id: editingResource._id, ...formData });
+      await updateResource({ id: editingResource._id, ...formData } as any);
     } else {
-      await createResource(formData);
+      await createResource(formData as any);
     }
     handleCloseModal();
   };
@@ -706,8 +706,8 @@ export default function AdminResourcesPage() {
                         />
                         {/* Image Preview */}
                         <div className="w-10 h-10 rounded-lg overflow-hidden bg-white/5 border border-white/10 flex-shrink-0">
-                          {color.imageUrl || color.image ? (
-                            <img src={color.imageUrl || color.image} alt="preview" className="w-full h-full object-cover" />
+                          {color.imageUrl || (color as any).image ? (
+                            <img src={color.imageUrl || (color as any).image} alt="preview" className="w-full h-full object-cover" />
                           ) : (
                             <ImageIcon className="w-6 h-6 text-gray-600 m-auto" />
                           )}

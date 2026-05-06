@@ -1,6 +1,5 @@
 // Server-side admin check utilities for Convex
 
-import { ActionInternal } from "../_generated/server";
 import { v } from "convex/values";
 
 // Admin Clerk IDs - should match the client-side list
@@ -20,7 +19,7 @@ export function isAdminClerkId(userId: string): boolean {
 /**
  * Require the caller to be an admin - throws if not
  */
-export async function requireAdmin(ctx: ActionInternal): Promise<string> {
+export async function requireAdmin(ctx: any): Promise<string> {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) {
     throw new Error("Authentication required");
@@ -36,7 +35,7 @@ export async function requireAdmin(ctx: ActionInternal): Promise<string> {
 /**
  * Optional admin check - returns null if not admin, user ID if admin
  */
-export async function getAdminClerkId(ctx: ActionInternal): Promise<string | null> {
+export async function getAdminClerkId(ctx: any): Promise<string | null> {
   try {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {

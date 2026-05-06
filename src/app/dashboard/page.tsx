@@ -48,8 +48,12 @@ const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#ef4444'
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { userId, user, isLoaded } = useAuth();
-  const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate);
+  const { userId, isLoaded } = useAuth();
+  const { user } = useUser();
+  const currentAffiliate = useQuery(
+    api.affiliates.getCurrentAffiliate,
+    { clerkUserId: userId || undefined }
+  );
   const deals = useQuery(api.deals.getAllDeals);
   const modules = useQuery(api.training.getTrainingModules);
   const payouts = useQuery(api.commissions.getAllPayouts);

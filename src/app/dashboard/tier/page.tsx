@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useAuth } from "@clerk/nextjs";
 import { formatCurrency } from "@/lib/utils";
 
 const tiers = [
@@ -113,7 +114,11 @@ const tiers = [
 ];
 
 export default function TierPage() {
-  const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate);
+  const { userId } = useAuth();
+  const currentAffiliate = useQuery(
+    api.affiliates.getCurrentAffiliate,
+    { clerkUserId: userId || undefined }
+  );
   const deals = useQuery(api.deals.getAllDeals);
   
   // Loading state
@@ -263,8 +268,7 @@ export default function TierPage() {
                   isCurrentTier ? tier.borderColor : "border-white/5"
                 } relative overflow-hidden ${isCurrentTier ? "ring-2 ring-offset-2 ring-offset-[#0a0a0b]" : ""}`}
                 style={isCurrentTier ? { 
-                  ringColor: tier.borderColor.split('/')[0].replace('border-', '')
-                } : {}}
+                  } : {}}
               >
                 {isCurrentTier && (
                   <div className="absolute top-3 right-3">

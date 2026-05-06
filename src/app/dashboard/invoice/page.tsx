@@ -643,7 +643,7 @@ export default function InvoicePage() {
       <ProductLibraryModal
         isOpen={isProductLibraryOpen}
         onClose={() => setIsProductLibraryOpen(false)}
-        onSelectProduct={(product, lineItemId, colorName, colorImage, quantity, unitPrice) => handleProductSelect(product, lineItemId, colorName, colorImage, quantity, unitPrice)}
+        onSelectProduct={(product, lineItemId, colorName, colorImage, quantity, unitPrice) => handleProductSelect({ name: product.name, colors: product.colors.map(c => ({ name: c.name, image: c.imageUrl })) }, lineItemId, colorName, colorImage, quantity, unitPrice)}
         targetLineItemId={selectedLineItemId}
         lineItemIds={lineItems.map((item) => item.id)}
       />

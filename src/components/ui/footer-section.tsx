@@ -59,64 +59,62 @@ const footerLinks: FooterSection[] = [
 
 export function Footer() {
 	return (
-		<footer className="relative w-full border-t border-white/[0.08] bg-black px-6 py-14 lg:py-16">
-			<div className="w-full px-6 lg:px-12 xl:px-20 flex flex-col items-center justify-center">
-			<div className="absolute top-0 right-1/2 left-1/2 h-px w-1/3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/10 blur-sm" />
+		<footer className="relative w-full border-t border-white/[0.06] bg-[#050508] px-6 py-14 lg:py-16">
+			<div className="max-w-7xl mx-auto px-6 lg:px-12">
+				<div className="grid w-full gap-8 lg:grid-cols-3 lg:gap-8">
+					{/* Brand Section */}
+					<AnimatedContainer className="space-y-4">
+						<Link href="/" className="flex items-center gap-2.5">
+							<Image
+								src="/roventis-logo.png"
+								alt="Roventis"
+								width={120}
+								height={28}
+								className="h-7 w-auto object-contain object-left"
+							/>
+						</Link>
+						<p className="text-slate-500 text-[13px] mt-4 max-w-xs leading-relaxed">
+							South Africa's trusted product sourcing platform.
+						</p>
+						<div className="flex items-center gap-4 pt-2">
+							<Link href="#" className="text-slate-500 hover:text-slate-300 transition-colors">
+								<Mail className="w-4 h-4" />
+							</Link>
+							<Link href="#" className="text-slate-500 hover:text-slate-300 transition-colors">
+								<MapPin className="w-4 h-4" />
+							</Link>
+						</div>
+					</AnimatedContainer>
 
-			<div className="grid w-full gap-8 xl:grid-cols-3 xl:gap-8">
-				{/* Brand Section */}
-				<AnimatedContainer className="space-y-4">
-					<Link href="/" className="flex items-center gap-2.5">
-						<Image
-							src="/roventis-logo.png"
-							alt="Roventis"
-							width={120}
-							height={28}
-							className="h-7 w-auto object-contain object-left"
-						/>
-					</Link>
-					<p className="text-gray-500 mt-6 text-[13px] md:mt-0 max-w-xs leading-relaxed">
-						South Africa’s trusted product sourcing platform.
-					</p>
-					<div className="flex items-center gap-4 pt-2">
-						<Link href="#" className="text-gray-500 hover:text-white transition-colors">
-							<Mail className="w-4 h-4" />
-						</Link>
-						<Link href="#" className="text-gray-500 hover:text-white transition-colors">
-							<MapPin className="w-4 h-4" />
-						</Link>
+					{/* Link Sections */}
+					<div className="mt-10 grid grid-cols-2 gap-8 lg:col-span-2 lg:mt-0">
+						{footerLinks.map((section, index) => (
+							<AnimatedContainer key={section.label} delay={0.1 + index * 0.1}>
+								<div className="mb-8 lg:mb-0">
+									<h3 className="text-[11px] font-medium uppercase tracking-widest text-slate-500">{section.label}</h3>
+									<ul className="mt-3 space-y-2 text-[13px] text-slate-500">
+										{section.links.map((link) => (
+											<li key={link.title}>
+												<Link
+													href={link.href}
+													className="hover:text-slate-300 inline-flex items-center transition-colors text-sm"
+												>
+													{link.icon && <link.icon className="mr-1 w-4 h-4" />}
+													{link.title}
+												</Link>
+											</li>
+										))}
+									</ul>
+								</div>
+							</AnimatedContainer>
+						))}
 					</div>
-				</AnimatedContainer>
-
-				{/* Link Sections */}
-				<div className="mt-10 grid grid-cols-2 gap-8 md:grid-cols-4 xl:col-span-2 xl:mt-0">
-					{footerLinks.map((section, index) => (
-						<AnimatedContainer key={section.label} delay={0.1 + index * 0.1}>
-							<div className="mb-10 md:mb-0">
-								<h3 className="text-[11px] font-medium uppercase tracking-widest text-gray-500">{section.label}</h3>
-								<ul className="mt-3 space-y-2 text-[13px] text-gray-500">
-									{section.links.map((link) => (
-										<li key={link.title}>
-											<Link
-												href={link.href}
-												className="hover:text-white inline-flex items-center transition-all duration-300"
-											>
-												{link.icon && <link.icon className="mr-1 w-4 h-4" />}
-												{link.title}
-											</Link>
-										</li>
-									))}
-								</ul>
-							</div>
-						</AnimatedContainer>
-					))}
 				</div>
-			</div>
 
-			{/* Copyright */}
-			<p className="mt-14 text-[12px] text-gray-600">
-				© {new Date().getFullYear()} Roventis Sourcing. All rights reserved.
-			</p>
+				{/* Copyright */}
+				<p className="mt-12 text-xs text-slate-600">
+					© {new Date().getFullYear()} Roventis Sourcing. All rights reserved.
+				</p>
 			</div>
 		</footer>
 	);
@@ -137,10 +135,10 @@ function AnimatedContainer({ className, delay = 0.1, children }: ViewAnimationPr
 
 	return (
 		<motion.div
-			initial={{ filter: 'blur(4px)', translateY: -8, opacity: 0 }}
-			whileInView={{ filter: 'blur(0px)', translateY: 0, opacity: 1 }}
+			initial={{ opacity: 0, y: 8 }}
+			whileInView={{ opacity: 1, y: 0 }}
 			viewport={{ once: true }}
-			transition={{ delay, duration: 0.8 }}
+			transition={{ delay, duration: 0.6 }}
 			className={className}
 		>
 			{children}

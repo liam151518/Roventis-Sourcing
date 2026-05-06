@@ -162,7 +162,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
           {/* Navigation */}
           <nav className="flex-1 px-3 pb-3 space-y-1 overflow-y-auto">
-            {navItems.map((item, index) => {
+            {navItems.map((item: any, index) => {
               const isActive = pathname === item.href;
               const tierRequired = item.tier;
               const tierMet = !tierRequired || (currentAffiliate && (
@@ -228,12 +228,12 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                     <Bell className="w-5 h-5" />
                     <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" />
                   </button>
-                  <UserButton afterSignOutUrl="/" />
+                  <UserButton />
                 </>
               )}
               {collapsed && (
                 <div className="w-8 h-8">
-                  <UserButton afterSignOutUrl="/" />
+                  <UserButton />
                 </div>
               )}
             </div>

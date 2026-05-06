@@ -75,9 +75,11 @@ export default function AdminTicketsPage() {
 
   // Sort tickets: open first, then by date
   const sortedTickets = [...filteredTickets].sort((a: any, b: any) => {
-    const statusOrder = { open: 0, in_progress: 1, resolved: 2, closed: 3 };
-    if (statusOrder[a.status] !== statusOrder[b.status]) {
-      return statusOrder[a.status] - statusOrder[b.status];
+    const statusOrder: Record<string, number> = { open: 0, in_progress: 1, resolved: 2, closed: 3 };
+    const aStatus = a.status as keyof typeof statusOrder;
+    const bStatus = b.status as keyof typeof statusOrder;
+    if (statusOrder[aStatus] !== statusOrder[bStatus]) {
+      return statusOrder[aStatus] - statusOrder[bStatus];
     }
     return b.updatedAt - a.updatedAt;
   });
