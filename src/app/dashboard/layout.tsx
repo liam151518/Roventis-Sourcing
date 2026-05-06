@@ -137,13 +137,14 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         initial={false}
         animate={{ width: collapsed ? 80 : 230 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
-        className={`fixed top-0 left-0 z-50 h-full bg-[#0a0a0b] border-r border-white/5 lg:translate-x-0 ${
+        className={`fixed top-0 left-0 z-50 h-full lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
+        style={{ background: 'var(--rs-bg-raised)', borderRight: '1px solid var(--rs-border)' }}
       >
         <div className="flex flex-col h-full">
           {/* Header with logo - click to toggle collapse */}
-          <div className="p-4 flex items-center justify-center">
+          <div className="p-4 flex items-center justify-center border-b" style={{ borderColor: 'var(--rs-border)' }}>
             <button
               onClick={() => setCollapsed(!collapsed)}
               className="flex items-center gap-2 hover:bg-white/5 rounded-xl p-2 transition-colors"
@@ -182,28 +183,31 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                 <Fragment key={item.href}>
                   {showSectionTitle && sectionLabel && !collapsed && (
                     <div className="pt-4 pb-2 px-3">
-                      <span className="text-[10px] font-semibold text-gray-600 uppercase tracking-[0.12em]">
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--rs-text-muted)' }}>
                         {sectionLabel}
                       </span>
                     </div>
                   )}
                 <Link
                   href={item.href}
+                  title={collapsed ? item.label : undefined}
                   className={`group flex items-center gap-2 px-3 py-2 rounded-xl font-medium transition-all relative ${
                     collapsed ? "justify-center px-1" : ""
                   } ${
-                    isActive ? "text-white bg-white/[0.04]" : "text-gray-400 hover:text-white hover:bg-white/5"
+                    isActive ? "text-white" : "text-gray-400 hover:text-white hover:bg-white/5"
                   }`}
+                  style={isActive ? { background: 'var(--rs-accent-soft)' } : undefined}
                   onClick={() => setSidebarOpen(false)}
                 >
                   {isActive && (
                     <motion.div
                       layoutId="activeNav"
-                      className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-7 bg-gradient-to-b from-blue-400 via-indigo-500 to-purple-500 rounded-r-full shadow-[0_0_12px_rgba(99,102,241,0.5)]"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-7 bg-gradient-to-b from-violet-400 to-violet-600 rounded-r-full"
+                      style={{ boxShadow: '0 0 12px rgba(124,58,237,0.5)' }}
                     />
                   )}
                   <item.icon className={`w-5 h-5 flex-shrink-0 transition-colors ${
-                    isActive ? "text-indigo-400" : "text-gray-500 group-hover:text-gray-300"
+                    isActive ? "text-violet-400" : "text-gray-500 group-hover:text-gray-300"
                   }`} />
                   <span className={`transition-all duration-200 ${collapsed ? 'w-0 opacity-0 hidden' : 'opacity-100'}`}>
                     {item.label}
@@ -248,7 +252,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         transition={{ duration: 0.2, ease: "easeInOut" }}
         className="flex-1 min-w-0"
       >
-        <main className="p-6 lg:p-8">
+        <main className="p-6 lg:p-8" style={{ background: 'var(--rs-bg-base)', minHeight: '100vh' }}>
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}

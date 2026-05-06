@@ -260,10 +260,11 @@ export default function DashboardPage() {
         className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
       >
         <div>
-          <h1 className="text-2xl font-semibold text-white tracking-tight">
+          <span className="rs-overline">Dashboard</span>
+          <h1 className="rs-page-title mt-1">
             Welcome back, {currentAffiliate.firstName}
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className="rs-page-subtitle">
             Here&apos;s what&apos;s happening with your affiliate business today.
           </p>
         </div>
@@ -484,7 +485,7 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="bg-[#141417] rounded-2xl border border-white/5 p-6"
+          className="rs-card p-6"
         >
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -633,7 +634,7 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
-          className="bg-[#141417] rounded-2xl border border-white/5 p-6"
+          className="rs-card p-6"
         >
           <h3 className="text-white font-semibold mb-4">Quick Stats</h3>
           <div className="space-y-4">
@@ -681,7 +682,7 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
-          className="bg-[#141417] rounded-2xl border border-white/5 p-6"
+          className="rs-card p-6"
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-white font-semibold tracking-tight">Tier Progress</h3>
@@ -769,39 +770,39 @@ export default function DashboardPage() {
           className="space-y-4"
         >
           {/* Resources */}
-          <div className="bg-[#141417] rounded-2xl border border-white/5 p-6">
+          <div className="rs-card p-6">
             <h3 className="text-white font-semibold mb-4">Quick Actions</h3>
             <div className="grid grid-cols-2 gap-3">
-              <Link href="/dashboard/deals" className="flex items-center gap-3 p-4 bg-[#0a0a0b] rounded-xl hover:bg-white/5 transition-colors">
-                <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
-                  <Briefcase className="w-5 h-5 text-blue-400" />
+              <Link href="/dashboard/deals" className="flex items-center gap-3 p-4 rs-card-inner hover:bg-white/5 transition-colors">
+                <div className="w-10 h-10 rounded-lg bg-[var(--rs-accent-soft)] flex items-center justify-center">
+                  <Briefcase className="w-5 h-5 text-violet-400" />
                 </div>
                 <div>
                   <p className="text-white text-sm font-medium">New Deal</p>
                   <p className="text-gray-500 text-xs">Create opportunity</p>
                 </div>
               </Link>
-              <Link href="/dashboard/resources" className="flex items-center gap-3 p-4 bg-[#0a0a0b] rounded-xl hover:bg-white/5 transition-colors">
-                <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
-                  <Users className="w-5 h-5 text-purple-400" />
+              <Link href="/dashboard/resources" className="flex items-center gap-3 p-4 rs-card-inner hover:bg-white/5 transition-colors">
+                <div className="w-10 h-10 rounded-lg bg-[var(--rs-accent-soft)] flex items-center justify-center">
+                  <Users className="w-5 h-5 text-violet-400" />
                 </div>
                 <div>
                   <p className="text-white text-sm font-medium">Resources</p>
                   <p className="text-gray-500 text-xs">View materials</p>
                 </div>
               </Link>
-              <Link href="/dashboard/marketing" className="flex items-center gap-3 p-4 bg-[#0a0a0b] rounded-xl hover:bg-white/5 transition-colors">
-                <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center">
-                  <MousePointer className="w-5 h-5 text-emerald-400" />
+              <Link href="/dashboard/marketing" className="flex items-center gap-3 p-4 rs-card-inner hover:bg-white/5 transition-colors">
+                <div className="w-10 h-10 rounded-lg bg-[var(--rs-accent-soft)] flex items-center justify-center">
+                  <MousePointer className="w-5 h-5 text-violet-400" />
                 </div>
                 <div>
                   <p className="text-white text-sm font-medium">Marketing</p>
                   <p className="text-gray-500 text-xs">Get links</p>
                 </div>
               </Link>
-              <Link href="/dashboard/training" className="flex items-center gap-3 p-4 bg-[#0a0a0b] rounded-xl hover:bg-white/5 transition-colors">
-                <div className="w-10 h-10 bg-amber-500/10 rounded-lg flex items-center justify-center">
-                  <Play className="w-5 h-5 text-amber-400" />
+              <Link href="/dashboard/training" className="flex items-center gap-3 p-4 rs-card-inner hover:bg-white/5 transition-colors">
+                <div className="w-10 h-10 rounded-lg bg-[var(--rs-accent-soft)] flex items-center justify-center">
+                  <Play className="w-5 h-5 text-violet-400" />
                 </div>
                 <div>
                   <p className="text-white text-sm font-medium">Training</p>
@@ -812,7 +813,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Performance This Month */}
-          <div className="bg-[#141417] rounded-2xl border border-white/5 p-6">
+          <div className="rs-card p-6">
             <h3 className="text-white font-semibold mb-4">This Month</h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 bg-[#0a0a0b] rounded-xl">

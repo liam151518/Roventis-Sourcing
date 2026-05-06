@@ -18,37 +18,15 @@ import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { SkeletonBlock } from "@/components/ui/SkeletonBlock";
 
 const statCards = [
-  { label: "Total Affiliates", key: "totalAffiliates", icon: Users, color: "blue" },
-  { label: "Total Sales", key: "totalSales", icon: TrendingUp, color: "green", format: "currency" },
-  { label: "Total Commission", key: "totalCommission", icon: DollarSign, color: "emerald", format: "currency" },
-  { label: "Pending Commission", key: "pendingCommission", icon: Activity, color: "amber", format: "currency" },
-  { label: "Total Deals", key: "totalDeals", icon: ShoppingCart, color: "purple" },
-  { label: "Active Orders", key: "activeOrders", icon: Package, color: "cyan" },
-  { label: "Open Tickets", key: "openTickets", icon: Ticket, color: "rose" },
-  { label: "Resources", key: "totalResources", icon: FileText, color: "orange" },
+  { label: "Total Affiliates", key: "totalAffiliates", icon: Users },
+  { label: "Total Sales", key: "totalSales", icon: TrendingUp },
+  { label: "Total Commission", key: "totalCommission", icon: DollarSign },
+  { label: "Pending Commission", key: "pendingCommission", icon: Activity },
+  { label: "Total Deals", key: "totalDeals", icon: ShoppingCart },
+  { label: "Active Orders", key: "activeOrders", icon: Package },
+  { label: "Open Tickets", key: "openTickets", icon: Ticket },
+  { label: "Resources", key: "totalResources", icon: FileText },
 ];
-
-const colorMap: Record<string, string> = {
-  blue: "from-blue-500/20 to-blue-600/10 border-blue-500/20",
-  green: "from-green-500/20 to-green-600/10 border-green-500/20",
-  emerald: "from-emerald-500/20 to-emerald-600/10 border-emerald-500/20",
-  amber: "from-amber-500/20 to-amber-600/10 border-amber-500/20",
-  purple: "from-purple-500/20 to-purple-600/10 border-purple-500/20",
-  cyan: "from-cyan-500/20 to-cyan-600/10 border-cyan-500/20",
-  rose: "from-rose-500/20 to-rose-600/10 border-rose-500/20",
-  orange: "from-orange-500/20 to-orange-600/10 border-orange-500/20",
-};
-
-const iconColorMap: Record<string, string> = {
-  blue: "text-blue-400",
-  green: "text-green-400",
-  emerald: "text-emerald-400",
-  amber: "text-amber-400",
-  purple: "text-purple-400",
-  cyan: "text-cyan-400",
-  rose: "text-rose-400",
-  orange: "text-orange-400",
-};
 
 export default function AdminOverviewPage() {
   const stats = useQuery(api.admin.getAdminDashboardStats);
@@ -71,98 +49,83 @@ export default function AdminOverviewPage() {
     );
   }
 
-  const getValue = (key: string) => {
-    const value = (stats as any)[key];
-    if (key.includes("Sales") || key.includes("Commission")) {
-      return formatCurrency(value || 0);
-    }
-    return value?.toLocaleString() || "0";
-  };
-
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-white tracking-tight">Admin Dashboard</h1>
-        <p className="text-gray-500 mt-1">Overview of your affiliate program</p>
+      <div className="rs-page-header">
+        <div>
+          <span className="rs-overline">Roventis Sourcing</span>
+          <h1 className="rs-page-title mt-1">Admin Overview</h1>
+          <p className="rs-page-subtitle">Live metrics across all affiliates and operations</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat, index) => (
           <motion.div
             key={stat.key}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-            className={`bg-gradient-to-br ${colorMap[stat.color]} border rounded-2xl p-6`}
+            transition={{ delay: index * 0.04, ease: [0.22, 1, 0.36, 1] }}
+            className="rs-card p-5 group"
           >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">{stat.label}</p>
-                <p className="text-2xl font-semibold text-white mt-2">
-                  {stat.key.includes("Sales") || stat.key.includes("Commission") ? (
-                    <AnimatedNumber value={(stats as any)[stat.key] || 0} formatter={formatCurrency} />
-                  ) : (
-                    <AnimatedNumber value={(stats as any)[stat.key] || 0} formatter={(v) => v.toLocaleString()} />
-                  )}
-                </p>
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-9 h-9 rounded-lg bg-[var(--rs-accent-soft)] border border-violet-500/15 flex items-center justify-center group-hover:border-violet-500/30 transition-colors">
+                <stat.icon className="w-4 h-4 text-violet-400" />
               </div>
-              <div className={`p-3 rounded-xl bg-white/5 ${iconColorMap[stat.color]}`}>
-                <stat.icon className="w-6 h-6" />
-              </div>
+              <span className="text-[11px] font-medium" style={{ color: 'var(--rs-text-muted)' }}>—</span>
             </div>
+            <p className="text-xs font-medium tracking-wide mb-1" style={{ color: 'var(--rs-text-secondary)' }}>
+              {stat.label}
+            </p>
+            <p className="rs-stat text-2xl font-semibold" style={{ color: 'var(--rs-text-primary)' }}>
+              {stat.key.includes("Sales") || stat.key.includes("Commission") ? (
+                <AnimatedNumber value={(stats as any)[stat.key] || 0} formatter={formatCurrency} />
+              ) : (
+                <AnimatedNumber value={(stats as any)[stat.key] || 0} formatter={(v) => v.toLocaleString()} />
+              )}
+            </p>
           </motion.div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-[#141417] rounded-2xl border border-white/5 p-6"
+          transition={{ delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          className="rs-card p-6"
         >
-          <h2 className="text-lg font-semibold text-white mb-4">Affiliate Tiers</h2>
+          <h3 className="text-lg font-semibold text-white mb-4">Recent Activity</h3>
           <div className="space-y-4">
-            {Object.entries(stats.tierBreakdown).map(([tier, count]) => (
-              <div key={tier} className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className={`w-3 h-3 rounded-full ${
-                    tier === "bronze" ? "bg-amber-500" :
-                    tier === "silver" ? "bg-gray-400" :
-                    tier === "gold" ? "bg-yellow-500" :
-                    "bg-indigo-500"
-                  }`} />
-                  <span className="text-gray-300 capitalize">{tier}</span>
-                </div>
-                <span className="text-white font-medium">{count as number} affiliates</span>
+            {(stats as any).recentActivity?.slice(0, 5).map((activity: any, i: number) => (
+              <div key={i} className="flex items-center gap-3 text-sm">
+                <div className="w-2 h-2 rounded-full bg-violet-500" />
+                <span className="text-slate-400">{activity.message}</span>
+                <span className="ml-auto text-xs text-slate-600">{activity.time}</span>
               </div>
-            ))}
+            )) || <p className="text-slate-500 text-sm">No recent activity</p>}
           </div>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-[#141417] rounded-2xl border border-white/5 p-6"
+          transition={{ delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          className="rs-card p-6"
         >
-          <h2 className="text-lg font-semibold text-white mb-4">Affiliate Status</h2>
+          <h3 className="text-lg font-semibold text-white mb-4">Top Affiliates</h3>
           <div className="space-y-4">
-            {Object.entries(stats.affiliateStatus).map(([status, count]) => (
-              <div key={status} className="flex items-center justify-between">
+            {(stats as any).topAffiliates?.slice(0, 5).map((affiliate: any, i: number) => (
+              <div key={i} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className={`w-3 h-3 rounded-full ${
-                    status === "pending" ? "bg-yellow-500" :
-                    status === "approved" ? "bg-green-500" :
-                    status === "rejected" ? "bg-red-500" :
-                    status === "suspended" ? "bg-orange-500" :
-                    "bg-gray-500"
-                  }`} />
-                  <span className="text-gray-300 capitalize">{status}</span>
+                  <span className="w-6 h-6 rounded-full bg-violet-500/20 text-violet-400 text-xs flex items-center justify-center font-medium">
+                    {i + 1}
+                  </span>
+                  <span className="text-slate-300 text-sm">{affiliate.name}</span>
                 </div>
-                <span className="text-white font-medium">{count as number}</span>
+                <span className="text-slate-400 text-sm font-mono">{formatCurrency(affiliate.commission)}</span>
               </div>
-            ))}
+            )) || <p className="text-slate-500 text-sm">No affiliates yet</p>}
           </div>
         </motion.div>
       </div>
