@@ -21,7 +21,7 @@ import {
   Tag,
   Receipt,
 } from "lucide-react";
-import { useAuth, useUser, UserButton, SignInButton } from "@clerk/nextjs";
+import { useAuth, useUser, UserButton, SignInButton, useClerk } from "@clerk/nextjs";
 import { isAdminEmail, isAdminUserId } from "@/lib/admin";
 
 const adminNavItems = [
@@ -44,6 +44,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { userId, isLoaded } = useAuth();
   const { user } = useUser();
+  const { signOut } = useClerk();
   
   const userEmail = useMemo(() => {
     if (!user) return "";
@@ -204,13 +205,13 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                     <Bell className="w-5 h-5" />
                     <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" />
                   </button>
-                  <Link
-                    href="/dashboard"
-                    className="flex items-center gap-2 px-3 py-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                  <button
+                    onClick={() => signOut({ redirectUrl: "/" })}
+                    className="flex items-center gap-2 px-3 py-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                   >
                     <LogOut className="w-5 h-5" />
-                    <span className="text-sm">Exit Admin</span>
-                  </Link>
+                    <span className="text-sm">Sign Out</span>
+                  </button>
                 </>
               )}
               {collapsed && (
