@@ -16,6 +16,7 @@ export default function LandingPage() {
   const [calculatorValue, setCalculatorValue] = useState(100000);
   const [calculatorTier, setCalculatorTier] = useState("bronze");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const tierRates: Record<string, number> = {
     bronze: 5,
@@ -98,7 +99,18 @@ export default function LandingPage() {
               ))}
             </ul>
 
-            <div className="flex items-center gap-3">
+            {/* Mobile Menu Button */}
+            <button
+              className="lg:hidden flex flex-col justify-center items-center w-10 h-10 gap-1.5"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              <span className={`w-6 h-0.5 bg-white transition-transform ${mobileMenuOpen ? "rotate-45 translate-y-2" : ""}`} />
+              <span className={`w-6 h-0.5 bg-white transition-opacity ${mobileMenuOpen ? "opacity-0" : ""}`} />
+              <span className={`w-6 h-0.5 bg-white transition-transform ${mobileMenuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+            </button>
+
+            <div className="hidden lg:flex items-center gap-3">
               <Show when="signed-out">
                 <Link href="/login" className="text-sm text-slate-400 hover:text-white hidden sm:block">Sign in</Link>
                 <Link href="/apply" className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:brightness-110 text-white text-[13px] font-medium px-5 py-2 rounded-full glow-pill">
@@ -114,6 +126,31 @@ export default function LandingPage() {
           </div>
         </div>
       </nav>
+
+      {/* Mobile Menu Dropdown */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="fixed top-16 left-0 right-0 z-40 bg-[#0a0a0b] border-b border-white/[0.06] lg:hidden"
+          >
+            <div className="px-6 py-4 flex flex-col gap-2">
+              {navLinks.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-base text-slate-400 hover:text-white py-2 px-2 transition-colors"
+                >
+                  {item.label}
+                </a>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* SECTION 2: HERO */}
       <section ref={heroRef} className="relative min-h-screen flex items-center justify-center topo-bg pt-16">
@@ -135,7 +172,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 24 }}
             animate={heroInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.1 }}
-            className="text-[56px] sm:text-[72px] md:text-[88px] font-extrabold tracking-[-0.04em] leading-[0.95] mb-8"
+            className="text-[40px] sm:text-[56px] md:text-[72px] lg:text-[88px] font-extrabold tracking-[-0.04em] leading-[0.95] mb-8"
           >
             Build a{" "}
             <span className="bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent">real</span>
@@ -170,7 +207,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={heroInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="flex items-center justify-center gap-8 lg:gap-16 mt-20"
+            className="grid grid-cols-2 sm:flex items-center justify-center gap-6 sm:gap-8 lg:gap-16 mt-16 sm:mt-20"
           >
             {[
               { value: "R23M+", label: "Total deals closed" },
@@ -178,7 +215,7 @@ export default function LandingPage() {
               { value: "5 days", label: "Average payout" },
               { value: "98%", label: "Affiliate satisfaction" },
             ].map((stat, index) => (
-              <div key={stat.label} className="text-center">
+              <div key={stat.label} className="text-center relative">
                 <div className="hero-stat-number">{stat.value}</div>
                 <div className="text-xs text-slate-500 uppercase tracking-wider mt-1">{stat.label}</div>
                 {index < 3 && <div className="hidden lg:block absolute w-px h-8 bg-white/10" style={{ marginLeft: '4rem' }} />}
@@ -191,9 +228,9 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 60 }}
             animate={heroInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className="mt-20"
+            className="mt-16 sm:mt-20"
           >
-            <div className="browser-frame">
+            <div className="browser-frame max-w-[880px] xl:max-w-[1100px] mx-auto">
               <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10">
                 <div className="browser-dots">
                   <div className="browser-dot bg-red-500" />
@@ -203,7 +240,7 @@ export default function LandingPage() {
                 <span className="browser-url">app.roventis.co.za</span>
               </div>
               <div className="aspect-[16/10] bg-gradient-to-br from-violet-950/30 to-[#0a0a0b] relative flex items-center justify-center">
-                <Image src="/dashboard-view.png" alt="Roventis Dashboard" fill className="object-cover" />
+                <Image src="/dashboard-view.png" alt="Roventis Dashboard" width={1600} height={1000} className="w-full h-full object-cover" />
                 <div className="absolute bottom-0 left-0 right-0 h-[30%] bg-gradient-to-t from-[#0a0a0b] to-transparent" />
               </div>
             </div>
@@ -223,9 +260,9 @@ export default function LandingPage() {
       <section className="py-12 border-y border-white/[0.04]">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-8">Affiliates already earning with Roventis</p>
-          <div className="flex flex-wrap items-center justify-center gap-12">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap justify-center gap-6 lg:gap-12">
             {companyNames.map((name) => (
-              <span key={name} className="text-2xl font-semibold text-slate-600 hover:text-slate-400 transition">{name}</span>
+              <span key={name} className="text-xl sm:text-2xl font-semibold text-slate-600 hover:text-slate-400 transition">{name}</span>
             ))}
           </div>
         </div>
@@ -233,7 +270,7 @@ export default function LandingPage() {
 
       {/* SECTION 4: STATS GRID */}
       <section ref={statsRef} className="py-24 md:py-32">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-6xl 2xl:max-w-[1440px] mx-auto px-6 2xl:px-16">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {statItems.map((stat, index) => (
               <motion.div
@@ -261,13 +298,13 @@ export default function LandingPage() {
       </section>
 
       {/* SECTION 5: DARK INTERLUDE BAND */}
-      <section ref={darkInterludeRef} className="py-32 relative topo-bg overflow-hidden">
+      <section ref={darkInterludeRef} className="py-24 md:py-32 relative topo-bg overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0b] via-[#0f0a1f] to-[#0a0a0b]" />
         <div className="relative max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             <div>
               <p className="text-[11px] uppercase tracking-widest text-violet-400 mb-4">BUILT FOR HUSTLERS</p>
-              <h2 className="text-4xl md:text-6xl font-extrabold tracking-[-0.03em] mb-6">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-[-0.03em] mb-6">
                 Sourcing made simple. Earnings made serious.
               </h2>
               <p className="text-slate-400 text-lg mb-4">
@@ -277,7 +314,7 @@ export default function LandingPage() {
                 Learn more <span>→</span>
               </a>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 max-w-lg mx-auto lg:mx-0">
               {[
                 "✓ Verified buyer database — refreshed weekly",
                 "✓ Built-in CRM with deal pipeline", 
@@ -294,10 +331,10 @@ export default function LandingPage() {
 
       {/* SECTION 6: HOW IT WORKS */}
       <section id="how-it-works" ref={howItWorksRef} className="py-24 md:py-32 bg-[#0a0a0b]">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl 2xl:max-w-[1440px] mx-auto px-6 2xl:px-16">
           <div className="text-center mb-16">
             <p className="text-[11px] uppercase tracking-widest text-violet-400 mb-3">How it works</p>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-[-0.03em] mb-4">From application to first commission in 14 days.</h2>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-[-0.03em] mb-4">From application to first commission in 14 days.</h2>
             <p className="text-slate-400 text-lg">Four steps. No surprises.</p>
           </div>
 
@@ -309,7 +346,7 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-[#0d0d12] border border-white/[0.06] rounded-2xl p-8 h-[280px] flex flex-col relative"
+                className="bg-[#0d0d12] border border-white/[0.06] rounded-2xl p-8 min-h-[220px] md:min-h-[260px] flex flex-col relative"
               >
                 <span className="step-number-ghost absolute top-4 right-6">{step.step}</span>
                 <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center mt-4 mb-4">
@@ -326,15 +363,15 @@ export default function LandingPage() {
       {/* SECTION 7: EARNINGS CALCULATOR */}
       <section id="calculator" ref={calculatorRef} className="py-24 md:py-32 relative">
         <div className="absolute inset-0 bg-radial-gradient from-violet-950/10 via-transparent to-transparent" />
-        <div className="relative max-w-7xl mx-auto px-6">
+        <div className="relative max-w-7xl 2xl:max-w-[1440px] mx-auto px-6 2xl:px-16">
           <div className="text-center mb-16">
             <p className="text-[11px] uppercase tracking-widest text-violet-400 mb-3">Earnings</p>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-[-0.03em] mb-4">Calculate your potential.</h2>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-[-0.03em] mb-4">Calculate your potential.</h2>
             <p className="text-slate-400 text-lg">Move the sliders. See what you'd earn at every tier.</p>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-8">
-            <div className="bg-[#0d0d12] border border-white/[0.06] rounded-3xl p-10 md:p-14">
+            <div className="bg-[#0d0d12] border border-white/[0.06] rounded-3xl p-6 sm:p-10 md:p-14">
               <div className="mb-8">
                 <div className="flex justify-between items-center mb-3">
                   <label className="text-slate-300 font-medium">Deals per month</label>
@@ -362,12 +399,12 @@ export default function LandingPage() {
                   <label className="text-slate-300 font-medium">Your tier</label>
                   <span className="text-violet-400 font-semibold capitalize">{calculatorTier}</span>
                 </div>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="flex flex-wrap gap-2">
                   {["bronze", "silver", "gold", "platinum"].map((tier) => (
                     <button
                       key={tier}
                       onClick={() => setCalculatorTier(tier)}
-                      className={`py-3 px-2 rounded-xl text-sm font-medium capitalize transition-all ${
+                      className={`flex-1 sm:flex-none py-3 px-2 sm:px-3 rounded-xl text-sm font-medium capitalize transition-all ${
                         calculatorTier === tier
                           ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white"
                           : "text-slate-400 hover:text-white bg-white/[0.06]"
@@ -380,7 +417,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="bg-[#0d0d12] border border-white/[0.06] rounded-3xl p-10 md:p-14 flex flex-col justify-center">
+            <div className="bg-[#0d0d12] border border-white/[0.06] rounded-3xl p-6 sm:p-10 md:p-14 flex flex-col justify-center">
               <p className="text-slate-400 text-[13px] mb-4">Monthly earnings estimate</p>
               <div className="text-6xl font-bold bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent mb-8">
                 {formatCurrency(monthlyEarnings)}
@@ -400,10 +437,10 @@ export default function LandingPage() {
 
       {/* SECTION 8: BENEFITS GRID */}
       <section id="benefits" ref={benefitsRef} className="py-24 md:py-32 bg-[#0a0a0b]">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl 2xl:max-w-[1440px] mx-auto px-6 2xl:px-16">
           <div className="text-center mb-16">
             <p className="text-[11px] uppercase tracking-widest text-violet-400 mb-3">Why Roventis</p>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-[-0.03em] mb-4">Everything you need to scale, nothing you don't.</h2>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-[-0.03em] mb-4">Everything you need to scale, nothing you don't.</h2>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -428,19 +465,22 @@ export default function LandingPage() {
       </section>
 
       {/* SECTION 9: TESTIMONIAL */}
-      <section ref={testimonialRef} className="py-32">
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <p className="text-2xl md:text-3xl font-medium text-white leading-relaxed tracking-tight mb-8">
-            "I made R47,000 in my first 60 days. The leads were already qualified. I just had to close. Roventis built the rails — I just rode them."
-          </p>
-          <div className="flex items-center justify-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600" />
-            <div className="text-left">
-              <p className="text-white font-medium">Thabo M.</p>
-              <p className="text-slate-400 text-sm">Platinum Affiliate, Cape Town</p>
+      <section ref={testimonialRef} className="py-24 md:py-32">
+        <div className="max-w-3xl mx-auto px-6">
+          <div className="bg-[#0d0d12] border border-white/[0.06] rounded-3xl p-8 md:p-16 text-center">
+            <p className="text-[#8b5cf6] text-[6rem] leading-[0.5] mb-6 font-serif">"</p>
+            <p className="text-2xl md:text-3xl font-medium text-white leading-relaxed tracking-tight mb-8">
+              "I made R47,000 in my first 60 days. The leads were already qualified. I just had to close. Roventis built the rails — I just rode them."
+            </p>
+            <div className="flex items-center justify-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600" />
+              <div className="text-left">
+                <p className="text-white font-medium">Thabo M.</p>
+                <p className="text-slate-400 text-sm">Platinum Affiliate, Cape Town</p>
+              </div>
             </div>
+            <p className="text-xs text-slate-500 mt-6">Numbers are real. Names changed for privacy.</p>
           </div>
-          <p className="text-xs text-slate-500 mt-4">Numbers are real. Names changed for privacy.</p>
         </div>
       </section>
 
@@ -449,7 +489,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-16">
             <p className="text-[11px] uppercase tracking-widest text-violet-400 mb-3">FAQ</p>
-            <h2 className="text-4xl md:text-5xl font-extrabold tracking-[-0.03em]">Everything else.</h2>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-[-0.03em]">Everything else.</h2>
           </div>
 
           <div className="divide-y divide-white/[0.06]">
@@ -483,10 +523,10 @@ export default function LandingPage() {
       </section>
 
       {/* SECTION 11: FINAL CTA BAND */}
-      <section ref={ctaRef} className="py-32 relative overflow-hidden topo-bg">
+      <section ref={ctaRef} className="py-24 md:py-32 relative overflow-hidden topo-bg">
         <div className="absolute inset-0 bg-gradient-to-br from-violet-900/30 via-[#0a0a0b] to-indigo-900/30" />
-        <div className="relative max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-4xl md:text-6xl font-extrabold tracking-[-0.03em] mb-6">Stop trading time for low rates.</h2>
+        <div className="relative max-w-4xl 2xl:max-w-5xl mx-auto px-6 text-center">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-[-0.03em] mb-6">Stop trading time for low rates.</h2>
           <p className="text-slate-400 text-lg mb-10">Apply in 5 minutes. We review applications within 48 hours.</p>
           <Link href="/apply" className="inline-block bg-gradient-to-r from-violet-600 to-indigo-600 hover:brightness-110 text-white px-8 py-4 rounded-full text-[15px] font-medium glow-pill">
             Apply now
