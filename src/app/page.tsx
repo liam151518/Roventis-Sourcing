@@ -203,9 +203,8 @@ export default function LandingPage() {
                 <span className="browser-url">app.roventis.co.za</span>
               </div>
               <div className="aspect-[16/10] bg-gradient-to-br from-violet-950/30 to-[#0a0a0b] relative flex items-center justify-center">
-                <span className="text-violet-500/20 text-9xl font-bold">R</span>
+                <Image src="/dashboard-view.png" alt="Roventis Dashboard" fill className="object-cover" />
                 <div className="absolute bottom-0 left-0 right-0 h-[30%] bg-gradient-to-t from-[#0a0a0b] to-transparent" />
-                {/* TODO: Replace with real dashboard screenshot once available */}
               </div>
             </div>
           </motion.div>
