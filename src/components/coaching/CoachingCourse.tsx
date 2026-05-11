@@ -1,8 +1,7 @@
 "use client";
-
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, CheckCircle2, ChevronRight, ChevronLeft } from "lucide-react";
+import { Clock, CheckCircle2, Circle } from "lucide-react";
 import { courseTitle, courseSubtitle, courseAttribution, lessons } from "./coachingContent";
 import LessonView from "./LessonView";
 
@@ -17,15 +16,12 @@ export default function CoachingCourse() {
   const [currentLessonId, setCurrentLessonId] = useState<string>(lessons[0]?.id || "");
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load progress from localStorage
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const data: ProgressData = JSON.parse(stored);
         setCompletedLessonIds(data.completedLessonIds || []);
-        
-        // Find first incomplete lesson or start with first
         const firstIncomplete = lessons.find(
           (l) => !data.completedLessonIds?.includes(l.id)
         );
@@ -41,7 +37,6 @@ export default function CoachingCourse() {
     setIsLoaded(true);
   }, []);
 
-  // Save progress to localStorage
   const saveProgress = useCallback((completed: string[]) => {
     try {
       const data: ProgressData = { completedLessonIds: completed };
@@ -51,56 +46,40 @@ export default function CoachingCourse() {
     }
   }, []);
 
-  const currentIndex = lessons.findIndex((l) => l.id === currentLessonId);
-  const currentLesson = lessons[currentIndex] || lessons[0];
-
-  const handleComplete = (lessonId: string) => {
-    if (!completedLessonIds.includes(lessonId)) {
-      const newCompleted = [...completedLessonIds, lessonId];
-      setCompletedLessonIds(newCompleted);
-      saveProgress(newCompleted);
-    }
-
-    // Auto-advance to next lesson
-    const nextIndex = currentIndex + 1;
-    if (nextIndex < lessons.length) {
-      setCurrentLessonId(lessons[nextIndex].id);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentIndex > 0) {
-      setCurrentLessonId(lessons[currentIndex - 1].id);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
-  const handleNext = () => {
-    if (currentIndex < lessons.length - 1) {
-      setCurrentLessonId(lessons[currentIndex + 1].id);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
   const handleSelectLesson = (lessonId: string) => {
     setCurrentLessonId(lessonId);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowUp" && currentIndex > 0) {
-        setCurrentLessonId(lessons[currentIndex - 1].id);
-      } else if (e.key === "ArrowDown" && currentIndex < lessons.length - 1) {
+  const handleComplete = (lessonId: string) => {
+    if (!completedLessonIds.includes(lessonId)) {
+      const updated = [...completedLessonIds, lessonId];
+      setCompletedLessonIds(updated);
+      saveProgress(updated);
+    }
+    const currentIndex = lessons.findIndex((l) => l.id === lessonId);
+    if (currentIndex < lessons.length - 1) {
+      setTimeout(() => {
         setCurrentLessonId(lessons[currentIndex + 1].id);
-      }
-    };
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 1500);
+    }
+  };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentIndex]);
+  const currentLesson = lessons.find((l) => l.id === currentLessonId);
+  const currentIndex = lessons.findIndex((l) => l.id === currentLessonId);
+
+  const handlePrevious = () => {
+    if (currentIndex > 0) {
+      handleSelectLesson(lessons[currentIndex - 1].id);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentIndex < lessons.length - 1) {
+      handleSelectLesson(lessons[currentIndex + 1].id);
+    }
+  };
 
   if (!isLoaded) {
     return (
@@ -112,161 +91,137 @@ export default function CoachingCourse() {
 
   const completedCount = lessons.filter((l) => completedLessonIds.includes(l.id)).length;
   const progress = (completedCount / lessons.length) * 100;
-  const isLastLesson = currentIndex === lessons.length - 1;
-  const lastLessonCompleted = completedLessonIds.includes(currentLesson?.id);
 
   return (
-    <div className="min-h-screen">
-      {/* Hero Header - Sticky */}
-      <motion.header
-        initial={{ opacity: 0, y: -20 }}
+    <div className="space-y-6">
+      {/* Hero Header */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="sticky top-0 z-40 bg-gradient-to-b from-[#0a0a0b] to-[#141417] border-b border-white/5"
+        className="rs-card-[14px] border border-white/5 p-8"
       >
-        <div className="max-w-[900px] mx-auto py-8 px-6 lg:px-12">
-          <span className="rs-overline text-xs tracking-widest">BEHAVIORAL SALES COURSE</span>
-          <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-white mt-2">
-            {courseTitle}
-          </h1>
-          <p className="text-base lg:text-lg text-gray-400 mt-3 leading-relaxed max-w-[700px]">
-            {courseSubtitle}
-          </p>
+        <span className="rs-overline">BEHAVIORAL SALES COURSE</span>
+        <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-white mt-2">
+          {courseTitle}
+        </h1>
+        <p className="text-gray-400 mt-2">{courseSubtitle}</p>
 
-          {/* Progress Bar */}
-          <div className="mt-6">
-            <div className="flex items-center justify-between text-sm mb-2">
-              <span className="text-gray-400">Progress</span>
-              <span className="text-white">
-                {completedCount} of {lessons.length} lessons completed
-              </span>
-            </div>
-            <div className="h-1.5 bg-white/8 rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-                className="h-full bg-gradient-to-r from-violet-600 to-violet-400 rounded-full"
-              />
-            </div>
+        {/* Progress Bar */}
+        <div className="mt-6">
+          <div className="flex items-center justify-between text-sm mb-2">
+            <span className="text-gray-400">Progress</span>
+            <span className="text-white">
+              {completedCount} / {lessons.length} completed
+            </span>
           </div>
-
-          {/* Attribution Link */}
-          <details className="mt-6 group">
-            <summary className="text-xs text-gray-600 hover:text-gray-400 cursor-pointer list-none flex items-center gap-1 w-fit transition-colors">
-              <span className="w-4 h-4 rounded-full border border-gray-600 group-hover:border-gray-400 flex items-center justify-center text-[10px] transition-colors">?</span>
-              <span>Source attribution</span>
-            </summary>
-            <p className="text-xs text-gray-500 mt-2 pl-5">
-              {courseAttribution.text}{" "}
-              <a
-                href={courseAttribution.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-violet-400/70 hover:text-violet-400 underline underline-offset-2 transition-colors"
-              >
-                {courseAttribution.linkText}
-              </a>
-            </p>
-          </details>
+          <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.5 }}
+              className="h-full bg-violet-500 rounded-full"
+            />
+          </div>
         </div>
-      </motion.header>
 
-      {/* Lesson Selector - Horizontal Scroll */}
-      <div className="bg-[#141417]/50 backdrop-blur-sm border-b border-white/5 sticky top-[calc(100%+1px)] z-30">
-        <div className="max-w-[900px] mx-auto py-4 px-6 lg:px-12">
-          <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide">
-            {lessons.map((lesson, index) => {
+        {/* Subtle Attribution Dropdown */}
+        <details className="mt-6 group w-fit">
+          <summary className="text-xs text-gray-600 hover:text-gray-400 cursor-pointer list-none flex items-center gap-2 transition-colors">
+            <span className="w-4 h-4 rounded-full border border-gray-600 group-hover:border-gray-400 flex items-center justify-center text-[10px] transition-colors">?</span>
+            <span>Source attribution</span>
+          </summary>
+          <p className="text-xs text-gray-500 mt-2 pl-6 max-w-md leading-relaxed">
+            {courseAttribution.text}{" "}
+            <a
+              href={courseAttribution.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-violet-400/70 hover:text-violet-400 underline underline-offset-2 transition-colors"
+            >
+              {courseAttribution.linkText}
+            </a>
+          </p>
+        </details>
+      </motion.div>
+
+      {/* Two Column Layout */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Lesson Sidebar - Mobile: Horizontal Scroll */}
+        <div className="lg:hidden">
+          <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
+            {lessons.map((lesson) => (
+              <button
+                key={lesson.id}
+                onClick={() => handleSelectLesson(lesson.id)}
+                className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm whitespace-nowrap transition-all ${
+                  currentLessonId === lesson.id
+                    ? "bg-violet-500/20 text-white border border-violet-500"
+                    : "bg-[#141417] text-gray-400 border border-white/5"
+                }`}
+              >
+                {lesson.chapter}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Lesson Sidebar - Desktop */}
+        <div className="hidden lg:block lg:w-[320px] flex-shrink-0">
+          <div className="space-y-2">
+            {lessons.map((lesson) => {
               const isCompleted = completedLessonIds.includes(lesson.id);
               const isActive = currentLessonId === lesson.id;
-
               return (
-                <motion.button
+                <button
                   key={lesson.id}
                   onClick={() => handleSelectLesson(lesson.id)}
-                  className={`flex-shrink-0 snap-center flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ease-inOut ${
+                  className={`w-full text-left p-4 rounded-[14px] transition-all ${
                     isActive
-                      ? "bg-violet-500/15 border border-violet-500/40 text-violet-100 shadow-[0_0_20px_rgba(124,58,237,0.15)]"
-                      : "border border-white/10 text-gray-400 bg-transparent hover:border-white/20 hover:text-gray-300"
+                      ? "bg-violet-500/8 border-l-2 border-violet-500"
+                      : "border border-white/5 hover:border-white/10"
                   }`}
                 >
-                  <span className="rs-overline text-xs">{index + 1}.</span>
-                  <span className="text-sm whitespace-nowrap">{lesson.title}</span>
-                  {isCompleted && (
-                    <CheckCircle2 className="w-4 h-4 text-violet-400 flex-shrink-0" />
-                  )}
-                </motion.button>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <span className="rs-overline text-xs">{lesson.chapter}</span>
+                      <h4 className="text-white font-medium mt-1">{lesson.title}</h4>
+                      <div className="flex items-center gap-1 mt-2 text-gray-500">
+                        <Clock className="w-3 h-3" />
+                        <span className="text-xs">{lesson.duration}</span>
+                      </div>
+                    </div>
+                    {isCompleted ? (
+                      <CheckCircle2 className="w-5 h-5 text-violet-400 flex-shrink-0" />
+                    ) : isActive ? (
+                      <div className="w-5 h-5 rounded-full border-2 border-violet-500" />
+                    ) : (
+                      <Circle className="w-5 h-5 text-gray-600 flex-shrink-0" />
+                    )}
+                  </div>
+                </button>
               );
             })}
           </div>
         </div>
-      </div>
 
-      {/* Lesson Content Area */}
-      <main className="max-w-[900px] mx-auto py-12 px-6 lg:px-12">
-        <AnimatePresence mode="wait">
-          {currentLesson && (
-            <LessonView
-              key={currentLesson.id}
-              lesson={currentLesson}
-              onComplete={handleComplete}
-              onPrevious={handlePrevious}
-              onNext={handleNext}
-              hasPrevious={currentIndex > 0}
-              hasNext={currentIndex < lessons.length - 1}
-              isCompleted={completedLessonIds.includes(currentLesson.id)}
-              currentIndex={currentIndex}
-              totalLessons={lessons.length}
-            />
-          )}
-        </AnimatePresence>
-      </main>
-
-      {/* Footer - Sticky */}
-      <footer className="sticky bottom-0 z-40 bg-[#0a0a0b]/80 backdrop-blur-sm border-t border-white/5">
-        <div className="max-w-[900px] mx-auto py-4 px-6 lg:px-12">
-          <div className="flex justify-between items-center">
-            {/* Previous */}
-            <div className="flex-1">
-              {currentIndex > 0 ? (
-                <button
-                  onClick={handlePrevious}
-                  className="flex items-center gap-2 px-4 py-2 rounded-[14px] text-sm font-medium bg-[#141417] text-white border border-white/10 hover:border-white/20 transition-all"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  Previous
-                </button>
-              ) : (
-                <div />
-              )}
-            </div>
-
-            {/* Lesson Counter */}
-            <div className="text-center text-sm text-gray-500">
-              Lesson {currentIndex + 1} of {lessons.length}
-            </div>
-
-            {/* Next */}
-            <div className="flex-1 flex justify-end">
-              {currentIndex < lessons.length - 1 ? (
-                <button
-                  onClick={handleNext}
-                  className="flex items-center gap-2 px-4 py-2 rounded-[14px] text-sm font-medium bg-violet-600 text-white hover:bg-violet-700 transition-all"
-                >
-                  Next
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              ) : lastLessonCompleted ? (
-                <span className="text-sm text-green-400 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4" />
-                  Course Complete
-                </span>
-              ) : (
-                <span className="text-sm text-gray-500">Final Lesson</span>
-              )}
-            </div>
-          </div>
+        {/* Lesson Content */}
+        <div className="flex-1 min-w-0">
+          <AnimatePresence mode="wait">
+            {currentLesson && (
+              <LessonView
+                key={currentLesson.id}
+                lesson={currentLesson}
+                onComplete={handleComplete}
+                onPrevious={handlePrevious}
+                onNext={handleNext}
+                hasPrevious={currentIndex > 0}
+                hasNext={currentIndex < lessons.length - 1}
+                isCompleted={completedLessonIds.includes(currentLesson.id)}
+              />
+            )}
+          </AnimatePresence>
         </div>
-      </footer>
+      </div>
     </div>
   );
 }
