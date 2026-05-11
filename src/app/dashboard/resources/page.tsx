@@ -23,6 +23,7 @@ import { useAuth } from "@clerk/nextjs";
 import { formatDate } from "@/lib/utils";
 import productLibraryData from "@/data/productLibrary.json";
 import CoachingCourse from "@/components/coaching/CoachingCourse";
+import ScriptsLibrary from "@/components/scripts/ScriptsLibrary";
 
 const categories = [
   { id: "coaching_sheet", label: "Coaching", icon: FileText },
@@ -283,8 +284,13 @@ export default function ResourcesPage() {
         <CoachingCourse />
       )}
 
-      {/* RESOURCES GRID (for non-coaching categories) */}
-      {selectedCategory !== "coaching_sheet" && selectedCategory !== "price_list" && selectedCategory !== "product_images" && (
+      {/* SCRIPTS SECTION */}
+      {selectedCategory === "script" && (
+        <ScriptsLibrary />
+      )}
+
+      {/* RESOURCES GRID (for other categories) */}
+      {selectedCategory !== "coaching_sheet" && selectedCategory !== "script" && selectedCategory !== "price_list" && selectedCategory !== "product_images" && (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredResources.map((resource: any, index: number) => {
             const FileIcon = getFileIcon(resource.fileType);
@@ -336,7 +342,7 @@ export default function ResourcesPage() {
       )}
 
       {/* No results message */}
-      {selectedCategory !== "coaching_sheet" && selectedCategory !== "price_list" && selectedCategory !== "product_images" && filteredResources.length === 0 && (
+      {selectedCategory !== "coaching_sheet" && selectedCategory !== "script" && selectedCategory !== "price_list" && selectedCategory !== "product_images" && filteredResources.length === 0 && (
         <div className="text-center py-16">
           <File className="w-12 h-12 text-gray-600 mx-auto mb-4" />
           <p className="text-gray-500">No resources found</p>
