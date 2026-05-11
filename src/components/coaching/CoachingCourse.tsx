@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, CheckCircle2, Circle, HelpCircle, ChevronRight, ChevronLeft } from "lucide-react";
-import { courseTitle, courseSubtitle, courseAttribution, lessons, type Lesson } from "./coachingContent";
+import { Clock, CheckCircle2, ChevronRight, ChevronLeft } from "lucide-react";
+import { courseTitle, courseSubtitle, courseAttribution, lessons } from "./coachingContent";
 import LessonView from "./LessonView";
 
 const STORAGE_KEY = "roventis_coaching_progress";
@@ -16,8 +16,6 @@ export default function CoachingCourse() {
   const [completedLessonIds, setCompletedLessonIds] = useState<string[]>([]);
   const [currentLessonId, setCurrentLessonId] = useState<string>(lessons[0]?.id || "");
   const [isLoaded, setIsLoaded] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
-  const tooltipRef = useRef<HTMLDivElement>(null);
 
   // Load progress from localStorage
   useEffect(() => {
@@ -42,19 +40,6 @@ export default function CoachingCourse() {
     }
     setIsLoaded(true);
   }, []);
-
-  // Close tooltip on outside click
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (tooltipRef.current && !tooltipRef.current.contains(e.target as Node)) {
-        setShowTooltip(false);
-      }
-    };
-    if (showTooltip) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showTooltip]);
 
   // Save progress to localStorage
   const saveProgress = useCallback((completed: string[]) => {
@@ -155,47 +140,34 @@ export default function CoachingCourse() {
                 {completedCount} of {lessons.length} lessons completed
               </span>
             </div>
-            <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-white/8 rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
                 transition={{ duration: 0.5, ease: "easeInOut" }}
-                className="h-full bg-gradient-to-r from-violet-500 to-violet-600 rounded-full"
+                className="h-full bg-gradient-to-r from-violet-600 to-violet-400 rounded-full"
               />
             </div>
           </div>
 
           {/* Attribution Link */}
-          <div className="mt-6 flex items-center gap-2 relative" ref={tooltipRef}>
-            <button
-              onClick={() => setShowTooltip(!showTooltip)}
-              className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-400 transition-colors"
-            >
-              <HelpCircle className="w-3 h-3" />
-              <span>About this course</span>
-            </button>
-            <AnimatePresence>
-              {showTooltip && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="absolute top-6 left-0 mt-2 p-4 bg-[#1a1a1f] border border-white/10 rounded-lg shadow-xl max-w-[300px] z-50"
-                >
-                  <p className="text-sm text-gray-300">{courseAttribution.text}</p>
-                  <a
-                    href={courseAttribution.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-violet-400 hover:text-violet-300 mt-2 inline-block"
-                  >
-                    {courseAttribution.linkText}
-                  </a>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          <details className="mt-6 group">
+            <summary className="text-xs text-gray-600 hover:text-gray-400 cursor-pointer list-none flex items-center gap-1 w-fit transition-colors">
+              <span className="w-4 h-4 rounded-full border border-gray-600 group-hover:border-gray-400 flex items-center justify-center text-[10px] transition-colors">?</span>
+              <span>Source attribution</span>
+            </summary>
+            <p className="text-xs text-gray-500 mt-2 pl-5">
+              {courseAttribution.text}{" "}
+              <a
+                href={courseAttribution.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-violet-400/70 hover:text-violet-400 underline underline-offset-2 transition-colors"
+              >
+                {courseAttribution.linkText}
+              </a>
+            </p>
+          </details>
         </div>
       </motion.header>
 

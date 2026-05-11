@@ -18,9 +18,9 @@ export type Lesson = {
 export const courseTitle = "The Roventis Behavioral Sales Manual";
 export const courseSubtitle = "A behaviorally engineered framework for high-ticket sourcing. Master the psychology behind every closed deal.";
 export const courseAttribution = {
-  text: "Behavioral sales frameworks inspired by Chase Hughes' research in behavioral influence. For deeper mastery, explore his original works.",
-  link: "https://chasehughes.com",
-  linkText: "Learn more at chasehughes.com"
+  text: "Behavioral frameworks inspired by the research of Chase Hughes.",
+  linkText: "Explore his work at chasehughes.com",
+  url: "https://chasehughes.com"
 };
 
 export const lessons: Lesson[] = [

@@ -70,11 +70,11 @@ export default function LessonView({
     >
       {/* Lesson Header */}
       <div className="mb-10">
-        <span className="rs-overline text-xs tracking-widest text-violet-400">{lesson.chapter}</span>
+        <span className="rs-overline text-[10px] tracking-widest text-violet-400/80">{lesson.chapter}</span>
         <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-white mt-2">
           {lesson.title}
         </h2>
-        <p className="text-base lg:text-lg text-gray-400 mt-3 leading-relaxed">{lesson.subtitle}</p>
+        <p className="text-base lg:text-lg text-gray-400 mt-2 leading-relaxed">{lesson.subtitle}</p>
         <div className="flex items-center gap-2 mt-4 text-gray-500">
           <Clock className="w-4 h-4" />
           <span className="text-sm">{lesson.duration}</span>
@@ -91,35 +91,38 @@ export default function LessonView({
             transition={{ delay: index * 0.04, duration: 0.3, ease: "easeInOut" }}
           >
             {card.type === "concept" && (
-              <div className="rs-card-[14px] border border-white/5 p-6 lg:p-8 rounded-[14px] hover:border-white/10 hover:shadow-lg hover:shadow-black/20 transition-all duration-300">
+              <div className="bg-[#141417] border border-white/5 rounded-[14px] p-6 hover:border-white/10 transition-all duration-300">
                 {card.title && (
-                  <span className="rs-overline text-violet-400 mb-3 block">{card.title}</span>
+                  <span className="rs-overline text-[10px] tracking-widest text-violet-400/70 mb-3 block">{card.title}</span>
                 )}
-                <p className="text-gray-300 leading-relaxed text-base lg:text-[15px]">{card.body}</p>
+                <p className="text-gray-300 leading-relaxed text-[15px]">{card.body}</p>
               </div>
             )}
 
             {card.type === "callout" && (
-              <div className="rs-card-[14px] bg-violet-500/8 border-l-4 border-violet-500/60 p-6 lg:p-8 rounded-[14px]">
-                <div className="flex items-center gap-2 mb-2">
-                  <Quote className="w-5 h-5 text-violet-400/40" />
-                  <span className="rs-overline text-violet-300">{card.title}</span>
+              <div className="bg-violet-500/[0.07] border-l-4 border-violet-500/50 rounded-r-[14px] p-6 relative overflow-hidden">
+                <div className="absolute top-3 right-4 opacity-10">
+                  <Quote className="w-10 h-10 text-violet-300" />
                 </div>
-                <p className="text-violet-100 leading-relaxed text-base lg:text-[15px] font-medium">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="rs-overline text-[10px] tracking-widest text-violet-400">{card.title}</span>
+                </div>
+                <p className="text-violet-100 leading-relaxed text-[15px] font-medium">
                   {card.body}
                 </p>
               </div>
             )}
 
             {card.type === "example" && (
-              <div className="rs-card-[14px] border border-white/5 p-6 lg:p-8 rounded-[14px]">
+              <div className="bg-[#141417] border border-white/5 rounded-[14px] p-6 hover:border-white/10 transition-all duration-300">
                 <p className="text-gray-300 mb-6 text-base leading-relaxed">{card.body}</p>
                 {card.example && (card.example.weak || card.example.strong) && (
                   <div className="grid md:grid-cols-2 gap-4 lg:gap-6">
                     {card.example.weak && (
-                      <div className="border-2 border-red-500/30 bg-red-500/5 rounded-[12px] p-5">
+                      <div className="border border-red-500/25 rounded-[10px] p-4 bg-red-500/[0.06]">
                         <div className="flex items-center gap-2 mb-3">
-                          <span className="text-xs font-bold text-red-400">✗ WEAK</span>
+                          <span className="w-4 h-4 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 text-[10px] font-bold">✗</span>
+                          <span className="text-red-400 text-xs font-semibold tracking-wide">WEAK</span>
                         </div>
                         <p className="text-gray-400 text-sm italic leading-relaxed">
                           {card.example.weak}
@@ -127,9 +130,10 @@ export default function LessonView({
                       </div>
                     )}
                     {card.example.strong && (
-                      <div className="border-2 border-violet-500/40 bg-violet-500/8 rounded-[12px] p-5">
+                      <div className="border border-violet-500/30 rounded-[10px] p-4 bg-violet-500/[0.07]">
                         <div className="flex items-center gap-2 mb-3">
-                          <span className="text-xs font-bold text-violet-300">✓ STRONG</span>
+                          <span className="w-4 h-4 rounded-full bg-violet-500/20 flex items-center justify-center text-violet-400 text-[10px] font-bold">✓</span>
+                          <span className="text-violet-400 text-xs font-semibold tracking-wide">STRONG</span>
                         </div>
                         <p className="text-gray-200 text-sm italic leading-relaxed font-medium">
                           {card.example.strong}
@@ -155,7 +159,8 @@ export default function LessonView({
           <span className="rs-overline text-xs tracking-widest text-gray-500">PRACTICE DRILL</span>
         </div>
 
-        <div className="rs-card-[14px] border border-white/5 p-8 lg:p-10 rounded-[14px]">
+        <div className="bg-[#141417] border border-white/5 rounded-[14px] p-8 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-violet-500/[0.03] to-transparent pointer-events-none rounded-[14px]" />
           <div className="flex items-center gap-4 mb-4">
             <div className="w-12 h-12 rounded-full bg-violet-500/15 flex items-center justify-center">
               <Target className="w-6 h-6 text-violet-400" />
@@ -178,19 +183,17 @@ export default function LessonView({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05, duration: 0.3, ease: "easeInOut" }}
                 onClick={() => toggleChecklistItem(index)}
-                className="w-full flex items-start gap-3 p-3 rounded-lg hover:bg-white/5 transition-all text-left"
+                className="w-full flex items-start gap-3 p-3 rounded-[10px] hover:bg-white/[0.04] transition-all duration-200 text-left group"
               >
                 {checkedItems.has(index) ? (
-                  <div className="w-5 h-5 bg-gradient-to-br from-violet-500 to-violet-600 rounded-[6px] flex items-center justify-center flex-shrink-0">
-                    <CheckCircle2 className="w-4 h-4 text-white" />
-                  </div>
+                  <CheckCircle2 className="w-5 h-5 text-violet-400 flex-shrink-0 transition-all duration-200" />
                 ) : (
-                  <div className="w-5 h-5 border-2 border-white/20 rounded-[6px] bg-transparent cursor-pointer hover:border-white/40 flex-shrink-0 transition-all" />
+                  <Circle className="w-5 h-5 text-gray-600 flex-shrink-0 group-hover:text-gray-400 transition-all duration-200" />
                 )}
                 <span
-                  className={`text-base leading-relaxed flex-1 ${
+                  className={`text-sm leading-relaxed transition-colors duration-200 ${
                     checkedItems.has(index)
-                      ? "text-gray-400"
+                      ? "text-gray-500 line-through"
                       : "text-gray-300"
                   }`}
                 >
@@ -249,14 +252,14 @@ export default function LessonView({
       </div>
 
       {/* Navigation Footer */}
-      <div className="flex justify-between items-center gap-4 mt-12 pt-8 border-t border-white/5">
+      <div className="flex justify-between gap-4 pt-4 border-t border-white/5">
         <button
           onClick={onPrevious}
           disabled={!hasPrevious}
-          className={`flex items-center gap-2 px-4 py-3 rounded-[14px] font-medium transition-all ${
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-[12px] text-sm font-medium transition-all duration-200 ${
             hasPrevious
-              ? "bg-[#141417] text-white border border-white/10 hover:border-white/20"
-              : "bg-[#141417] text-gray-600 border border-white/5 cursor-not-allowed"
+              ? "bg-[#141417] text-gray-300 border border-white/8 hover:border-white/15 hover:text-white"
+              : "bg-transparent text-gray-700 border border-white/5 cursor-not-allowed"
           }`}
         >
           <ChevronLeft className="w-4 h-4" />
@@ -270,10 +273,10 @@ export default function LessonView({
         <button
           onClick={onNext}
           disabled={!hasNext}
-          className={`flex items-center gap-2 px-4 py-3 rounded-[14px] font-medium transition-all ${
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-[12px] text-sm font-medium transition-all duration-200 ${
             hasNext
-              ? "bg-violet-600 text-white hover:bg-violet-700"
-              : "bg-violet-600/50 text-gray-400 cursor-not-allowed"
+              ? "bg-violet-600 text-white hover:bg-violet-500 shadow-lg shadow-violet-500/20"
+              : "bg-violet-600/30 text-gray-500 cursor-not-allowed"
           }`}
         >
           Next
