@@ -25,7 +25,6 @@ export default function ScriptsLibrary() {
 
   const handleSelectScript = (script: Script) => {
     setSelectedScript(script);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
