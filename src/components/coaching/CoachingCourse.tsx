@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, CheckCircle2, Circle } from "lucide-react";
+import { Clock, CheckCircle2, Circle, ChevronLeft, ChevronRight } from "lucide-react";
 import { courseTitle, courseSubtitle, courseAttribution, lessons } from "./coachingContent";
 import LessonView from "./LessonView";
 
@@ -151,83 +151,49 @@ export default function CoachingCourse() {
         </details>
       </motion.div>
 
-      {/* Two Column Layout */}
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Lesson Sidebar - Mobile: Horizontal Scroll */}
-        <div className="lg:hidden">
-          <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
-            {lessons.map((lesson) => (
+      {/* Lesson Navigation - Horizontal Scroll */}
+      <div className="overflow-x-auto pb-2 -mx-4 px-4">
+        <div className="flex gap-2 min-w-max">
+          {lessons.map((lesson, index) => {
+            const isCompleted = completedLessonIds.includes(lesson.id);
+            const isActive = currentLessonId === lesson.id;
+            return (
               <button
                 key={lesson.id}
                 onClick={() => handleSelectLesson(lesson.id)}
-                className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm whitespace-nowrap transition-all ${
-                  currentLessonId === lesson.id
+                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm whitespace-nowrap transition-all ${
+                  isActive
                     ? "bg-violet-500/20 text-white border border-violet-500"
-                    : "bg-[#141417] text-gray-400 border border-white/5"
+                    : "bg-[#141417] text-gray-400 border border-white/5 hover:border-white/10"
                 }`}
               >
-                {lesson.chapter}
+                <span className="text-xs text-gray-500">{index + 1}.</span>
+                <span>{lesson.chapter}</span>
+                {isCompleted && (
+                  <CheckCircle2 className="w-4 h-4 text-violet-400" />
+                )}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
+      </div>
 
-        {/* Lesson Sidebar - Desktop */}
-        <div className="hidden lg:block lg:w-[320px] flex-shrink-0">
-          <div className="space-y-2">
-            {lessons.map((lesson) => {
-              const isCompleted = completedLessonIds.includes(lesson.id);
-              const isActive = currentLessonId === lesson.id;
-              return (
-                <button
-                  key={lesson.id}
-                  onClick={() => handleSelectLesson(lesson.id)}
-                  className={`w-full text-left p-4 rounded-[14px] transition-all ${
-                    isActive
-                      ? "bg-violet-500/8 border-l-2 border-violet-500"
-                      : "border border-white/5 hover:border-white/10"
-                  }`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <span className="rs-overline text-xs">{lesson.chapter}</span>
-                      <h4 className="text-white font-medium mt-1">{lesson.title}</h4>
-                      <div className="flex items-center gap-1 mt-2 text-gray-500">
-                        <Clock className="w-3 h-3" />
-                        <span className="text-xs">{lesson.duration}</span>
-                      </div>
-                    </div>
-                    {isCompleted ? (
-                      <CheckCircle2 className="w-5 h-5 text-violet-400 flex-shrink-0" />
-                    ) : isActive ? (
-                      <div className="w-5 h-5 rounded-full border-2 border-violet-500" />
-                    ) : (
-                      <Circle className="w-5 h-5 text-gray-600 flex-shrink-0" />
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Lesson Content */}
-        <div className="flex-1 min-w-0">
-          <AnimatePresence mode="wait">
-            {currentLesson && (
-              <LessonView
-                key={currentLesson.id}
-                lesson={currentLesson}
-                onComplete={handleComplete}
-                onPrevious={handlePrevious}
-                onNext={handleNext}
-                hasPrevious={currentIndex > 0}
-                hasNext={currentIndex < lessons.length - 1}
-                isCompleted={completedLessonIds.includes(currentLesson.id)}
-              />
-            )}
-          </AnimatePresence>
-        </div>
+      {/* Lesson Content - Full Width */}
+      <div className="w-full">
+        <AnimatePresence mode="wait">
+          {currentLesson && (
+            <LessonView
+              key={currentLesson.id}
+              lesson={currentLesson}
+              onComplete={handleComplete}
+              onPrevious={handlePrevious}
+              onNext={handleNext}
+              hasPrevious={currentIndex > 0}
+              hasNext={currentIndex < lessons.length - 1}
+              isCompleted={completedLessonIds.includes(currentLesson.id)}
+            />
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

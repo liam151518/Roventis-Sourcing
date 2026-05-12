@@ -59,7 +59,7 @@ export default function LessonView({
       key={lesson.id}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-[760px] mx-auto"
+      className="max-w-4xl mx-auto"
     >
       {/* Lesson Header */}
       <div className="mb-8">
