@@ -91,6 +91,7 @@ export default function CoachingCourse() {
 
   const completedCount = lessons.filter((l) => completedLessonIds.includes(l.id)).length;
   const progress = (completedCount / lessons.length) * 100;
+  const isCourseCompleted = completedCount === lessons.length;
 
   return (
     <div className="space-y-6">
@@ -101,6 +102,12 @@ export default function CoachingCourse() {
         className="rs-card-[14px] border border-white/5 p-8"
       >
         <span className="rs-overline">BEHAVIORAL SALES COURSE</span>
+        {isCourseCompleted && (
+          <span className="ml-3 inline-flex items-center px-3 py-1 rounded-full bg-green-500/20 border border-green-500/40 text-green-400 text-xs">
+            <CheckCircle2 className="w-3 h-3 mr-1" />
+            Completed
+          </span>
+        )}
         <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-white mt-2">
           {courseTitle}
         </h1>
