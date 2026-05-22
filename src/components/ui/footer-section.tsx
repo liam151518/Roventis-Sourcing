@@ -59,8 +59,11 @@ const footerLinks: FooterSection[] = [
 
 export function Footer() {
 	return (
-		<footer className="relative w-full bg-[#faf9f7] px-6 pt-20 pb-12 z-10">
-			<div className="max-w-6xl mx-auto">
+		<footer className="relative w-full bg-[#faf9f7] pt-20 pb-10 z-10">
+			{/* Top divider that goes full width edge-to-edge */}
+			<div className="w-full h-px bg-black/5 mb-16" />
+
+			<div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24">
 				{/* Top: brand + columns */}
 				<div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
 					{/* Brand Section */}
@@ -111,9 +114,18 @@ export function Footer() {
 						))}
 					</div>
 				</div>
+			</div>
 
-				{/* Divider */}
-				<div className="mt-16 pt-8 border-t border-black/5 flex flex-col md:flex-row items-center justify-between gap-4">
+			{/* Giant brand watermark */}
+			<div className="relative w-full mt-20 mb-8 overflow-hidden select-none pointer-events-none">
+				<div className="text-center text-[clamp(4rem,18vw,16rem)] font-semibold leading-none tracking-[-0.05em] bg-gradient-to-b from-[#1d1d1f]/10 to-transparent bg-clip-text text-transparent">
+					ROVENTIS
+				</div>
+			</div>
+
+			{/* Bottom bar — full width edge to edge */}
+			<div className="w-full border-t border-black/5">
+				<div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
 					<p className="text-[12px] text-[#86868b]">
 						© {new Date().getFullYear()} Roventis Sourcing. All rights reserved.
 					</p>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -18,8 +18,10 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { Show } from "@clerk/nextjs";
+import { MeshGradient, DotOrbit } from "@paper-design/shaders-react";
 import { formatCurrency } from "@/lib/utils";
 import { Footer } from "@/components/ui/footer-section";
+import { Header } from "@/components/ui/header-2";
 
 import "./landing.css";
 
@@ -29,7 +31,6 @@ export default function LandingPage() {
   const [calculatorValue, setCalculatorValue] = useState(100000);
   const [calculatorTier, setCalculatorTier] = useState("bronze");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const tierRates: Record<string, number> = {
     bronze: 5,
@@ -41,16 +42,9 @@ export default function LandingPage() {
   const monthlyEarnings = Math.round(calculatorDeals * calculatorValue * (tierRates[calculatorTier] / 100));
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2400);
+    const timer = setTimeout(() => setLoading(false), 2800);
     return () => clearTimeout(timer);
   }, []);
-
-  const navLinks = [
-    { label: "Benefits", href: "#benefits" },
-    { label: "Compare", href: "#compare" },
-    { label: "How it works", href: "#how" },
-    { label: "Earnings", href: "#earnings" },
-  ];
 
   const benefits = [
     {
@@ -118,21 +112,48 @@ export default function LandingPage() {
         {loading && (
           <motion.div
             initial={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 1.05 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            exit={{ opacity: 0, scale: 1.04 }}
+            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
             className="loading-screen"
           >
-            <div className="loading-shader" />
-            <div className="loading-pulse" />
+            {/* Shader layers */}
+            <MeshGradient
+              className="absolute inset-0 w-full h-full"
+              colors={["#faf9f7", "#e8eef9", "#cfe0fb", "#0071e3"]}
+              speed={0.55}
+              distortion={0.85}
+              swirl={0.6}
+              grainMixer={0.04}
+              grainOverlay={0.02}
+            />
+            <div className="absolute inset-0 opacity-30 mix-blend-overlay">
+              <DotOrbit
+                className="w-full h-full"
+                colors={["#0071e3", "#bcd4f5"]}
+                colorBack="rgba(0,0,0,0)"
+                speed={0.8}
+                size={0.35}
+                spreading={0.6}
+              />
+            </div>
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_30%,_rgba(250,249,247,0.7)_75%,_rgba(250,249,247,1)_100%)]" />
+
+            {/* Title */}
             <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, y: 12, filter: "blur(8px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
               className="relative z-10 text-center"
             >
               <h1 className="loading-title">
                 Roventis <span className="accent">Sourcing</span>
               </h1>
+              <motion.div
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 2.4, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
+                className="mt-6 mx-auto h-px w-32 bg-gradient-to-r from-transparent via-[#0071e3] to-transparent origin-left"
+              />
             </motion.div>
           </motion.div>
         )}
@@ -145,95 +166,7 @@ export default function LandingPage() {
         className="landing-bg min-h-screen text-[#1d1d1f] relative overflow-x-hidden"
       >
         {/* === NAVIGATION === */}
-        <nav className="fixed top-0 left-0 right-0 z-50 nav-blur">
-          <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-            <Link href="/" className="flex items-center">
-              <Image
-                src="/roventis-logo.png"
-                alt="Roventis Sourcing"
-                width={120}
-                height={28}
-                className="h-7 w-auto"
-              />
-            </Link>
-
-            <ul className="hidden md:flex items-center gap-9">
-              {navLinks.map((item) => (
-                <li key={item.label}>
-                  <a
-                    href={item.href}
-                    className="text-[13px] text-[#1d1d1f]/80 hover:text-[#1d1d1f] transition-colors"
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-
-            <button
-              className="md:hidden flex flex-col justify-center items-center w-9 h-9 gap-1"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle menu"
-            >
-              <span className={`w-5 h-px bg-[#1d1d1f] transition-transform ${mobileMenuOpen ? "rotate-45 translate-y-1" : ""}`} />
-              <span className={`w-5 h-px bg-[#1d1d1f] transition-opacity ${mobileMenuOpen ? "opacity-0" : ""}`} />
-              <span className={`w-5 h-px bg-[#1d1d1f] transition-transform ${mobileMenuOpen ? "-rotate-45 -translate-y-1" : ""}`} />
-            </button>
-
-            <div className="hidden md:flex items-center gap-4">
-              <Show when="signed-out">
-                <Link href="/login" className="text-[13px] text-[#1d1d1f]/80 hover:text-[#1d1d1f]">
-                  Sign in
-                </Link>
-                <Link
-                  href="/apply"
-                  className="bg-[#1d1d1f] text-white text-[13px] font-medium px-5 py-2 rounded-full hover:bg-[#2d2d2f] transition-colors"
-                >
-                  Apply now
-                </Link>
-              </Show>
-              <Show when="signed-in">
-                <Link
-                  href="/dashboard"
-                  className="bg-[#1d1d1f] text-white text-[13px] font-medium px-5 py-2 rounded-full hover:bg-[#2d2d2f] transition-colors"
-                >
-                  Dashboard
-                </Link>
-              </Show>
-            </div>
-          </div>
-
-          {/* Mobile menu */}
-          <AnimatePresence>
-            {mobileMenuOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                className="md:hidden bg-[#faf9f7] border-b border-black/5"
-              >
-                <div className="px-6 py-4 flex flex-col gap-3">
-                  {navLinks.map((item) => (
-                    <a
-                      key={item.label}
-                      href={item.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="text-sm text-[#1d1d1f]/80 py-2"
-                    >
-                      {item.label}
-                    </a>
-                  ))}
-                  <div className="pt-3 border-t border-black/5 flex flex-col gap-3">
-                    <Link href="/login" className="text-sm text-[#1d1d1f]/80">Sign in</Link>
-                    <Link href="/apply" className="btn-apple text-center justify-center">
-                      Apply now
-                    </Link>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </nav>
+        <Header />
 
         {/* === HERO SECTION === */}
         <section className="relative min-h-screen flex items-center justify-center pt-14 overflow-hidden">
@@ -266,9 +199,9 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: loading ? 0 : 1, y: loading ? 20 : 0 }}
               transition={{ duration: 0.9, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="hero-subhead max-w-2xl mx-auto mb-10"
+              className="hero-subhead max-w-xl mx-auto mb-10"
             >
-              Roventis Sourcing connects ambitious South Africans with verified buyers across hospitality, corporate, and retail. Earn up to 12% commission on every deal you close.
+              Verified buyers. Locked-in pricing. Up to 12% commission on every deal you close.
             </motion.p>
 
             <motion.div
@@ -628,7 +561,7 @@ export default function LandingPage() {
         </section>
 
         {/* === FAQ === */}
-        <section className="relative py-32 px-6 z-10">
+        <section id="faq" className="relative py-32 px-6 z-10">
           <div className="max-w-3xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
