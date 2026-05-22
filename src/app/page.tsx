@@ -14,9 +14,6 @@ import {
   TrendingUp,
   BarChart3,
   HeartHandshake,
-  ShieldCheck,
-  Zap,
-  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -101,15 +98,15 @@ export default function LandingPage() {
     { feature: "Branded invoice generator", us: true, them: false, none: false },
     { feature: "Real-time commission tracking", us: true, them: true, none: false },
     { feature: "Dedicated account manager", us: true, them: false, none: false },
-    { feature: "5% – 12% commission tiers", us: true, them: false, none: false },
+    { feature: "5% to 12% commission tiers", us: true, them: false, none: false },
   ];
 
   const faqItems = [
-    { q: "Is this an MLM?", a: "No. This is a single-tier affiliate program. You earn on the deals you close — not by recruiting others." },
+    { q: "Is this an MLM?", a: "No. This is a single-tier affiliate program. You earn on the deals you close, not by recruiting others." },
     { q: "How much can I realistically earn?", a: "There's no cap. Commissions range from 5% to 12% based on your tier. Top affiliates clear over R100,000/month." },
     { q: "Do I need sales experience?", a: "Helpful but not required. Our onboarding modules will get you ready to close in days." },
     { q: "How do I get paid?", a: "Commissions are paid monthly via EFT. Payments are typically processed within 5 days of deal closure." },
-    { q: "What can I sell?", a: "Everything in the Roventis catalog — tactical gear, corporate merchandise, workwear, uniforms, and custom manufacturing." },
+    { q: "What can I sell?", a: "Everything in the Roventis catalog: tactical gear, corporate merchandise, workwear, uniforms, and custom manufacturing." },
   ];
 
   const trustedBy = ["Velocity", "Nova Capital", "Apex", "Lumen Group", "Pinnacle", "Stratos", "Velocity", "Nova Capital", "Apex", "Lumen Group", "Pinnacle", "Stratos"];
@@ -245,7 +242,6 @@ export default function LandingPage() {
             <video
               className="hero-video"
               autoPlay
-              loop
               muted
               playsInline
               preload="auto"
@@ -256,18 +252,6 @@ export default function LandingPage() {
           </div>
 
           <div className="relative z-10 max-w-5xl mx-auto px-6 py-24 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: loading ? 0 : 1, y: loading ? 12 : 0 }}
-              transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/70 backdrop-blur-md border border-white/80 mb-8"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-[#0071e3]" />
-              <span className="text-[11px] font-medium tracking-wide text-[#1d1d1f]">
-                Trusted by 200+ affiliates across South Africa
-              </span>
-            </motion.div>
-
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: loading ? 0 : 1, y: loading ? 20 : 0 }}
@@ -306,7 +290,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: loading ? 0 : 1, y: loading ? 24 : 0 }}
               transition={{ duration: 1, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
-              className="grid grid-cols-2 md:grid-cols-4 gap-10 max-w-3xl mx-auto"
+              className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10 max-w-3xl mx-auto"
             >
               {[
                 { value: "R23M+", label: "Deals closed" },
@@ -315,8 +299,8 @@ export default function LandingPage() {
                 { value: "98%", label: "Satisfaction" },
               ].map((stat) => (
                 <div key={stat.label} className="text-center">
-                  <div className="big-number">{stat.value}</div>
-                  <div className="text-[12px] text-[#6e6e73] mt-2 uppercase tracking-wider">{stat.label}</div>
+                  <div className="hero-stat-number">{stat.value}</div>
+                  <div className="text-[11px] text-[#6e6e73] mt-2 uppercase tracking-[0.1em]">{stat.label}</div>
                 </div>
               ))}
             </motion.div>
@@ -381,7 +365,7 @@ export default function LandingPage() {
                 We've cracked <span className="accent">the code.</span>
               </h2>
               <p className="hero-subhead">
-                Every tool, every lead, every commission — engineered to remove friction so you can focus on closing.
+                Every tool, every lead, every commission, engineered to remove friction so you can focus on closing.
               </p>
             </motion.div>
 
@@ -630,13 +614,13 @@ export default function LandingPage() {
             >
               <div className="quote-glass mb-2">"</div>
               <p className="text-2xl md:text-3xl lg:text-[40px] font-medium leading-tight tracking-tight text-[#1d1d1f] mb-10 -mt-4">
-                I made R47,000 in my first 60 days. The leads were already qualified. I just had to close. Roventis built the rails — I just rode them.
+                I made R47,000 in my first 60 days. The leads were already qualified. I just had to close. Roventis built the rails, I just rode them.
               </p>
               <div className="flex items-center justify-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#0071e3] to-[#0050a0]" />
                 <div className="text-left">
                   <p className="text-[15px] font-medium text-[#1d1d1f]">Thabo M.</p>
-                  <p className="text-[13px] text-[#6e6e73]">Platinum Affiliate · Cape Town</p>
+                  <p className="text-[13px] text-[#6e6e73]">Platinum Affiliate, Cape Town</p>
                 </div>
               </div>
             </motion.div>

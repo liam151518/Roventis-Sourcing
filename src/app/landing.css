@@ -562,6 +562,17 @@
   -webkit-text-fill-color: transparent;
 }
 
+/* Hero stat number - smaller for 4-column grid layout */
+.hero-stat-number {
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: #1d1d1f;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 /* === COMPARISON TABLE === */
 .comparison-row {
   display: grid;
