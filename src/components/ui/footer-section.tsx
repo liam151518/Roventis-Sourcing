@@ -59,47 +59,48 @@ const footerLinks: FooterSection[] = [
 
 export function Footer() {
 	return (
-		<footer className="relative w-full border-t border-white/[0.06] bg-[#050508] px-6 py-14 lg:py-16">
-			<div className="max-w-7xl mx-auto px-6 lg:px-12">
-				<div className="grid w-full gap-8 lg:grid-cols-3 lg:gap-8">
+		<footer className="relative w-full bg-[#faf9f7] px-6 pt-20 pb-12 z-10">
+			<div className="max-w-6xl mx-auto">
+				{/* Top: brand + columns */}
+				<div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
 					{/* Brand Section */}
-					<AnimatedContainer className="space-y-4">
-						<Link href="/" className="flex items-center gap-2.5">
+					<AnimatedContainer className="lg:col-span-4 space-y-4">
+						<Link href="/" className="flex items-center">
 							<Image
 								src="/roventis-logo.png"
 								alt="Roventis"
 								width={120}
 								height={28}
-								className="h-7 w-auto object-contain object-left"
+								className="h-7 w-auto"
 							/>
 						</Link>
-						<p className="text-slate-500 text-[13px] mt-4 max-w-xs leading-relaxed">
-							South Africa's trusted product sourcing platform.
+						<p className="text-[14px] text-[#6e6e73] max-w-xs leading-relaxed">
+							South Africa's trusted product sourcing platform. Built for hustlers, designed for scale.
 						</p>
-						<div className="flex items-center gap-4 pt-2">
-							<Link href="#" className="text-slate-500 hover:text-slate-300 transition-colors">
+						<div className="flex items-center gap-3 pt-2">
+							<Link href="#" className="w-9 h-9 rounded-full bg-white border border-black/5 flex items-center justify-center text-[#6e6e73] hover:text-[#1d1d1f] hover:bg-black/5 transition-colors">
 								<Mail className="w-4 h-4" />
 							</Link>
-							<Link href="#" className="text-slate-500 hover:text-slate-300 transition-colors">
+							<Link href="#" className="w-9 h-9 rounded-full bg-white border border-black/5 flex items-center justify-center text-[#6e6e73] hover:text-[#1d1d1f] hover:bg-black/5 transition-colors">
 								<MapPin className="w-4 h-4" />
 							</Link>
 						</div>
 					</AnimatedContainer>
 
 					{/* Link Sections */}
-					<div className="mt-10 grid grid-cols-2 gap-8 lg:col-span-2 lg:mt-0">
+					<div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:col-span-8">
 						{footerLinks.map((section, index) => (
-							<AnimatedContainer key={section.label} delay={0.1 + index * 0.1}>
-								<div className="mb-8 lg:mb-0">
-									<h3 className="text-[11px] font-medium uppercase tracking-widest text-slate-500">{section.label}</h3>
-									<ul className="mt-3 space-y-2 text-[13px] text-slate-500">
+							<AnimatedContainer key={section.label} delay={0.1 + index * 0.08}>
+								<div>
+									<h3 className="text-[11px] font-semibold uppercase tracking-widest text-[#1d1d1f]">{section.label}</h3>
+									<ul className="mt-4 space-y-3">
 										{section.links.map((link) => (
 											<li key={link.title}>
 												<Link
 													href={link.href}
-													className="hover:text-slate-300 inline-flex items-center transition-colors text-sm"
+													className="text-[13px] text-[#6e6e73] hover:text-[#1d1d1f] inline-flex items-center transition-colors"
 												>
-													{link.icon && <link.icon className="mr-1 w-4 h-4" />}
+													{link.icon && <link.icon className="mr-1.5 w-3.5 h-3.5" />}
 													{link.title}
 												</Link>
 											</li>
@@ -111,10 +112,17 @@ export function Footer() {
 					</div>
 				</div>
 
-				{/* Copyright */}
-				<p className="mt-12 text-xs text-slate-600">
-					© {new Date().getFullYear()} Roventis Sourcing. All rights reserved.
-				</p>
+				{/* Divider */}
+				<div className="mt-16 pt-8 border-t border-black/5 flex flex-col md:flex-row items-center justify-between gap-4">
+					<p className="text-[12px] text-[#86868b]">
+						© {new Date().getFullYear()} Roventis Sourcing. All rights reserved.
+					</p>
+					<div className="flex items-center gap-6 text-[12px] text-[#86868b]">
+						<Link href="#" className="hover:text-[#1d1d1f] transition-colors">Privacy</Link>
+						<Link href="#" className="hover:text-[#1d1d1f] transition-colors">Terms</Link>
+						<Link href="#" className="hover:text-[#1d1d1f] transition-colors">Cookies</Link>
+					</div>
+				</div>
 			</div>
 		</footer>
 	);
