@@ -26,8 +26,7 @@ import { Header } from "@/components/ui/header-2";
 import "./landing.css";
 
 export default function LandingPage() {
-  const alreadyVisited = typeof window !== "undefined" && sessionStorage.getItem("rv-visited") === "1";
-  const [loading, setLoading] = useState(!alreadyVisited);
+  const [loading, setLoading] = useState(true);
   const [calculatorDeals, setCalculatorDeals] = useState(5);
   const [calculatorValue, setCalculatorValue] = useState(100000);
   const [calculatorTier, setCalculatorTier] = useState("bronze");
@@ -43,13 +42,17 @@ export default function LandingPage() {
   const monthlyEarnings = Math.round(calculatorDeals * calculatorValue * (tierRates[calculatorTier] / 100));
 
   useEffect(() => {
-    if (alreadyVisited) return;
+    // Skip animation if returning from client-side navigation (same window context)
+    if ((window as unknown as Record<string, boolean>).__rvLoaded) {
+      setLoading(false);
+      return;
+    }
     const timer = setTimeout(() => {
       setLoading(false);
-      sessionStorage.setItem("rv-visited", "1");
+      (window as unknown as Record<string, boolean>).__rvLoaded = true;
     }, 2800);
     return () => clearTimeout(timer);
-  }, [alreadyVisited]);
+  }, []);
 
   const benefits = [
     {
