@@ -8,18 +8,23 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <article className="legal-content">
-      <header className="mb-12">
-        <p className="text-[12px] font-medium uppercase tracking-widest text-[#0071e3] mb-3">Legal</p>
-        <h1 className="text-[clamp(2rem,5vw,3rem)] font-semibold tracking-[-0.035em] text-[#1d1d1f] leading-tight">
+      <header>
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0071e3]/[0.06] mb-5">
+          <div className="w-1.5 h-1.5 rounded-full bg-[#0071e3]" />
+          <span className="text-[11px] font-semibold uppercase tracking-widest text-[#0071e3]">Legal</span>
+        </div>
+        <h1 className="text-[clamp(2.25rem,5vw,3.25rem)] font-semibold tracking-[-0.04em] text-[#1d1d1f] leading-[1.1]">
           Privacy Policy
         </h1>
-        <p className="mt-4 text-[15px] text-[#6e6e73]">Last updated: 25 May 2026</p>
+        <p className="mt-4 text-[15px] text-[#6e6e73]">
+          Last updated: 25 May 2026
+        </p>
       </header>
 
       <section>
         <h2>1. Introduction</h2>
         <p>
-          Roventis Sourcing (Pty) Ltd (&quot;Roventis&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) is committed to protecting
+          Roventis (Pty) Ltd (&quot;Roventis&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) is committed to protecting
           your personal information in accordance with the Protection of Personal Information Act 4 of 2013 (&quot;POPIA&quot;)
           and the Electronic Communications and Transactions Act 25 of 2002 (&quot;ECTA&quot;).
         </p>
@@ -143,9 +148,9 @@ export default function PrivacyPage() {
       <section>
         <h2>11. Contact</h2>
         <p>
-          <strong>Roventis Sourcing (Pty) Ltd</strong><br />
+          <strong>Roventis (Pty) Ltd</strong><br />
           Information Officer: privacy@roventis.co.za<br />
-          General enquiries: support@roventis.co.za
+          General Enquiries: support@roventis.co.za
         </p>
       </section>
     </article>

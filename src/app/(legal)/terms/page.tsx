@@ -8,12 +8,17 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <article className="legal-content">
-      <header className="mb-12">
-        <p className="text-[12px] font-medium uppercase tracking-widest text-[#0071e3] mb-3">Legal</p>
-        <h1 className="text-[clamp(2rem,5vw,3rem)] font-semibold tracking-[-0.035em] text-[#1d1d1f] leading-tight">
+      <header>
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0071e3]/[0.06] mb-5">
+          <div className="w-1.5 h-1.5 rounded-full bg-[#0071e3]" />
+          <span className="text-[11px] font-semibold uppercase tracking-widest text-[#0071e3]">Legal</span>
+        </div>
+        <h1 className="text-[clamp(2.25rem,5vw,3.25rem)] font-semibold tracking-[-0.04em] text-[#1d1d1f] leading-[1.1]">
           Terms of Service
         </h1>
-        <p className="mt-4 text-[15px] text-[#6e6e73]">Last updated: 25 May 2026</p>
+        <p className="mt-4 text-[15px] text-[#6e6e73]">
+          Last updated: 25 May 2026
+        </p>
       </header>
 
       <section>
@@ -21,7 +26,7 @@ export default function TermsPage() {
         <p>
           By accessing or using the Roventis Sourcing platform (&quot;Platform&quot;), you agree to be bound by these Terms
           of Service (&quot;Terms&quot;). If you do not agree, you must not use the Platform. These Terms constitute a
-          legally binding agreement between you and Roventis Sourcing (Pty) Ltd (&quot;Roventis&quot;), registered in
+          legally binding agreement between you and Roventis (Pty) Ltd (&quot;Roventis&quot;), registered in
           South Africa.
         </p>
       </section>
@@ -160,7 +165,7 @@ export default function TermsPage() {
       <section>
         <h2>14. Contact</h2>
         <p>
-          <strong>Roventis Sourcing (Pty) Ltd</strong><br />
+          <strong>Roventis (Pty) Ltd</strong><br />
           Legal enquiries: legal@roventis.co.za<br />
           Support: support@roventis.co.za
         </p>
