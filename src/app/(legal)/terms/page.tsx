@@ -9,10 +9,6 @@ export default function TermsPage() {
   return (
     <article className="legal-content">
       <header>
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0071e3]/[0.06] mb-5">
-          <div className="w-1.5 h-1.5 rounded-full bg-[#0071e3]" />
-          <span className="text-[11px] font-semibold uppercase tracking-widest text-[#0071e3]">Legal</span>
-        </div>
         <h1 className="text-[clamp(2.25rem,5vw,3.25rem)] font-semibold tracking-[-0.04em] text-[#1d1d1f] leading-[1.1]">
           Terms of Service
         </h1>
