@@ -3,6 +3,7 @@ import { Geist, Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import ConvexClientProvider from "@/lib/convex/provider";
+import { CookieConsent } from "@/components/ui/cookie-consent";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,7 @@ export default function RootLayout({
         <body className={`${geistSans.variable} ${inter.variable} antialiased`}>
           <ConvexClientProvider>
             {children}
+            <CookieConsent />
           </ConvexClientProvider>
         </body>
       </html>

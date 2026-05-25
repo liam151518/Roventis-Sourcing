@@ -1,0 +1,118 @@
+.legal-content {
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+.legal-content section {
+  margin-bottom: 2.5rem;
+}
+
+.legal-content h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1d1d1f;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.75rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.legal-content section:first-of-type h2 {
+  border-top: none;
+  padding-top: 0;
+}
+
+.legal-content h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.legal-content p {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: #424245;
+  margin-bottom: 0.75rem;
+}
+
+.legal-content ul,
+.legal-content ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.legal-content ul {
+  list-style: none;
+}
+
+.legal-content ul li {
+  position: relative;
+  padding-left: 0.25rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: #424245;
+}
+
+.legal-content ul li::before {
+  content: '';
+  position: absolute;
+  left: -1rem;
+  top: 0.7em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #0071e3;
+  opacity: 0.6;
+}
+
+.legal-content ol li {
+  margin-bottom: 0.5rem;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: #424245;
+}
+
+.legal-content strong {
+  color: #1d1d1f;
+  font-weight: 600;
+}
+
+.legal-content .cookie-table {
+  overflow-x: auto;
+  margin: 1rem 0;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.legal-content table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.legal-content thead {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.legal-content th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: #1d1d1f;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.legal-content td {
+  padding: 0.75rem 1rem;
+  color: #424245;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.legal-content tr:last-child td {
+  border-bottom: none;
+}

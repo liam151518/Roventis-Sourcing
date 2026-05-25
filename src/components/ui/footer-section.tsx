@@ -22,32 +22,32 @@ const footerLinks: FooterSection[] = [
 	{
 		label: 'Product',
 		links: [
-			{ title: 'Features', href: '#' },
-			{ title: 'Pricing', href: '#' },
-			{ title: 'Testimonials', href: '#' },
-			{ title: 'Integration', href: '#' },
+			{ title: 'Features', href: '#benefits' },
+			{ title: 'How It Works', href: '#how' },
+			{ title: 'Earnings', href: '#earnings' },
+			{ title: 'FAQ', href: '#faq' },
+		],
+	},
+	{
+		label: 'Legal',
+		links: [
+			{ title: 'Privacy Policy', href: '/privacy' },
+			{ title: 'Terms of Service', href: '/terms' },
+			{ title: 'Cookie Policy', href: '/cookies' },
+			{ title: 'Affiliate Agreement', href: '/affiliate-agreement' },
 		],
 	},
 	{
 		label: 'Company',
 		links: [
-			{ title: 'FAQs', href: '#faq' },
 			{ title: 'About Us', href: '#' },
-			{ title: 'Privacy Policy', href: '#' },
-			{ title: 'Terms of Service', href: '#' },
+			{ title: 'Support', href: '#' },
+			{ title: 'Disclaimer', href: '/disclaimer' },
+			{ title: 'Contact', href: '#' },
 		],
 	},
 	{
-		label: 'Resources',
-		links: [
-			{ title: 'Blog', href: '#' },
-			{ title: 'Changelog', href: '#' },
-			{ title: 'Brand', href: '#' },
-			{ title: 'Help', href: '#' },
-		],
-	},
-	{
-		label: 'Social Links',
+		label: 'Social',
 		links: [
 			{ title: 'Facebook', href: '#', icon: FacebookIcon },
 			{ title: 'Instagram', href: '#', icon: InstagramIcon },
@@ -130,9 +130,9 @@ export function Footer() {
 						© {new Date().getFullYear()} Roventis Sourcing. All rights reserved.
 					</p>
 					<div className="flex items-center gap-6 text-[12px] text-[#86868b]">
-						<Link href="#" className="hover:text-[#1d1d1f] transition-colors">Privacy</Link>
-						<Link href="#" className="hover:text-[#1d1d1f] transition-colors">Terms</Link>
-						<Link href="#" className="hover:text-[#1d1d1f] transition-colors">Cookies</Link>
+						<Link href="/privacy" className="hover:text-[#1d1d1f] transition-colors">Privacy</Link>
+						<Link href="/terms" className="hover:text-[#1d1d1f] transition-colors">Terms</Link>
+						<Link href="/cookies" className="hover:text-[#1d1d1f] transition-colors">Cookies</Link>
 					</div>
 				</div>
 			</div>
