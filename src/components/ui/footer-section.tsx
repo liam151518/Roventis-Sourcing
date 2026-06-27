@@ -3,7 +3,7 @@
 import React from 'react';
 import type { ComponentProps, ReactNode } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { FacebookIcon, InstagramIcon, LinkedinIcon, YoutubeIcon, Mail, MapPin } from 'lucide-react';
+import { InstagramIcon, YoutubeIcon, Mail, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -49,10 +49,8 @@ const footerLinks: FooterSection[] = [
 	{
 		label: 'Social',
 		links: [
-			{ title: 'Facebook', href: '#', icon: FacebookIcon },
-			{ title: 'Instagram', href: '#', icon: InstagramIcon },
-			{ title: 'Youtube', href: '#', icon: YoutubeIcon },
-			{ title: 'LinkedIn', href: '#', icon: LinkedinIcon },
+			{ title: 'Instagram', href: 'https://www.instagram.com/roventis.co.za?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==', icon: InstagramIcon },
+			{ title: 'Youtube', href: 'http://www.youtube.com/@RoventisGear', icon: YoutubeIcon },
 		],
 	},
 ];
@@ -97,17 +95,23 @@ export function Footer() {
 								<div>
 									<h3 className="text-[11px] font-semibold uppercase tracking-widest text-[#1d1d1f]">{section.label}</h3>
 									<ul className="mt-4 space-y-3">
-										{section.links.map((link) => (
-											<li key={link.title}>
-												<Link
-													href={link.href}
-													className="text-[13px] text-[#6e6e73] hover:text-[#1d1d1f] inline-flex items-center transition-colors"
-												>
-													{link.icon && <link.icon className="mr-1.5 w-3.5 h-3.5" />}
-													{link.title}
-												</Link>
-											</li>
-										))}
+										{section.links.map((link) => {
+											const isExternal = /^https?:\/\//i.test(link.href);
+											return (
+												<li key={link.title}>
+													<Link
+														href={link.href}
+														className="text-[13px] text-[#6e6e73] hover:text-[#1d1d1f] inline-flex items-center transition-colors"
+														{...(isExternal
+															? { target: '_blank' as const, rel: 'noopener noreferrer' }
+															: {})}
+													>
+														{link.icon && <link.icon className="mr-1.5 w-3.5 h-3.5" />}
+														{link.title}
+													</Link>
+												</li>
+											);
+										})}
 									</ul>
 								</div>
 							</AnimatedContainer>
