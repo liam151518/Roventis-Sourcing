@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, Fragment } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
@@ -409,22 +409,24 @@ export default function LandingPage() {
               </h2>
             </motion.div>
 
-            <div className="flex flex-col md:flex-row items-center gap-8 md:gap-0 max-w-4xl mx-auto">
+            <div className="flex flex-col md:flex-row items-stretch justify-center gap-8 md:gap-0 max-w-4xl mx-auto">
               {steps.map((step, index) => (
-                <div key={step.num} className="flex items-center flex-1 w-full">
+                <Fragment key={step.num}>
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true, margin: "-50px" }}
                     transition={{ duration: 0.7, delay: index * 0.15, ease: [0.16, 1, 0.3, 1] }}
-                    className="flex flex-col items-center text-center flex-1"
+                    className="flex flex-col items-center text-center md:flex-1"
                   >
                     <div className="step-badge mb-5">{step.num}</div>
                     <h3 className="text-lg font-semibold mb-2 tracking-tight">{step.title}</h3>
                     <p className="text-[14px] text-[#6e6e73] max-w-[180px]">{step.desc}</p>
                   </motion.div>
-                  {index < steps.length - 1 && <div className="step-connector hidden md:block" />}
-                </div>
+                  {index < steps.length - 1 && (
+                    <div className="step-connector hidden md:flex md:items-center md:self-center md:mx-2" />
+                  )}
+                </Fragment>
               ))}
             </div>
           </div>

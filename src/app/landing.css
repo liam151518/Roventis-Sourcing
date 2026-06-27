@@ -392,7 +392,9 @@
 }
 
 .step-connector {
-  flex: 1;
+  width: 100%;
+  max-width: 120px;
+  min-width: 40px;
   height: 1px;
   background: linear-gradient(90deg, rgba(0, 113, 227, 0.3) 0%, rgba(0, 113, 227, 0.1) 100%);
   margin: 0 1rem;
