@@ -22,6 +22,7 @@ import { MeshGradient, DotOrbit } from "@paper-design/shaders-react";
 import { formatCurrency } from "@/lib/utils";
 import { Footer } from "@/components/ui/footer-section";
 import { Header } from "@/components/ui/header-2";
+import { MatrixDotAvatar } from "@/components/ui/matrix-avatar";
 
 import "./landing.css";
 
@@ -560,12 +561,15 @@ export default function LandingPage() {
                 I made R47,000 in my first 60 days. The leads were already qualified. I just had to close. Roventis built the rails, I just rode them.
               </p>
               <div className="flex items-center justify-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#0071e3] to-[#0050a0]" />
+                <MatrixDotAvatar seed="thabo-m-platinum-cape-town" size={56} />
                 <div className="text-left">
                   <p className="text-[15px] font-medium text-[#1d1d1f]">Thabo M.</p>
                   <p className="text-[13px] text-[#6e6e73]">Platinum Affiliate, Cape Town</p>
                 </div>
               </div>
+              <p className="mt-4 text-[11px] text-[#86868b] italic">
+                Stylised portrait — not a photograph of the person named.
+              </p>
             </motion.div>
           </div>
         </section>
