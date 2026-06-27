@@ -50,7 +50,7 @@ export default function AboutPage() {
           </h1>
           <p className="about-lede">
             Roventis (Pty) Ltd is a South African sourcing platform that
-            connects vetted affiliates with serious buyers &mdash; and pays
+            connects vetted affiliates with serious buyers - and pays
             you up to 12% commission on every deal you close.
           </p>
         </header>
@@ -60,8 +60,8 @@ export default function AboutPage() {
           <p>
             Roventis sits between <strong>vetted South African suppliers</strong>
             and the <strong>affiliates</strong> who bring buyers to them.
-            We handle the sourcing side of the deal &mdash; verified pricing,
-            locked-in quotes, supplier vetting, order tracking &mdash; so
+            We handle the sourcing side of the deal - verified pricing,
+            locked-in quotes, supplier vetting, order tracking - so
             you can focus on what you do best: closing.
           </p>
           <p>
@@ -103,7 +103,7 @@ export default function AboutPage() {
           <h2>Why affiliates choose us</h2>
           <p>
             <strong>Verified buyers, real demand.</strong> Every lead in your
-            pool has been qualified &mdash; not cold-scraped. Time spent on
+            pool has been qualified - not cold-scraped. Time spent on
             real conversations, not dead ends.
           </p>
           <p>
@@ -114,7 +114,7 @@ export default function AboutPage() {
           <p>
             <strong>Monthly payouts.</strong> Commissions are tracked
             transparently in your dashboard and paid out on a predictable
-            monthly schedule &mdash; no chasing, no surprises.
+            monthly schedule - no chasing, no surprises.
           </p>
           <p>
             <strong>Tiered upside.</strong> Climb from Affiliate to Platinum
