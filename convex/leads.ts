@@ -2,7 +2,7 @@ import { query, mutation, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { TIER_CONFIG, getNextMondayMidnightSAST, CLAIM_TTL_MS, MAX_RELEASES_DEFAULT, getAllowedPools, getWeeklyLimit, type PoolTier } from "./lib/tierConfig";
-import { isAdminClerkId, requireAdmin } from "./lib/auth";
+import { requireAdmin, isAdminCtx } from "./lib/auth";
 import { internal } from "./_generated/api";
 
 // ========== UTILITIES ==========
@@ -500,10 +500,8 @@ export const bulkUploadLeads = mutation({
     adminClerkUserId: v.string(),
   },
   handler: async (ctx, args) => {
-    // Server-side admin check
-    if (!isAdminClerkId(args.adminClerkUserId)) {
-      throw new Error("Admin access required");
-    }
+    // Server-side admin check (role-based, from Clerk JWT)
+    await requireAdmin(ctx);
 
     const now = Date.now();
     let inserted = 0;
@@ -571,10 +569,8 @@ export const bulkUploadLeads = mutation({
 export const adminReassignLead = mutation({
   args: { leadId: v.string(), newAffiliateId: v.string(), adminClerkUserId: v.string() },
   handler: async (ctx, args) => {
-    // Server-side admin check
-    if (!isAdminClerkId(args.adminClerkUserId)) {
-      throw new Error("Admin access required");
-    }
+    // Server-side admin check (role-based, from Clerk JWT)
+    await requireAdmin(ctx);
 
     const lead = await ctx.db.get(args.leadId as Id<"leads">);
     if (!lead) {
@@ -613,10 +609,8 @@ export const adminReassignLead = mutation({
 export const adminReleaseLead = mutation({
   args: { leadId: v.string(), adminClerkUserId: v.string() },
   handler: async (ctx, args) => {
-    // Server-side admin check
-    if (!isAdminClerkId(args.adminClerkUserId)) {
-      throw new Error("Admin access required");
-    }
+    // Server-side admin check (role-based, from Clerk JWT)
+    await requireAdmin(ctx);
 
     const lead = await ctx.db.get(args.leadId as Id<"leads">);
     if (!lead) {
@@ -651,10 +645,8 @@ export const adminReleaseLead = mutation({
 export const adminRetireLead = mutation({
   args: { leadId: v.string(), adminClerkUserId: v.string() },
   handler: async (ctx, args) => {
-    // Server-side admin check
-    if (!isAdminClerkId(args.adminClerkUserId)) {
-      throw new Error("Admin access required");
-    }
+    // Server-side admin check (role-based, from Clerk JWT)
+    await requireAdmin(ctx);
 
     const lead = await ctx.db.get(args.leadId as Id<"leads">);
     if (!lead) {
@@ -686,10 +678,8 @@ export const adminRetireLead = mutation({
 export const adminDeleteLead = mutation({
   args: { leadId: v.string(), adminClerkUserId: v.string() },
   handler: async (ctx, args) => {
-    // Server-side admin check
-    if (!isAdminClerkId(args.adminClerkUserId)) {
-      throw new Error("Admin access required");
-    }
+    // Server-side admin check (role-based, from Clerk JWT)
+    await requireAdmin(ctx);
 
     const lead = await ctx.db.get(args.leadId as Id<"leads">);
     if (!lead) {
@@ -782,8 +772,8 @@ export const seedDemoLeads = mutation({
     const now = Date.now();
 
     // Check for admin auth if provided
-    if (args.adminClerkUserId && !isAdminClerkId(args.adminClerkUserId)) {
-      throw new Error("Admin access required");
+    if (args.adminClerkUserId) {
+      await requireAdmin(ctx);
     }
 
     const demoLeads = [

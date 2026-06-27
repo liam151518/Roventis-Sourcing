@@ -24,7 +24,7 @@ import {
 import { useQuery, useMutation } from "convex/react";
 import { useAuth, useUser, UserButton } from "@clerk/nextjs";
 import { api } from "@/convex/_generated/api";
-import { isAdminEmail, isAdminUserId } from "@/lib/admin";
+import { isAdmin } from "@/lib/admin";
 
 const navItems = [
   // Dashboard
@@ -72,15 +72,13 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     return email;
   }, [user]);
 
-  // Check admin - use userId which is more reliable
-  const isAdmin = useMemo(() => {
+  // Check admin via Clerk publicMetadata.role (with email fallback for cutover)
+  const isAdminUser = useMemo(() => {
     if (!userId) return false;
-    // Check both email and user ID for admin
-    const emailAdmin = userEmail ? isAdminEmail(userEmail) : false;
-    const idAdmin = isAdminUserId(userId);
-    console.log("Admin check:", { userId, userEmail, emailAdmin, idAdmin });
-    return emailAdmin || idAdmin;
-  }, [userId, userEmail]);
+    const result = isAdmin(user, userEmail);
+    console.log("Admin check:", { userId, userEmail, isAdmin: result });
+    return result;
+  }, [userId, user, userEmail]);
 
   // Always pass a consistent argument to keep hooks stable
   const currentAffiliate = useQuery(
@@ -90,32 +88,32 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
   // Debug
   useEffect(() => {
-    console.log("Dashboard:", { isLoaded, userId, userEmail, isAdmin, hasAffiliate: !!currentAffiliate });
-  }, [isLoaded, userId, userEmail, isAdmin, currentAffiliate]);
+    console.log("Dashboard:", { isLoaded, userId, userEmail, isAdmin: isAdminUser, hasAffiliate: !!currentAffiliate });
+  }, [isLoaded, userId, userEmail, isAdminUser, currentAffiliate]);
 
   // Redirect admins to admin dashboard - only when fully loaded and confirmed admin
   useEffect(() => {
-    if (isLoaded && userId && isAdmin) {
+    if (isLoaded && userId && isAdminUser) {
       console.log("Redirecting admin to admin dashboard");
       router.push("/admin");
     }
-  }, [isLoaded, userId, isAdmin, router]);
+  }, [isLoaded, userId, isAdminUser, router]);
 
   // Skip seeding for admin users
   useEffect(() => {
-    if (isAdmin || !userEmail || !userId) return;
-    
+    if (isAdminUser || !userEmail || !userId) return;
+
     if (isLoaded && currentAffiliate === null) {
-      seedDemoData({ 
+      seedDemoData({
         clerkUserId: userId,
         firstName: user?.firstName || "Demo",
-        lastName: user?.lastName || "User", 
+        lastName: user?.lastName || "User",
         email: userEmail
       }).then(() => {
         seedAllData();
       });
     }
-  }, [isLoaded, userId, currentAffiliate, user, isAdmin, userEmail]);
+  }, [isLoaded, userId, currentAffiliate, user, isAdminUser, userEmail]);
 
   return (
     <div className="min-h-screen bg-black flex">

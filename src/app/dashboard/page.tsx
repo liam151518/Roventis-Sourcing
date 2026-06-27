@@ -25,7 +25,7 @@ import Link from "next/link";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { formatCurrency } from "@/lib/utils";
-import { isAdminEmail, isAdminUserId } from "@/lib/admin";
+import { isAdmin } from "@/lib/admin";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { SkeletonBlock } from "@/components/ui/SkeletonBlock";
 import { 
@@ -67,20 +67,17 @@ export default function DashboardPage() {
            "";
   }, [user]);
 
-  const isAdmin = useMemo(() => {
+  const isAdminUser = useMemo(() => {
     if (!userId) return false;
-    // Check both email and user ID for admin
-    const emailAdmin = userEmail ? isAdminEmail(userEmail) : false;
-    const idAdmin = isAdminUserId(userId);
-    return emailAdmin || idAdmin;
-  }, [userId, userEmail]);
+    return isAdmin(user, userEmail);
+  }, [userId, user, userEmail]);
 
   // Redirect admins to admin dashboard - but only after auth is loaded
   useEffect(() => {
-    if (isLoaded && isAdmin) {
+    if (isLoaded && isAdminUser) {
       router.push("/admin");
     }
-  }, [isLoaded, isAdmin, router]);
+  }, [isLoaded, isAdminUser, router]);
   
   // All hooks must be called before any early returns
   // Filter deals for current user (safe to do with null checks)

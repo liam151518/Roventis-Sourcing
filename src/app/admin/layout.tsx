@@ -22,7 +22,7 @@ import {
   Receipt,
 } from "lucide-react";
 import { useAuth, useUser, UserButton, SignInButton, useClerk } from "@clerk/nextjs";
-import { isAdminEmail, isAdminUserId } from "@/lib/admin";
+import { isAdmin } from "@/lib/admin";
 
 const adminNavItems = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, section: "dashboard" },
@@ -53,18 +53,16 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
            "";
   }, [user]);
 
-  const isAdmin = useMemo(() => {
+  const isAdminUser = useMemo(() => {
     if (!userId) return false;
-    const emailAdmin = userEmail ? isAdminEmail(userEmail) : false;
-    const idAdmin = isAdminUserId(userId);
-    return emailAdmin || idAdmin;
-  }, [userId, userEmail]);
+    return isAdmin(user, userEmail);
+  }, [userId, user, userEmail]);
 
   useEffect(() => {
-    if (isLoaded && userId && !isAdmin) {
+    if (isLoaded && userId && !isAdminUser) {
       router.push("/dashboard");
     }
-  }, [isLoaded, userId, isAdmin, router]);
+  }, [isLoaded, userId, isAdminUser, router]);
 
   if (!isLoaded) {
     return (
@@ -90,7 +88,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (isLoaded && userId && !isAdmin) {
+  if (isLoaded && userId && !isAdminUser) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">

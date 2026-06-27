@@ -1,24 +1,12 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { isAdminCtx, requireAdmin } from "./lib/auth";
 
-// Admin emails
-const ADMIN_EMAILS = [
-  "luanras@icloud.com",
-  "dino.fernandes@icloud.com",
-  "marcusdeaguiar17@gmail.com",
-  "echarddeklerk@icloud.com",
-  "liamxandersantos@gmail.com",
-];
-
-function isAdminEmail(email: string): boolean {
-  return ADMIN_EMAILS.includes(email.toLowerCase());
-}
-
-// Check if user is admin
+// Check if the current caller is an admin (reads Clerk publicMetadata.role)
 export const checkIsAdmin = query({
-  args: { email: v.string() },
-  handler: async (ctx, args) => {
-    return isAdminEmail(args.email);
+  args: {},
+  handler: async (ctx) => {
+    return await isAdminCtx(ctx);
   },
 });
 
@@ -490,13 +478,11 @@ export const getLeaderboard = query({
 export const approveOrderCommission = mutation({
   args: {
     orderId: v.string(),
-    adminClerkUserId: v.string(),
+    adminClerkUserId: v.string(), // deprecated, kept for client compat
   },
   handler: async (ctx, args) => {
-    const ADMIN_IDS = ["user_3B7OeXBrhE04XG6KNSbtEE5UD1H"];
-    if (!ADMIN_IDS.includes(args.adminClerkUserId)) {
-      throw new Error("Admin access required");
-    }
+    // Server-side admin check from Clerk JWT (role-based)
+    await requireAdmin(ctx);
     
     const order = await ctx.db.get(args.orderId as any) as any;
     if (!order) {
@@ -545,13 +531,10 @@ export const markCommissionPaid = mutation({
   args: {
     orderId: v.string(),
     paymentReference: v.string(),
-    adminClerkUserId: v.string(),
+    adminClerkUserId: v.string(), // deprecated, kept for client compat
   },
   handler: async (ctx, args) => {
-    const ADMIN_IDS = ["user_3B7OeXBrhE04XG6KNSbtEE5UD1H"];
-    if (!ADMIN_IDS.includes(args.adminClerkUserId)) {
-      throw new Error("Admin access required");
-    }
+    await requireAdmin(ctx);
     
     const order = await ctx.db.get(args.orderId as any) as any;
     if (!order) {
@@ -629,12 +612,9 @@ export const getCommissionSummary = query({
 });
 
 export const recalculateAffiliateCommissions = mutation({
-  args: { adminClerkUserId: v.string() },
+  args: { adminClerkUserId: v.string() }, // deprecated, kept for client compat
   handler: async (ctx, args) => {
-    const ADMIN_IDS = ["user_3B7OeXBrhE04XG6KNSbtEE5UD1H"];
-    if (!ADMIN_IDS.includes(args.adminClerkUserId)) {
-      throw new Error("Admin access required");
-    }
+    await requireAdmin(ctx);
     
     const affiliates = await ctx.db.query("affiliates").collect();
     const orders = await ctx.db.query("orders").collect();
