@@ -40,10 +40,9 @@ const footerLinks: FooterSection[] = [
 	{
 		label: 'Company',
 		links: [
-			{ title: 'About Us', href: '#' },
-			{ title: 'Support', href: '#' },
+			{ title: 'About Us', href: '/about' },
 			{ title: 'Disclaimer', href: '/disclaimer' },
-			{ title: 'Contact', href: '#' },
+			{ title: 'Contact', href: 'mailto:roventis.io@gmail.com' },
 		],
 	},
 	{
