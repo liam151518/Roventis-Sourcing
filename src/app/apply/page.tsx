@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { SignUp } from "@clerk/nextjs";
+import { useEffect } from "react";
 import { MeshGradient } from "@paper-design/shaders-react";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft, Check, Clock, ShieldCheck } from "lucide-react";
 
 const perks = [
   "Access to 500+ verified buyers",
@@ -13,7 +13,36 @@ const perks = [
   "Full training and deal support",
 ];
 
+const steps = [
+  { num: "01", label: "Book a call" },
+  { num: "02", label: "Quick vetting chat" },
+  { num: "03", label: "Get your invite" },
+];
+
+const CALENDLY_URL = "https://calendly.com/roventis-io/30min";
+
 export default function ApplyPage() {
+  // Load Calendly's embed stylesheet + widget script on mount
+  useEffect(() => {
+    const linkId = "calendly-widget-css";
+    if (!document.getElementById(linkId)) {
+      const link = document.createElement("link");
+      link.id = linkId;
+      link.rel = "stylesheet";
+      link.href = "https://assets.calendly.com/assets/external/widget.css";
+      document.head.appendChild(link);
+    }
+
+    const scriptId = "calendly-widget-script";
+    if (!document.getElementById(scriptId)) {
+      const script = document.createElement("script");
+      script.id = scriptId;
+      script.src = "https://assets.calendly.com/assets/external/widget.js";
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left panel — shader + brand */}
@@ -37,18 +66,35 @@ export default function ApplyPage() {
             className="h-9 w-auto mb-12 brightness-0 invert"
           />
 
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-[12px] text-white/90 font-medium mb-6">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            Invite-only application
+          </span>
+
           <h2 className="text-[clamp(2rem,3.5vw,2.75rem)] font-semibold tracking-[-0.035em] text-white leading-[1.15]">
-            Start earning from
+            Join Roventis
             <br />
-            day one.
+            by introduction.
           </h2>
 
           <p className="mt-5 text-[15px] text-white/70 leading-relaxed max-w-sm">
-            Join a growing network of affiliates closing real deals across hospitality, corporate, and retail sectors.
+            We personally meet every new affiliate before granting access. Book a short call so we can learn about your network and goals.
           </p>
 
+          {/* 3-step process */}
+          <div className="mt-10 space-y-4">
+            {steps.map((step) => (
+              <div key={step.num} className="flex items-center gap-4">
+                <div className="w-9 h-9 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center text-[12px] font-semibold text-white tracking-wide shrink-0">
+                  {step.num}
+                </div>
+                <span className="text-[14px] text-white/90">{step.label}</span>
+              </div>
+            ))}
+          </div>
+
           {/* Perks list */}
-          <div className="mt-10 space-y-3.5">
+          <div className="mt-12 space-y-3.5">
             {perks.map((perk) => (
               <div key={perk} className="flex items-center gap-3">
                 <div className="w-5 h-5 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center shrink-0">
@@ -83,7 +129,7 @@ export default function ApplyPage() {
         </div>
       </div>
 
-      {/* Right panel — form */}
+      {/* Right panel — Calendly embed */}
       <div className="relative flex-1 flex flex-col bg-[#faf9f7] min-h-screen lg:min-h-0">
         {/* Mobile shader background */}
         <div className="absolute inset-0 lg:hidden">
@@ -119,49 +165,39 @@ export default function ApplyPage() {
         </div>
 
         {/* Form area */}
-        <div className="relative z-10 flex-1 flex items-center justify-center px-6 sm:px-10 pb-12">
-          <div className="w-full max-w-[380px]">
-            <div className="mb-8">
+        <div className="relative z-10 flex-1 flex flex-col px-6 sm:px-10 pb-12">
+          <div className="w-full max-w-[560px] mx-auto">
+            <div className="mb-6">
               <h1 className="text-[28px] font-semibold tracking-[-0.03em] text-[#1d1d1f]">
-                Create your account
+                Book a vetting call
               </h1>
               <p className="mt-2 text-[15px] text-[#6e6e73]">
-                Get started in under 2 minutes
+                Pick a 20-minute slot below. Once we approve you on the call, we&apos;ll send a sign-up link to your inbox.
               </p>
             </div>
 
-            <SignUp
-              fallbackRedirectUrl="/dashboard"
-              appearance={{
-                elements: {
-                  rootBox: "w-full",
-                  card: "bg-transparent shadow-none p-0 gap-6",
-                  header: "hidden",
-                  socialButtonsBlockButton:
-                    "bg-white border border-black/[0.08] text-[#1d1d1f] hover:bg-[#f5f5f7] hover:border-black/[0.12] rounded-[14px] h-[46px] transition-all font-medium shadow-sm",
-                  socialButtonsBlockButtonText: "text-[#1d1d1f] font-medium text-[14px]",
-                  dividerLine: "bg-black/[0.06]",
-                  dividerText: "text-[#86868b] text-[13px] px-4",
-                  formFieldLabel: "text-[#1d1d1f] font-medium text-[13px] mb-1.5",
-                  formFieldInput:
-                    "bg-white border border-black/[0.08] text-[#1d1d1f] rounded-[14px] h-[46px] px-4 focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/10 transition-all placeholder:text-[#86868b] shadow-sm",
-                  formButtonPrimary:
-                    "bg-[#1d1d1f] hover:bg-[#333] text-white rounded-[14px] h-[46px] font-medium transition-all shadow-sm hover:shadow-md",
-                  footerActionLink: "text-[#0071e3] hover:text-[#0050a0] font-medium",
-                  footer: "hidden",
-                  formFieldInputShowPasswordButton: "text-[#6e6e73] hover:text-[#1d1d1f]",
-                  identityPreviewEditButton: "text-[#0071e3]",
-                  formResendCodeLink: "text-[#0071e3]",
-                  otpCodeFieldInput: "border-black/[0.08] text-[#1d1d1f] rounded-[10px]",
-                  formFieldAction: "text-[#0071e3] text-[13px]",
-                  alertText: "text-[#1d1d1f] text-[13px]",
-                }
-              }}
-              routing="hash"
+            {/* Trust strip */}
+            <div className="flex items-center gap-4 mb-5 text-[13px] text-[#6e6e73]">
+              <div className="flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5" />
+                <span>~20 minutes</span>
+              </div>
+              <div className="w-px h-3 bg-black/10" />
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>No payment required</span>
+              </div>
+            </div>
+
+            {/* Calendly inline embed */}
+            <div
+              className="calendly-inline-widget rounded-2xl overflow-hidden border border-black/[0.08] bg-white shadow-sm"
+              data-url={CALENDLY_URL}
+              style={{ minWidth: "320px", height: "640px" }}
             />
 
-            <p className="text-center text-[13px] text-[#86868b] mt-8">
-              Already have an account?{" "}
+            <p className="text-center text-[13px] text-[#86868b] mt-6">
+              Already approved?{" "}
               <Link href="/login" className="text-[#0071e3] hover:text-[#0050a0] font-medium transition-colors">
                 Sign in
               </Link>
