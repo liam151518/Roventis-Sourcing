@@ -2,25 +2,19 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { 
-  Award, 
-  Zap, 
-  Crown, 
-  Star, 
-  TrendingUp, 
-  Check, 
+import {
+  Award,
+  Zap,
+  Crown,
+  Star,
+  TrendingUp,
+  Check,
   X,
-  Lock,
-  Unlock,
-  DollarSign,
-  Users,
-  Gift,
-  FileText,
   Target,
-  Briefcase,
-  ArrowRight
+  ArrowRight,
+  Sparkles,
 } from "lucide-react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@clerk/nextjs";
 import { formatCurrency } from "@/lib/utils";
@@ -29,8 +23,8 @@ const tiers = [
   {
     id: "bronze",
     name: "Bronze",
-    borderAccent: "border-orange-500/20",
-    iconColor: "text-orange-400",
+    accent: "rgba(245,158,11,0.10)",
+    iconColor: "#fbbf24",
     icon: Award,
     commission: "5%",
     subscription: "Free",
@@ -49,8 +43,8 @@ const tiers = [
   {
     id: "silver",
     name: "Silver",
-    borderAccent: "border-white/10",
-    iconColor: "text-[var(--rs-text-secondary)]",
+    accent: "rgba(148,163,184,0.12)",
+    iconColor: "#cbd5e1",
     icon: Star,
     commission: "10%",
     subscription: "Free",
@@ -69,8 +63,8 @@ const tiers = [
   {
     id: "gold",
     name: "Gold",
-    borderAccent: "border-amber-400/30",
-    iconColor: "text-amber-300",
+    accent: "rgba(252,211,77,0.12)",
+    iconColor: "#fcd34d",
     icon: TrendingUp,
     commission: "15%",
     subscription: "Free",
@@ -89,8 +83,8 @@ const tiers = [
   {
     id: "platinum",
     name: "Platinum",
-    borderAccent: "border-violet-500/30",
-    iconColor: "text-violet-300",
+    accent: "var(--rs-accent-soft)",
+    iconColor: "var(--rs-text-accent)",
     icon: Crown,
     commission: "12-15%",
     subscription: "R899.69/mo",
@@ -116,36 +110,51 @@ export default function TierPage() {
     { clerkUserId: userId || undefined }
   );
   const deals = useQuery(api.deals.getAllDeals);
-  
-  // Loading state
+
   if (currentAffiliate === null || deals === null) {
     return (
-      <div className="min-h-screen bg-[#0a0a0b] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="space-y-6">
+        <div className="rs-skeleton h-8 w-64" />
+        <div className="rs-skeleton h-32" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="rs-skeleton h-72" />
+          <div className="rs-skeleton h-72" />
+          <div className="rs-skeleton h-72" />
+          <div className="rs-skeleton h-72" />
+        </div>
       </div>
     );
   }
 
-  const userDeals = (deals || []).filter(d => d.affiliateId === currentAffiliate?._id);
+  const userDeals = (deals || []).filter(
+    (d) => d.affiliateId === currentAffiliate?._id
+  );
   const closedWonValue = userDeals
-    .filter(d => d.status === "closed_won")
+    .filter((d) => d.status === "closed_won")
     .reduce((sum, d) => sum + d.dealValue, 0);
 
-  const currentTierIndex = tiers.findIndex(t => t.id === currentAffiliate?.tier);
+  const currentTierIndex = tiers.findIndex(
+    (t) => t.id === currentAffiliate?.tier
+  );
   const nextTier = tiers[currentTierIndex + 1];
   const currentTier = tiers[currentTierIndex];
 
   const getProgress = () => {
     if (currentAffiliate?.tier === "bronze") {
-      // First sale to unlock Silver
-      return { current: closedWonValue, target: 1, percent: closedWonValue > 0 ? 100 : 0 };
+      return {
+        current: closedWonValue,
+        target: 1,
+        percent: closedWonValue > 0 ? 100 : 0,
+      };
     }
     if (currentAffiliate?.tier === "silver") {
-      // R150k to unlock Gold
-      return { current: closedWonValue, target: 150000, percent: Math.min((closedWonValue / 150000) * 100, 100) };
+      return {
+        current: closedWonValue,
+        target: 150000,
+        percent: Math.min((closedWonValue / 150000) * 100, 100),
+      };
     }
     if (currentAffiliate?.tier === "gold") {
-      // Needs to upgrade to Platinum
       return { current: 0, target: 1, percent: 0 };
     }
     return { current: 0, target: 1, percent: 100 };
@@ -156,47 +165,90 @@ export default function TierPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="text-center">
+      <div>
         <span className="rs-overline">Your Account</span>
-        <h1 className="rs-page-title">Tier & Upgrade</h1>
-        <p className="text-gray-400">View your current tier and unlock premium benefits</p>
+        <h1 className="rs-page-title text-2xl md:text-[28px] mt-1">
+          Tier & Upgrade
+        </h1>
+        <p className="rs-page-subtitle">
+          View your current tier and unlock premium benefits.
+        </p>
       </div>
 
       {/* Current Tier Card */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rs-card !border-[var(--rs-accent-soft)] rounded-3xl p-8 relative overflow-hidden"
+        className="rs-card p-8 relative overflow-hidden"
+        style={{
+          background: `linear-gradient(135deg, ${currentTier?.accent}, var(--rs-bg-base))`,
+        }}
       >
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-600 to-purple-700 flex items-center justify-center">
+            <div
+              className="w-16 h-16 rounded-2xl flex items-center justify-center"
+              style={{ background: currentTier?.accent }}
+            >
               {currentAffiliate?.tier === "platinum" ? (
-                <Crown className="w-10 h-10 text-white" />
+                <Crown
+                  className="w-7 h-7"
+                  style={{ color: currentTier?.iconColor }}
+                />
               ) : currentAffiliate?.tier === "gold" ? (
-                <TrendingUp className="w-10 h-10 text-white" />
+                <TrendingUp
+                  className="w-7 h-7"
+                  style={{ color: currentTier?.iconColor }}
+                />
               ) : currentAffiliate?.tier === "silver" ? (
-                <Star className="w-10 h-10 text-white" />
+                <Star
+                  className="w-7 h-7"
+                  style={{ color: currentTier?.iconColor }}
+                />
               ) : (
-                <Award className="w-10 h-10 text-white" />
+                <Award
+                  className="w-7 h-7"
+                  style={{ color: currentTier?.iconColor }}
+                />
               )}
             </div>
             <div>
-              <p className="text-gray-400 text-sm">Current Tier</p>
-              <h2 className={`text-3xl font-bold ${currentTier?.iconColor}`}>{currentTier?.name}</h2>
-              <p className="text-gray-400">{currentTier?.commission} commission rate</p>
+              <p
+                className="text-xs uppercase tracking-wider"
+                style={{ color: "var(--rs-text-muted)" }}
+              >
+                Current Tier
+              </p>
+              <h2
+                className="text-2xl font-semibold rs-stat"
+                style={{ color: currentTier?.iconColor }}
+              >
+                {currentTier?.name}
+              </h2>
+              <p
+                className="text-xs mt-0.5"
+                style={{ color: "var(--rs-text-secondary)" }}
+              >
+                {currentTier?.commission} commission rate
+              </p>
             </div>
           </div>
 
           <div className="flex flex-col items-end gap-2">
             <div className="text-right">
-              <p className="text-gray-400 text-sm">Total Sales</p>
-              <p className="text-2xl font-bold text-white">{formatCurrency(closedWonValue)}</p>
+              <p
+                className="text-xs"
+                style={{ color: "var(--rs-text-muted)" }}
+              >
+                Total Sales
+              </p>
+              <p className="text-2xl font-semibold text-white rs-stat">
+                {formatCurrency(closedWonValue)}
+              </p>
             </div>
-            <div className="px-4 py-1.5 bg-white/5 rounded-full">
-              <span className="text-gray-400 text-sm">Next: </span>
-              <span className="text-white font-medium">{nextTier?.name || "Max Tier"}</span>
-            </div>
+            <span className="rs-pill rs-pill--violet">
+              Next: {nextTier?.name || "Max tier"}
+            </span>
           </div>
         </div>
       </motion.div>
@@ -204,43 +256,59 @@ export default function TierPage() {
       {/* Progress to Next Tier */}
       {currentAffiliate?.tier !== "platinum" && nextTier && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-[#111113] rounded-2xl p-6 border border-white/5"
+          className="rs-card p-6"
         >
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-white font-semibold">Progress to {nextTier.name}</h3>
-              <p className="text-gray-400 text-sm">
-                {currentAffiliate?.tier === "bronze" 
+              <h3 className="text-sm font-semibold text-white">
+                Progress to {nextTier.name}
+              </h3>
+              <p
+                className="text-xs mt-0.5"
+                style={{ color: "var(--rs-text-secondary)" }}
+              >
+                {currentAffiliate?.tier === "bronze"
                   ? "Make your first sale to unlock Silver tier"
-                  : `Reach R150,000 in sales to unlock Gold tier`
-                }
+                  : "Reach R150,000 in sales to unlock Gold tier"}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-bold text-white">{Math.round(progress.percent)}%</p>
-              <p className="text-gray-400 text-sm">
-                {formatCurrency(progress.current)} / {formatCurrency(progress.target)}
+              <p className="text-xl font-semibold text-white rs-stat">
+                {Math.round(progress.percent)}%
+              </p>
+              <p
+                className="text-xs"
+                style={{ color: "var(--rs-text-muted)" }}
+              >
+                {formatCurrency(progress.current)} /{" "}
+                {formatCurrency(progress.target)}
               </p>
             </div>
           </div>
-          
-          <div className="h-3 bg-[var(--rs-bg-overlay)] rounded-full overflow-hidden">
+
+          <div
+            className="h-2 rounded-full overflow-hidden"
+            style={{ background: "var(--rs-bg-overlay)" }}
+          >
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progress.percent}%` }}
               transition={{ duration: 1, ease: "easeOut" }}
-              className="h-full bg-gradient-to-r from-violet-500 to-violet-400 rounded-full"
+              className="h-full rounded-full"
+              style={{
+                background:
+                  "linear-gradient(90deg, var(--rs-accent), var(--rs-text-accent))",
+              }}
             />
           </div>
 
           {currentAffiliate?.tier === "gold" && (
-            <div className="mt-4 p-4 bg-violet-500/10 border border-violet-500/20 rounded-xl">
-              <p className="text-violet-400 text-sm">
-                Upgrade to Platinum for R899.69/month to unlock 12-15% commission and exclusive lead access.
-              </p>
+            <div className="rs-callout rs-callout--info mt-4">
+              Upgrade to Platinum for R899.69/month to unlock 12-15% commission
+              and exclusive lead access.
             </div>
           )}
         </motion.div>
@@ -248,67 +316,117 @@ export default function TierPage() {
 
       {/* Tier Comparison */}
       <div>
-        <h2 className="text-xl font-semibold text-white mb-4">Compare Tiers</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="rs-section-header-title mb-4">Compare Tiers</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {tiers.map((tier, index) => {
             const isCurrentTier = tier.id === currentAffiliate?.tier;
             const Icon = tier.icon;
-            
+
             return (
               <motion.div
                 key={tier.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className={`rs-card p-5 ${
-                  isCurrentTier ? '!border-[var(--rs-accent)] shadow-[0_0_0_1px_var(--rs-accent),0_0_24px_var(--rs-accent-glow)]' : tier.borderAccent
-                } relative overflow-hidden`}
+                transition={{ delay: index * 0.08 }}
+                className="rs-card p-5 relative overflow-hidden"
+                style={
+                  isCurrentTier
+                    ? {
+                        borderColor: "var(--rs-accent)",
+                        boxShadow:
+                          "0 0 0 1px var(--rs-accent), 0 0 24px var(--rs-accent-glow)",
+                      }
+                    : undefined
+                }
               >
                 {isCurrentTier && (
                   <div className="absolute top-3 right-3">
-                    <span className="px-2 py-1 bg-[var(--rs-accent-soft)] text-[var(--rs-accent)] text-xs font-medium rounded-full">
-                      Current
-                    </span>
+                    <span className="rs-pill rs-pill--violet">Current</span>
                   </div>
                 )}
 
-                <div className={`w-12 h-12 rounded-xl bg-[var(--rs-accent-soft)] flex items-center justify-center mb-4`}>
-                  <Icon className={`w-6 h-6 ${tier.iconColor}`} />
+                <div
+                  className="w-11 h-11 rounded-xl flex items-center justify-center mb-4"
+                  style={{ background: tier.accent }}
+                >
+                  <Icon
+                    className="w-5 h-5"
+                    style={{ color: tier.iconColor }}
+                  />
                 </div>
 
-                <h3 className={`text-xl font-bold ${tier.iconColor} mb-1`}>{tier.name}</h3>
-                
+                <h3
+                  className="text-base font-semibold mb-1"
+                  style={{ color: tier.iconColor }}
+                >
+                  {tier.name}
+                </h3>
+
                 <div className="mb-4">
-                  <p className="rs-stat text-2xl font-bold text-white">{tier.commission}</p>
-                  <p className="text-gray-400 text-sm">commission</p>
+                  <p className="text-2xl font-semibold text-white rs-stat">
+                    {tier.commission}
+                  </p>
+                  <p
+                    className="text-xs"
+                    style={{ color: "var(--rs-text-muted)" }}
+                  >
+                    commission
+                  </p>
                 </div>
 
-                <div className="mb-4 p-3 bg-white/5 rounded-xl">
-                  <p className="text-gray-400 text-xs">Subscription</p>
-                  <p className="text-white font-semibold">{tier.subscription}</p>
+                <div
+                  className="mb-4 p-3 rounded-lg"
+                  style={{
+                    background: "var(--rs-bg-base)",
+                    border: "1px solid var(--rs-border)",
+                  }}
+                >
+                  <p
+                    className="text-[10px] uppercase tracking-wider"
+                    style={{ color: "var(--rs-text-muted)" }}
+                  >
+                    Subscription
+                  </p>
+                  <p className="text-sm font-semibold text-white">
+                    {tier.subscription}
+                  </p>
                 </div>
 
                 <div className="space-y-2">
                   {tier.features.slice(0, 5).map((feature) => (
                     <div key={feature.name} className="flex items-center gap-2">
                       {feature.included ? (
-                        <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                        <Check
+                          className="w-3.5 h-3.5 flex-shrink-0"
+                          style={{ color: "var(--rs-success)" }}
+                        />
                       ) : (
-                        <X className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                        <X
+                          className="w-3.5 h-3.5 flex-shrink-0"
+                          style={{ color: "var(--rs-text-muted)" }}
+                        />
                       )}
-                      <span className={`text-sm ${feature.included ? "text-gray-300" : "text-gray-600"}`}>
+                      <span
+                        className="text-xs"
+                        style={{
+                          color: feature.included
+                            ? "var(--rs-text-primary)"
+                            : "var(--rs-text-muted)",
+                        }}
+                      >
                         {feature.name}
                       </span>
                     </div>
                   ))}
                 </div>
 
-                {tier.id === "platinum" && currentAffiliate?.tier !== "platinum" && (
-                  <button className="w-full mt-4 py-3 rs-btn-primary">
-                    <Zap className="w-4 h-4" />
-                    Upgrade Now
-                  </button>
-                )}
+                {tier.id === "platinum" &&
+                  currentAffiliate?.tier !== "platinum" && (
+                    <button className="rs-btn-primary w-full justify-center mt-4">
+                      <Zap className="w-3.5 h-3.5" />
+                      Upgrade Now
+                    </button>
+                  )}
               </motion.div>
             );
           })}
@@ -317,22 +435,45 @@ export default function TierPage() {
 
       {/* Requirements */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="bg-[#111113] rounded-2xl p-6 border border-white/5"
+        className="rs-card p-6"
       >
-        <h3 className="text-lg font-semibold text-white mb-4">Tier Requirements</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="rs-section-header-title mb-4">Tier Requirements</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {tiers.map((tier) => (
-            <div key={tier.id} className="p-4 bg-white/5 rounded-xl">
+            <div
+              key={tier.id}
+              className="p-4 rounded-lg"
+              style={{
+                background: "var(--rs-bg-base)",
+                border: "1px solid var(--rs-border)",
+              }}
+            >
               <div className="flex items-center gap-2 mb-2">
-                <div className={`w-8 h-8 rounded-lg bg-[var(--rs-accent-soft)] flex items-center justify-center`} style={{ color: tier.iconColor }}>
-                  <tier.icon className={`w-4 h-4 ${tier.iconColor}`} />
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center"
+                  style={{ background: tier.accent }}
+                >
+                  <tier.icon
+                    className="w-4 h-4"
+                    style={{ color: tier.iconColor }}
+                  />
                 </div>
-                <span className={`font-semibold ${tier.iconColor}`}>{tier.name}</span>
+                <span
+                  className="text-sm font-semibold"
+                  style={{ color: tier.iconColor }}
+                >
+                  {tier.name}
+                </span>
               </div>
-              <p className="text-gray-400 text-sm">{tier.requirements[0]}</p>
+              <p
+                className="text-xs"
+                style={{ color: "var(--rs-text-secondary)" }}
+              >
+                {tier.requirements[0]}
+              </p>
             </div>
           ))}
         </div>
@@ -341,32 +482,85 @@ export default function TierPage() {
       {/* Platinum CTA */}
       {currentAffiliate?.tier !== "platinum" && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="bg-gradient-to-br from-violet-900/30 to-purple-900/30 rounded-3xl p-8 border border-violet-500/20"
+          className="rs-card p-8 relative overflow-hidden"
+          style={{
+            background:
+              "linear-gradient(135deg, var(--rs-accent-soft), var(--rs-bg-base))",
+            border: "1px solid var(--rs-accent)",
+          }}
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-purple-700 flex items-center justify-center">
-                <Crown className="w-8 h-8 text-white" />
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                style={{ background: "var(--rs-accent)" }}
+              >
+                <Sparkles className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-white">Go Platinum</h3>
-                <p className="text-gray-400">Unlock the full potential of your affiliate business</p>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-semibold text-white">
+                    Go Platinum
+                  </h3>
+                  <span className="rs-pill rs-pill--violet">Premium</span>
+                </div>
+                <p
+                  className="text-xs mt-0.5"
+                  style={{ color: "var(--rs-text-secondary)" }}
+                >
+                  Unlock the full potential of your affiliate business.
+                </p>
               </div>
             </div>
-            <div className="text-center md:text-right">
-              <p className="text-3xl font-bold text-white mb-1">R899.69<span className="text-lg font-normal text-gray-400">/month</span></p>
-              <ul className="text-gray-400 text-sm mb-4 space-y-1">
-                <li>+ 12-15% commission</li>
-                <li>+ Exclusive lead pool</li>
-                <li>+ Priority support</li>
+            <div className="md:text-right">
+              <p className="text-2xl font-semibold text-white rs-stat">
+                R899.69
+                <span
+                  className="text-sm font-normal"
+                  style={{ color: "var(--rs-text-muted)" }}
+                >
+                  /month
+                </span>
+              </p>
+              <ul className="space-y-1 my-3">
+                <li
+                  className="text-xs flex items-center md:justify-end gap-1.5"
+                  style={{ color: "var(--rs-text-secondary)" }}
+                >
+                  <Check
+                    className="w-3 h-3"
+                    style={{ color: "var(--rs-success)" }}
+                  />
+                  12-15% commission
+                </li>
+                <li
+                  className="text-xs flex items-center md:justify-end gap-1.5"
+                  style={{ color: "var(--rs-text-secondary)" }}
+                >
+                  <Check
+                    className="w-3 h-3"
+                    style={{ color: "var(--rs-success)" }}
+                  />
+                  Exclusive lead pool
+                </li>
+                <li
+                  className="text-xs flex items-center md:justify-end gap-1.5"
+                  style={{ color: "var(--rs-text-secondary)" }}
+                >
+                  <Check
+                    className="w-3 h-3"
+                    style={{ color: "var(--rs-success)" }}
+                  />
+                  Priority support
+                </li>
               </ul>
-              <button className="rs-btn-primary flex items-center gap-2 mx-auto md:mx-0">
-                <Zap className="w-5 h-5" />
+              <button className="rs-btn-primary inline-flex">
+                <Zap className="w-3.5 h-3.5" />
                 Upgrade to Platinum
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>

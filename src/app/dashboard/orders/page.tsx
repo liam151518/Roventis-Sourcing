@@ -110,8 +110,18 @@ export default function OrdersPage() {
   // Loading state
   if (currentAffiliate === null || orders === null) {
     return (
-      <div className="min-h-screen bg-[#0a0a0b] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="space-y-6">
+        <div className="rs-skeleton h-8 w-48" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="rs-skeleton h-24" />
+          <div className="rs-skeleton h-24" />
+          <div className="rs-skeleton h-24" />
+          <div className="rs-skeleton h-24" />
+        </div>
+        <div className="space-y-3">
+          <div className="rs-skeleton h-28" />
+          <div className="rs-skeleton h-28" />
+        </div>
       </div>
     );
   }
@@ -133,25 +143,25 @@ export default function OrdersPage() {
       label: "Total Orders",
       value: orders?.length || 0,
       icon: Package,
-      color: "from-blue-500 to-indigo-600",
+      tone: "info" as const,
     },
     {
       label: "In Progress",
       value: orders?.filter(o => ["submitted", "supplier_confirmed", "in_transit"].includes(o.status)).length || 0,
       icon: Clock,
-      color: "from-amber-500 to-orange-600",
+      tone: "warning" as const,
     },
     {
       label: "Delivered",
       value: orders?.filter(o => ["delivered", "installed"].includes(o.status)).length || 0,
       icon: CheckCircle,
-      color: "from-emerald-500 to-teal-600",
+      tone: "success" as const,
     },
     {
       label: "Total Value",
       value: formatCurrency(orders?.reduce((sum, o) => sum + o.totalAmount, 0) || 0),
       icon: DollarSign,
-      color: "from-purple-500 to-pink-600",
+      tone: "accent" as const,
     },
   ];
 
@@ -269,16 +279,21 @@ export default function OrdersPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div>
           <span className="rs-overline">Orders</span>
-          <h1 className="rs-page-title">Track and manage your orders</h1>
+          <h1 className="rs-page-title text-2xl md:text-[28px] mt-1">
+            Track and manage your orders
+          </h1>
+          <p className="rs-page-subtitle">
+            From draft to installation — track every step of your fulfillment.
+          </p>
         </div>
-        <button 
+        <button
           onClick={() => setShowNewOrderModal(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rs-btn-primary"
+          className="rs-btn-primary"
         >
           <Plus className="w-4 h-4" />
           New Order
@@ -286,42 +301,49 @@ export default function OrdersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {stats.map((stat, index) => (
           <motion.div
             key={stat.label}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="rs-card"
+            className="rs-card p-5"
           >
-            <div className="flex items-center gap-3 mb-2">
-              <div className={`w-10 h-10 rounded-[14px] bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
-                <stat.icon className="w-5 h-5 text-white" />
+            <div className="flex items-center justify-between mb-3">
+              <div className={`rs-icon-tile rs-icon-tile--${stat.tone}`}>
+                <stat.icon className="w-4 h-4" />
               </div>
             </div>
-            <p className="text-gray-400 text-sm">{stat.label}</p>
-            <p className="text-xl font-bold text-white">{stat.value}</p>
+            <div className="text-2xl font-semibold text-white rs-stat">{stat.value}</div>
+            <div className="text-xs mt-1" style={{ color: "var(--rs-text-secondary)" }}>
+              {stat.label}
+            </div>
           </motion.div>
         ))}
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-4">
+      <div className="flex flex-col md:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
+            style={{ color: "var(--rs-text-muted)" }}
+          />
           <input
             type="text"
             placeholder="Search orders..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 rs-card text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+            className="rs-input pl-9"
+            style={{ height: 42 }}
           />
         </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-3 rs-card text-white focus:outline-none focus:border-blue-500"
+          className="rs-input md:w-56"
+          style={{ height: 42 }}
         >
           <option value="all">All Status</option>
           <option value="draft">Draft</option>
@@ -342,57 +364,98 @@ export default function OrdersPage() {
             return (
               <motion.div
                 key={order._id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.03 }}
                 onClick={() => {
                   setSelectedOrder(order);
                   setShowOrderModal(true);
                 }}
-                className="rs-card hover:border-white/10 cursor-pointer transition-all"
+                className="rs-card p-5 cursor-pointer transition-all hover:border-white/10"
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-[14px] bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-                      <Package className="w-6 h-6 text-blue-400" />
+                  <div className="flex items-start gap-3">
+                    <div className="rs-icon-tile rs-icon-tile--accent">
+                      <Package className="w-4 h-4" />
                     </div>
                     <div>
-                      <h3 className="text-white font-semibold">{order.clientName}</h3>
-                      <p className="text-gray-400 text-sm">{order.clientCompany || "Individual"}</p>
+                      <h3 className="text-sm font-semibold text-white">{order.clientName}</h3>
+                      <p className="text-xs" style={{ color: "var(--rs-text-secondary)" }}>
+                        {order.clientCompany || "Individual"}
+                      </p>
                     </div>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-4">
                     <div className="text-right">
-                      <p className="text-gray-400 text-xs">Order Value</p>
-                      <p className="text-white font-semibold">{formatCurrency(order.totalAmount)}</p>
+                      <p className="text-[10px]" style={{ color: "var(--rs-text-muted)" }}>
+                        Order Value
+                      </p>
+                      <p className="text-sm font-semibold text-white">{formatCurrency(order.totalAmount)}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-gray-400 text-xs">Commission</p>
-                      <p className={`font-semibold ${order.commissionStatus === "approved" || order.commissionStatus === "paid" ? "text-emerald-400" : "text-amber-400"}`}>
+                      <p className="text-[10px]" style={{ color: "var(--rs-text-muted)" }}>
+                        Commission
+                      </p>
+                      <p
+                        className="text-sm font-semibold"
+                        style={{
+                          color:
+                            order.commissionStatus === "approved" || order.commissionStatus === "paid"
+                              ? "var(--rs-success)"
+                              : "var(--rs-warning)",
+                        }}
+                      >
                         {formatCurrency(order.commissionAmount)}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <StatusBadge tone={order.status === "submitted" || order.status === "supplier_confirmed" || order.status === "in_transit" ? "active" : order.status === "delivered" || order.status === "installed" ? "paid" : "neutral"}>
+                      <StatusBadge
+                        tone={
+                          order.status === "submitted" ||
+                          order.status === "supplier_confirmed" ||
+                          order.status === "in_transit"
+                            ? "active"
+                            : order.status === "delivered" || order.status === "installed"
+                              ? "paid"
+                              : "neutral"
+                        }
+                      >
                         <StatusIcon className="w-3 h-3 inline mr-1" />
                         {statusConfig[order.status as keyof typeof statusConfig]?.label || order.status}
                       </StatusBadge>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-gray-500" />
+                    <ChevronRight
+                      className="w-4 h-4"
+                      style={{ color: "var(--rs-text-muted)" }}
+                    />
                   </div>
                 </div>
 
                 {/* Order Items Preview */}
-                <div className="mt-4 pt-4 border-t border-white/5">
+                <div
+                  className="mt-4 pt-3"
+                  style={{ borderTop: "1px solid var(--rs-border)" }}
+                >
                   <div className="flex flex-wrap gap-2">
                     {order.items?.slice(0, 3).map((item: any, i: number) => (
-                      <span key={i} className="px-2 py-1 bg-white/5 rounded text-xs text-gray-400">
-                        {item.productName} x{item.quantity}
+                      <span
+                        key={i}
+                        className="rs-pill"
+                        style={{ fontSize: 10 }}
+                      >
+                        {item.productName} ×{item.quantity}
                       </span>
                     ))}
                     {order.items?.length > 3 && (
-                      <span className="px-2 py-1 bg-white/5 rounded text-xs text-gray-500">
+                      <span
+                        className="rs-pill"
+                        style={{
+                          background: "var(--rs-bg-overlay)",
+                          color: "var(--rs-text-muted)",
+                          fontSize: 10,
+                        }}
+                      >
                         +{order.items.length - 3} more
                       </span>
                     )}
@@ -401,15 +464,19 @@ export default function OrdersPage() {
 
                 {/* Submit to Admin Button for Drafts */}
                 {order.status === "draft" && (
-                  <div className="mt-4 pt-4 border-t border-white/5 flex justify-end">
+                  <div
+                    className="mt-3 pt-3 flex justify-end"
+                    style={{ borderTop: "1px solid var(--rs-border)" }}
+                  >
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleSubmitToAdmin(order._id);
                       }}
-                      className="flex items-center gap-2 px-4 py-2 rs-btn-primary rounded-lg text-sm transition-colors"
+                      className="rs-btn-primary"
+                      style={{ height: 34 }}
                     >
-                      <Send className="w-4 h-4" />
+                      <Send className="w-3.5 h-3.5" />
                       Submit for Approval
                     </button>
                   </div>
@@ -418,10 +485,14 @@ export default function OrdersPage() {
             );
           })
         ) : (
-          <div className="rs-card p-12 text-center">
-            <Package className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <p className="text-gray-400 mb-2">No orders found</p>
-            <p className="text-gray-500 text-sm">Create your first order or adjust your filters</p>
+          <div className="rs-empty-state py-16">
+            <div className="rs-empty-state-icon">
+              <Package className="w-5 h-5" />
+            </div>
+            <div className="rs-empty-state-title">No orders found</div>
+            <div className="rs-empty-state-description">
+              Create your first order or adjust your filters.
+            </div>
           </div>
         )}
       </div>
@@ -433,7 +504,7 @@ export default function OrdersPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+            className="rs-modal-backdrop"
             onClick={() => setShowOrderModal(false)}
           >
             <motion.div
@@ -441,24 +512,28 @@ export default function OrdersPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="rs-card max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              className="rs-modal max-w-2xl w-full p-0"
             >
-              <div className="sticky top-0 bg-[#111113] border-b border-white/5 p-6 flex items-center justify-between">
+              <div className="rs-modal-header">
                 <div>
-                  <h2 className="text-xl font-bold text-white">Order Details</h2>
-                  <p className="text-gray-400 text-sm">#{selectedOrder._id.slice(-8)}</p>
+                  <h2 className="text-base font-semibold text-white">Order Details</h2>
+                  <p className="text-xs mt-0.5" style={{ color: "var(--rs-text-muted)" }}>
+                    #{selectedOrder._id.slice(-8)}
+                  </p>
                 </div>
-                <button 
+                <button
                   onClick={() => setShowOrderModal(false)}
-                  className="text-gray-400 hover:text-white"
+                  className="p-1.5 rounded-md hover:bg-white/5 transition-colors"
+                  style={{ color: "var(--rs-text-secondary)" }}
+                  aria-label="Close"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="p-6 space-y-6">
+              <div className="rs-modal-body space-y-5">
                 {/* Status Progress */}
-                <div className="mb-6">
+                <div>
                   <div className="flex items-center justify-between">
                     {["draft", "submitted", "supplier_confirmed", "in_transit", "delivered", "installed"].map((status, i, arr) => {
                       const isActive = arr.indexOf(selectedOrder.status) >= i;
@@ -466,60 +541,121 @@ export default function OrdersPage() {
                       return (
                         <div key={status} className="flex items-center">
                           <div className="flex flex-col items-center">
-                            <div className={`w-3 h-3 rounded-full ${isActive ? (isCurrent ? "bg-blue-500" : "bg-emerald-500") : "bg-gray-600"}`} />
-                            {i < 5 && <div className={`w-8 h-0.5 ${isActive ? "bg-emerald-500" : "bg-gray-600"}`} />}
+                            <div
+                              className="w-2.5 h-2.5 rounded-full"
+                              style={{
+                                background: isActive
+                                  ? isCurrent
+                                    ? "var(--rs-accent)"
+                                    : "var(--rs-success)"
+                                  : "var(--rs-bg-overlay)",
+                                border: isCurrent ? "2px solid var(--rs-accent)" : "0",
+                              }}
+                            />
+                            {i < 5 && (
+                              <div
+                                className="w-8 h-0.5 mt-1"
+                                style={{
+                                  background: isActive
+                                    ? "var(--rs-success)"
+                                    : "var(--rs-bg-overlay)",
+                                }}
+                              />
+                            )}
                           </div>
                         </div>
                       );
                     })}
                   </div>
-                  <div className="flex justify-between mt-2">
-                    <span className={`text-xs ${selectedOrder.status === "draft" ? "text-blue-400" : "text-emerald-400"}`}>
+                  <div className="mt-2">
+                    <span
+                      className="text-xs font-medium"
+                      style={{
+                        color:
+                          selectedOrder.status === "draft"
+                            ? "var(--rs-text-accent)"
+                            : "var(--rs-success)",
+                      }}
+                    >
                       {statusConfig[selectedOrder.status as keyof typeof statusConfig]?.label}
                     </span>
                   </div>
                 </div>
 
                 {/* Client Info */}
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="p-4 bg-white/5 rounded-[14px]">
-                    <p className="text-gray-400 text-xs mb-1">Client</p>
-                    <p className="text-white font-medium">{selectedOrder.clientName}</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div
+                    className="p-4 rounded-lg"
+                    style={{ background: "var(--rs-bg-base)", border: "1px solid var(--rs-border)" }}
+                  >
+                    <p className="text-[10px] mb-1" style={{ color: "var(--rs-text-muted)" }}>
+                      CLIENT
+                    </p>
+                    <p className="text-sm font-medium text-white">{selectedOrder.clientName}</p>
                     {selectedOrder.clientCompany && (
-                      <p className="text-gray-400 text-sm">{selectedOrder.clientCompany}</p>
+                      <p className="text-xs mt-0.5" style={{ color: "var(--rs-text-secondary)" }}>
+                        {selectedOrder.clientCompany}
+                      </p>
                     )}
                   </div>
-                  <div className="p-4 bg-white/5 rounded-[14px]">
-                    <p className="text-gray-400 text-xs mb-1">Contact</p>
-                    <p className="text-white font-medium">{selectedOrder.clientEmail}</p>
+                  <div
+                    className="p-4 rounded-lg"
+                    style={{ background: "var(--rs-bg-base)", border: "1px solid var(--rs-border)" }}
+                  >
+                    <p className="text-[10px] mb-1" style={{ color: "var(--rs-text-muted)" }}>
+                      CONTACT
+                    </p>
+                    <p className="text-sm font-medium text-white">{selectedOrder.clientEmail}</p>
                     {selectedOrder.clientPhone && (
-                      <p className="text-gray-400 text-sm">{selectedOrder.clientPhone}</p>
+                      <p className="text-xs mt-0.5" style={{ color: "var(--rs-text-secondary)" }}>
+                        {selectedOrder.clientPhone}
+                      </p>
                     )}
                   </div>
                 </div>
 
                 {/* Company Details */}
                 {selectedOrder.companyName && (
-                  <div className="p-4 bg-white/5 rounded-[14px] mb-6">
-                    <p className="text-gray-400 text-xs mb-3 flex items-center gap-2">
-                      <Building2 className="w-4 h-4" /> Company Details
+                  <div
+                    className="p-4 rounded-lg"
+                    style={{ background: "var(--rs-bg-base)", border: "1px solid var(--rs-border)" }}
+                  >
+                    <p
+                      className="text-[10px] mb-3 flex items-center gap-2"
+                      style={{ color: "var(--rs-text-muted)" }}
+                    >
+                      <Building2 className="w-3.5 h-3.5" /> COMPANY DETAILS
                     </p>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <p className="text-gray-500 text-xs">Company Name</p>
-                        <p className="text-white">{selectedOrder.companyName}</p>
+                        <p className="text-[10px]" style={{ color: "var(--rs-text-muted)" }}>
+                          Company Name
+                        </p>
+                        <p className="text-xs text-white mt-0.5">{selectedOrder.companyName}</p>
                       </div>
                       <div>
-                        <p className="text-gray-500 text-xs">Registration #</p>
-                        <p className="text-white">{selectedOrder.companyRegistrationNumber || "N/A"}</p>
+                        <p className="text-[10px]" style={{ color: "var(--rs-text-muted)" }}>
+                          Registration #
+                        </p>
+                        <p className="text-xs text-white mt-0.5">
+                          {selectedOrder.companyRegistrationNumber || "N/A"}
+                        </p>
                       </div>
                       <div>
-                        <p className="text-gray-500 text-xs">VAT Number</p>
-                        <p className="text-white">{selectedOrder.companyVATNumber || "N/A"}</p>
+                        <p className="text-[10px]" style={{ color: "var(--rs-text-muted)" }}>
+                          VAT Number
+                        </p>
+                        <p className="text-xs text-white mt-0.5">
+                          {selectedOrder.companyVATNumber || "N/A"}
+                        </p>
                       </div>
                       <div>
-                        <p className="text-gray-500 text-xs">Website</p>
-                        <p className="text-white">{selectedOrder.companyWebsite || "N/A"}</p>
+                        <p className="text-[10px]" style={{ color: "var(--rs-text-muted)" }}>
+                          Website
+                        </p>
+                        <p className="text-xs text-white mt-0.5">
+                          {selectedOrder.companyWebsite || "N/A"}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -527,58 +663,114 @@ export default function OrdersPage() {
 
                 {/* Delivery Address */}
                 {selectedOrder.deliveryAddress && (
-                  <div className="mb-6 p-4 bg-white/5 rounded-[14px]">
-                    <p className="text-gray-400 text-xs mb-2">Delivery Address</p>
+                  <div
+                    className="p-4 rounded-lg"
+                    style={{ background: "var(--rs-bg-base)", border: "1px solid var(--rs-border)" }}
+                  >
+                    <p className="text-[10px] mb-2" style={{ color: "var(--rs-text-muted)" }}>
+                      DELIVERY ADDRESS
+                    </p>
                     <div className="flex items-start gap-2">
-                      <MapPin className="w-4 h-4 text-gray-500 mt-0.5" />
-                      <p className="text-white">{selectedOrder.deliveryAddress}</p>
+                      <MapPin
+                        className="w-3.5 h-3.5 mt-0.5"
+                        style={{ color: "var(--rs-text-muted)" }}
+                      />
+                      <p className="text-sm text-white">{selectedOrder.deliveryAddress}</p>
                     </div>
                   </div>
                 )}
 
                 {/* Order Items */}
-                <div className="mb-6">
-                  <p className="text-gray-400 text-sm mb-3">Order Items</p>
+                <div>
+                  <div className="rs-section-header-title mb-3">Order Items</div>
                   <div className="space-y-2">
                     {selectedOrder.items?.map((item: any, i: number) => (
-                      <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-[14px]">
+                      <div
+                        key={i}
+                        className="flex items-center justify-between p-3 rounded-lg"
+                        style={{
+                          background: "var(--rs-bg-base)",
+                          border: "1px solid var(--rs-border)",
+                        }}
+                      >
                         <div>
-                          <p className="text-white font-medium">{item.productName}</p>
-                          <p className="text-gray-400 text-sm">Qty: {item.quantity} x {formatCurrency(item.unitPrice)}</p>
+                          <p className="text-sm font-medium text-white">{item.productName}</p>
+                          <p
+                            className="text-xs mt-0.5"
+                            style={{ color: "var(--rs-text-secondary)" }}
+                          >
+                            Qty: {item.quantity} × {formatCurrency(item.unitPrice)}
+                          </p>
                         </div>
-                        <p className="text-white font-semibold">{formatCurrency(item.total)}</p>
+                        <p className="text-sm font-semibold text-white rs-stat">
+                          {formatCurrency(item.total)}
+                        </p>
                       </div>
                     ))}
                   </div>
-                  <div className="mt-3 pt-3 border-t border-white/10 flex justify-between">
-                    <span className="text-gray-400">Total</span>
-                    <span className="text-white font-bold text-lg">{formatCurrency(selectedOrder.totalAmount)}</span>
+                  <div
+                    className="mt-3 pt-3 flex justify-between"
+                    style={{ borderTop: "1px solid var(--rs-border)" }}
+                  >
+                    <span
+                      className="text-xs"
+                      style={{ color: "var(--rs-text-secondary)" }}
+                    >
+                      Total
+                    </span>
+                    <span className="text-base font-semibold text-white rs-stat">
+                      {formatCurrency(selectedOrder.totalAmount)}
+                    </span>
                   </div>
                 </div>
 
                 {/* Documents */}
                 {(selectedOrder.invoiceDocument || selectedOrder.legalDocument || selectedOrder.paymentProof || selectedOrder.customLogo || selectedOrder.productImages?.length > 0 || selectedOrder.mockupPhotos?.length > 0) && (
-                  <div className="mb-6">
-                    <p className="text-gray-400 text-sm mb-3">Uploaded Documents</p>
+                  <div>
+                    <div className="rs-section-header-title mb-3">Uploaded Documents</div>
                     <div className="grid grid-cols-2 gap-2">
                       {selectedOrder.invoiceDocument && (
-                        <a href={selectedOrder.invoiceDocument} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 bg-white/5 rounded-lg text-blue-400 hover:bg-white/10">
-                          <FileText className="w-4 h-4" /> Invoice
+                        <a
+                          href={selectedOrder.invoiceDocument}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rs-pill hover:bg-white/10 transition-colors"
+                          style={{ color: "var(--rs-info)" }}
+                        >
+                          <FileText className="w-3.5 h-3.5" /> Invoice
                         </a>
                       )}
                       {selectedOrder.legalDocument && (
-                        <a href={selectedOrder.legalDocument} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 bg-white/5 rounded-lg text-green-400 hover:bg-white/10">
-                          <FileText className="w-4 h-4" /> Legal Document
+                        <a
+                          href={selectedOrder.legalDocument}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rs-pill hover:bg-white/10 transition-colors"
+                          style={{ color: "var(--rs-success)" }}
+                        >
+                          <FileText className="w-3.5 h-3.5" /> Legal Document
                         </a>
                       )}
                       {selectedOrder.paymentProof && (
-                        <a href={selectedOrder.paymentProof} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 bg-white/5 rounded-lg text-purple-400 hover:bg-white/10">
-                          <Image className="w-4 h-4" /> Payment Proof
+                        <a
+                          href={selectedOrder.paymentProof}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rs-pill hover:bg-white/10 transition-colors"
+                          style={{ color: "var(--rs-text-accent)" }}
+                        >
+                          <Image className="w-3.5 h-3.5" /> Payment Proof
                         </a>
                       )}
                       {selectedOrder.customLogo && (
-                        <a href={selectedOrder.customLogo} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 bg-white/5 rounded-lg text-amber-400 hover:bg-white/10">
-                          <Building2 className="w-4 h-4" /> Custom Logo
+                        <a
+                          href={selectedOrder.customLogo}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rs-pill hover:bg-white/10 transition-colors"
+                          style={{ color: "var(--rs-warning)" }}
+                        >
+                          <Building2 className="w-3.5 h-3.5" /> Custom Logo
                         </a>
                       )}
                     </div>
@@ -586,20 +778,51 @@ export default function OrdersPage() {
                 )}
 
                 {/* Commission & Tracking */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-white/5 rounded-[14px]">
-                    <p className="text-gray-400 text-xs mb-1">Commission Status</p>
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${commissionStatusConfig[selectedOrder.commissionStatus as keyof typeof commissionStatusConfig]?.color || "bg-gray-500/10 text-gray-400"}`}>
+                <div className="grid grid-cols-2 gap-3">
+                  <div
+                    className="p-4 rounded-lg"
+                    style={{ background: "var(--rs-bg-base)", border: "1px solid var(--rs-border)" }}
+                  >
+                    <p className="text-[10px] mb-1" style={{ color: "var(--rs-text-muted)" }}>
+                      COMMISSION STATUS
+                    </p>
+                    <span
+                      className="rs-pill mt-1"
+                      style={{
+                        background:
+                          selectedOrder.commissionStatus === "pending"
+                            ? "rgba(245,158,11,0.10)"
+                            : selectedOrder.commissionStatus === "approved"
+                              ? "rgba(16,185,129,0.10)"
+                              : "rgba(59,130,246,0.10)",
+                        color:
+                          selectedOrder.commissionStatus === "pending"
+                            ? "var(--rs-warning)"
+                            : selectedOrder.commissionStatus === "approved"
+                              ? "var(--rs-success)"
+                              : "var(--rs-info)",
+                      }}
+                    >
                       {commissionStatusConfig[selectedOrder.commissionStatus as keyof typeof commissionStatusConfig]?.label || selectedOrder.commissionStatus}
                     </span>
-                    <p className="text-white font-semibold mt-1">{formatCurrency(selectedOrder.commissionAmount)}</p>
+                    <p className="text-sm font-semibold text-white mt-2 rs-stat">
+                      {formatCurrency(selectedOrder.commissionAmount)}
+                    </p>
                   </div>
                   {selectedOrder.trackingNumber && (
-                    <div className="p-4 bg-white/5 rounded-[14px]">
-                      <p className="text-gray-400 text-xs mb-1">Tracking</p>
-                      <p className="text-white font-medium">{selectedOrder.trackingNumber}</p>
+                    <div
+                      className="p-4 rounded-lg"
+                      style={{ background: "var(--rs-bg-base)", border: "1px solid var(--rs-border)" }}
+                    >
+                      <p className="text-[10px] mb-1" style={{ color: "var(--rs-text-muted)" }}>
+                        TRACKING
+                      </p>
+                      <p className="text-sm font-medium text-white">{selectedOrder.trackingNumber}</p>
                       {selectedOrder.deliveryDate && (
-                        <p className="text-gray-400 text-sm">
+                        <p
+                          className="text-xs mt-1"
+                          style={{ color: "var(--rs-text-secondary)" }}
+                        >
                           Delivered: {new Date(selectedOrder.deliveryDate).toLocaleDateString()}
                         </p>
                       )}
@@ -619,7 +842,7 @@ export default function OrdersPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 z-50 flex items-start justify-center p-4 overflow-y-auto"
+            className="rs-modal-backdrop items-start"
             onClick={() => setShowNewOrderModal(false)}
           >
             <motion.div
@@ -627,75 +850,79 @@ export default function OrdersPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="rs-card w-full max-w-4xl max-h-[90vh] overflow-y-auto my-8"
+              className="rs-modal w-full max-w-4xl p-0 my-8"
             >
-              <div className="sticky top-0 bg-[#111113] border-b border-white/5 p-6 flex items-center justify-between">
+              <div className="rs-modal-header">
                 <div>
-                  <h2 className="text-xl font-bold text-white">Create New Order</h2>
-                  <p className="text-gray-400 text-sm">Fill in all details and upload required documents</p>
+                  <h2 className="text-base font-semibold text-white">Create New Order</h2>
+                  <p className="text-xs mt-0.5" style={{ color: "var(--rs-text-muted)" }}>
+                    Fill in all details and upload required documents
+                  </p>
                 </div>
-                <button 
+                <button
                   onClick={() => setShowNewOrderModal(false)}
-                  className="text-gray-400 hover:text-white"
+                  className="p-1.5 rounded-md hover:bg-white/5 transition-colors"
+                  style={{ color: "var(--rs-text-secondary)" }}
+                  aria-label="Close"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
               <div className="p-6 space-y-6">
                 {/* Client Information */}
                 <div className="space-y-4">
-                  <h3 className="text-white font-medium flex items-center gap-2">
-                    <User className="w-4 h-4" /> Client Information
+                  <h3 className="text-sm font-semibold text-white flex items-center gap-2" style={{ color: "var(--rs-text-primary)" }}>
+                    <User className="w-3.5 h-3.5" /> Client Information
                   </h3>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-gray-400 text-sm mb-2">Client Name *</label>
+                      <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Client Name *</label>
                       <input
                         type="text"
                         value={formData.clientName}
                         onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="rs-input"
                         placeholder="John Doe"
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-400 text-sm mb-2">Company Name</label>
+                      <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Company Name</label>
                       <input
                         type="text"
                         value={formData.clientCompany}
                         onChange={(e) => setFormData({ ...formData, clientCompany: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="rs-input"
                         placeholder="Acme Corp"
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-400 text-sm mb-2">Email *</label>
+                      <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Email *</label>
                       <input
                         type="email"
                         value={formData.clientEmail}
                         onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="rs-input"
                         placeholder="john@example.com"
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-400 text-sm mb-2">Phone</label>
+                      <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Phone</label>
                       <input
                         type="tel"
                         value={formData.clientPhone}
                         onChange={(e) => setFormData({ ...formData, clientPhone: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="rs-input"
                         placeholder="+27 82 123 4567"
                       />
                     </div>
                     <div className="col-span-2">
-                      <label className="block text-gray-400 text-sm mb-2">Delivery Address</label>
+                      <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Delivery Address</label>
                       <input
                         type="text"
                         value={formData.deliveryAddress}
                         onChange={(e) => setFormData({ ...formData, deliveryAddress: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="rs-input"
                         placeholder="123 Main Street, City, 8001"
                       />
                     </div>
@@ -704,87 +931,87 @@ export default function OrdersPage() {
 
                 {/* Company Details (For Manufacturing) */}
                 <div className="space-y-4">
-                  <h3 className="text-white font-medium flex items-center gap-2">
-                    <Building2 className="w-4 h-4" /> Company Details (For Manufacturing)
+                  <h3 className="text-sm font-semibold text-white flex items-center gap-2" style={{ color: "var(--rs-text-primary)" }}>
+                    <Building2 className="w-3.5 h-3.5" /> Company Details (For Manufacturing)
                   </h3>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-gray-400 text-sm mb-2">Company Name</label>
+                      <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Company Name</label>
                       <input
                         type="text"
                         value={formData.companyName}
                         onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="rs-input"
                         placeholder="Acme Manufacturing"
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-400 text-sm mb-2">Registration Number</label>
+                      <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Registration Number</label>
                       <input
                         type="text"
                         value={formData.companyRegistrationNumber}
                         onChange={(e) => setFormData({ ...formData, companyRegistrationNumber: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="rs-input"
                         placeholder="2021/123456/07"
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-400 text-sm mb-2">VAT Number</label>
+                      <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>VAT Number</label>
                       <input
                         type="text"
                         value={formData.companyVATNumber}
                         onChange={(e) => setFormData({ ...formData, companyVATNumber: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="rs-input"
                         placeholder="4120185361"
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-400 text-sm mb-2">Website</label>
+                      <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Website</label>
                       <input
                         type="url"
                         value={formData.companyWebsite}
                         onChange={(e) => setFormData({ ...formData, companyWebsite: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="rs-input"
                         placeholder="https://acme.co.za"
                       />
                     </div>
                     <div className="col-span-2">
-                      <label className="block text-gray-400 text-sm mb-2">Company Address</label>
+                      <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Company Address</label>
                       <input
                         type="text"
                         value={formData.companyAddress}
                         onChange={(e) => setFormData({ ...formData, companyAddress: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="rs-input"
                         placeholder="Factory Address for Manufacturing"
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-400 text-sm mb-2">Contact Person Name</label>
+                      <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Contact Person Name</label>
                       <input
                         type="text"
                         value={formData.contactPersonName}
                         onChange={(e) => setFormData({ ...formData, contactPersonName: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="rs-input"
                         placeholder="Jane Smith"
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-400 text-sm mb-2">Contact Person Email</label>
+                      <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Contact Person Email</label>
                       <input
                         type="email"
                         value={formData.contactPersonEmail}
                         onChange={(e) => setFormData({ ...formData, contactPersonEmail: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="rs-input"
                         placeholder="jane@acme.co.za"
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-400 text-sm mb-2">Contact Person Phone</label>
+                      <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Contact Person Phone</label>
                       <input
                         type="tel"
                         value={formData.contactPersonPhone}
                         onChange={(e) => setFormData({ ...formData, contactPersonPhone: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="rs-input"
                         placeholder="+27 82 987 6543"
                       />
                     </div>
@@ -794,33 +1021,40 @@ export default function OrdersPage() {
                 {/* Order Items */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-white font-medium flex items-center gap-2">
-                      <Package className="w-4 h-4" /> Order Items
+                    <h3 className="text-sm font-semibold text-white flex items-center gap-2" style={{ color: "var(--rs-text-primary)" }}>
+                      <Package className="w-3.5 h-3.5" /> Order Items
                     </h3>
                     <button
                       type="button"
                       onClick={addItem}
-                      className="flex items-center gap-1 px-3 py-1 text-sm text-blue-400 hover:text-blue-300"
+                      className="flex items-center gap-1 px-2 py-1 text-xs font-medium transition-colors"
+                      style={{ color: "var(--rs-text-accent)" }}
                     >
-                      <Plus className="w-4 h-4" /> Add Item
+                      <Plus className="w-3.5 h-3.5" /> Add Item
                     </button>
                   </div>
                   <div className="space-y-2">
                     {orderItems.map((item, index) => (
-                      <div key={index} className="flex items-center gap-2 p-3 bg-white/5 rounded-[14px]">
+                      <div
+                        key={index}
+                        className="flex items-center gap-2 p-3 rounded-lg"
+                        style={{ background: "var(--rs-bg-base)", border: "1px solid var(--rs-border)" }}
+                      >
                         <input
                           type="text"
                           value={item.productName}
                           onChange={(e) => handleItemChange(index, "productName", e.target.value)}
                           placeholder="Product name"
-                          className="flex-1 px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm"
+                          className="rs-input flex-1"
+                          style={{ height: 34, fontSize: 12 }}
                         />
                         <input
                           type="number"
                           min="1"
                           value={item.quantity}
                           onChange={(e) => handleItemChange(index, "quantity", parseInt(e.target.value) || 0)}
-                          className="w-20 px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-white text-sm"
+                          className="rs-input w-20"
+                          style={{ height: 34, fontSize: 12 }}
                         />
                         <input
                           type="number"
@@ -828,73 +1062,81 @@ export default function OrdersPage() {
                           value={item.unitPrice}
                           onChange={(e) => handleItemChange(index, "unitPrice", parseFloat(e.target.value) || 0)}
                           placeholder="Price"
-                          className="w-28 px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm"
+                          className="rs-input w-28"
+                          style={{ height: 34, fontSize: 12 }}
                         />
-                        <p className="w-24 text-white text-sm text-right">{formatCurrency(item.total)}</p>
+                        <p className="w-24 text-xs text-white text-right rs-stat">{formatCurrency(item.total)}</p>
                         <button
                           type="button"
                           onClick={() => removeItem(index)}
                           disabled={orderItems.length === 1}
-                          className="p-2 text-gray-400 hover:text-red-400 disabled:opacity-50"
+                          className="p-1.5 hover:bg-white/5 rounded disabled:opacity-50"
+                          style={{ color: "var(--rs-text-secondary)" }}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     ))}
                   </div>
                   <div className="flex justify-end pt-2">
                     <div className="text-right">
-                      <p className="text-gray-400 text-sm">Total:</p>
-                      <p className="text-2xl font-bold text-white">{formatCurrency(calculateTotal())}</p>
+                      <p className="text-xs" style={{ color: "var(--rs-text-muted)" }}>
+                        Total:
+                      </p>
+                      <p className="text-xl font-semibold text-white rs-stat">
+                        {formatCurrency(calculateTotal())}
+                      </p>
                     </div>
                   </div>
                 </div>
 
                 {/* Documents */}
                 <div className="space-y-4">
-                  <h3 className="text-white font-medium flex items-center gap-2">
-                    <FileText className="w-4 h-4" /> Documents & Files
+                  <h3 className="text-sm font-semibold text-white flex items-center gap-2" style={{ color: "var(--rs-text-primary)" }}>
+                    <FileText className="w-3.5 h-3.5" /> Documents & Files
                   </h3>
-                  <p className="text-gray-500 text-sm">Upload your files to cloud storage and paste the links below</p>
-                  
-                  <div className="grid grid-cols-2 gap-4">
+                  <p className="text-xs" style={{ color: "var(--rs-text-muted)" }}>
+                    Upload your files to cloud storage and paste the links below.
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-gray-400 text-sm mb-2">Invoice Document URL</label>
+                      <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Invoice Document URL</label>
                       <input
                         type="url"
                         value={formData.invoiceDocument}
                         onChange={(e) => setFormData({ ...formData, invoiceDocument: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="rs-input"
                         placeholder="https://storage.example.com/invoice.pdf"
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-400 text-sm mb-2">Legal Document URL (Signed)</label>
+                      <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Legal Document URL (Signed)</label>
                       <input
                         type="url"
                         value={formData.legalDocument}
                         onChange={(e) => setFormData({ ...formData, legalDocument: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="rs-input"
                         placeholder="https://storage.example.com/contract.pdf"
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-400 text-sm mb-2">Payment Proof URL</label>
+                      <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Payment Proof URL</label>
                       <input
                         type="url"
                         value={formData.paymentProof}
                         onChange={(e) => setFormData({ ...formData, paymentProof: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="rs-input"
                         placeholder="https://storage.example.com/payment.jpg"
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-400 text-sm mb-2">Custom Logo URL</label>
+                      <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Custom Logo URL</label>
                       <input
                         type="url"
                         value={formData.customLogo}
                         onChange={(e) => setFormData({ ...formData, customLogo: e.target.value })}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="rs-input"
                         placeholder="https://storage.example.com/logo.png"
                       />
                     </div>
@@ -902,12 +1144,12 @@ export default function OrdersPage() {
 
                   {/* Product Images */}
                   <div>
-                    <label className="block text-gray-400 text-sm mb-2">Product Images URLs</label>
+                    <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Product Images URLs</label>
                     <div className="flex gap-2 mb-2">
                       <input
                         type="url"
                         id="productImageUrl"
-                        className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="flex-1 rs-input"
                         placeholder="https://storage.example.com/product1.jpg"
                         onKeyPress={(e) => {
                           if (e.key === "Enter") {
@@ -924,17 +1166,36 @@ export default function OrdersPage() {
                           handleAddUrl("productImages", input.value);
                           input.value = "";
                         }}
-                        className="px-4 py-2 bg-white/10 text-white rounded-[14px] hover:bg-white/20"
+                        className="rs-btn-ghost"
+                        style={{ height: 38, paddingLeft: 14, paddingRight: 14 }}
                       >
                         Add
                       </button>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {formData.productImages.map((url, idx) => (
-                        <div key={idx} className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg">
-                          <Image className="w-4 h-4 text-pink-400" />
-                          <span className="text-white text-sm truncate max-w-[200px]">{idx + 1}</span>
-                          <button type="button" onClick={() => handleRemoveUrl("productImages", idx)} className="text-gray-400 hover:text-red-400">
+                        <div
+                          key={idx}
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
+                          style={{
+                            background: "var(--rs-bg-overlay)",
+                            border: "1px solid var(--rs-border)",
+                          }}
+                        >
+                          <Image className="w-3.5 h-3.5" style={{ color: "#f472b6" }} />
+                          <span
+                            className="text-xs truncate max-w-[200px]"
+                            style={{ color: "var(--rs-text-primary)" }}
+                          >
+                            Image {idx + 1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveUrl("productImages", idx)}
+                            className="hover:opacity-80"
+                            style={{ color: "var(--rs-text-muted)" }}
+                            aria-label="Remove image"
+                          >
                             <X className="w-3 h-3" />
                           </button>
                         </div>
@@ -944,12 +1205,12 @@ export default function OrdersPage() {
 
                   {/* Mockup Photos */}
                   <div>
-                    <label className="block text-gray-400 text-sm mb-2">Mockup Photos URLs</label>
+                    <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Mockup Photos URLs</label>
                     <div className="flex gap-2 mb-2">
                       <input
                         type="url"
                         id="mockupUrl"
-                        className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="flex-1 rs-input"
                         placeholder="https://storage.example.com/mockup1.jpg"
                         onKeyPress={(e) => {
                           if (e.key === "Enter") {
@@ -966,17 +1227,36 @@ export default function OrdersPage() {
                           handleAddUrl("mockupPhotos", input.value);
                           input.value = "";
                         }}
-                        className="px-4 py-2 bg-white/10 text-white rounded-[14px] hover:bg-white/20"
+                        className="rs-btn-ghost"
+                        style={{ height: 38, paddingLeft: 14, paddingRight: 14 }}
                       >
                         Add
                       </button>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {formData.mockupPhotos.map((url, idx) => (
-                        <div key={idx} className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg">
-                          <Image className="w-4 h-4 text-cyan-400" />
-                          <span className="text-white text-sm truncate max-w-[200px]">{idx + 1}</span>
-                          <button type="button" onClick={() => handleRemoveUrl("mockupPhotos", idx)} className="text-gray-400 hover:text-red-400">
+                        <div
+                          key={idx}
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
+                          style={{
+                            background: "var(--rs-bg-overlay)",
+                            border: "1px solid var(--rs-border)",
+                          }}
+                        >
+                          <Image className="w-3.5 h-3.5" style={{ color: "#22d3ee" }} />
+                          <span
+                            className="text-xs truncate max-w-[200px]"
+                            style={{ color: "var(--rs-text-primary)" }}
+                          >
+                            Mockup {idx + 1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveUrl("mockupPhotos", idx)}
+                            className="hover:opacity-80"
+                            style={{ color: "var(--rs-text-muted)" }}
+                            aria-label="Remove mockup"
+                          >
                             <X className="w-3 h-3" />
                           </button>
                         </div>
@@ -987,35 +1267,46 @@ export default function OrdersPage() {
 
                 {/* Notes */}
                 <div>
-                  <label className="block text-gray-400 text-sm mb-2">Additional Notes</label>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Additional Notes</label>
                   <textarea
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     rows={3}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-none"
+                    className="rs-input rs-input--textarea"
                     placeholder="Any special instructions..."
                   />
                 </div>
               </div>
 
               {/* Footer */}
-              <div className="sticky bottom-0 bg-[#111113] border-t border-white/5 p-6 flex justify-end gap-3">
+              <div
+                className="sticky bottom-0 p-4 flex justify-end gap-2"
+                style={{
+                  background: "var(--rs-bg-base)",
+                  borderTop: "1px solid var(--rs-border)",
+                }}
+              >
                 <button
                   onClick={() => setShowNewOrderModal(false)}
-                  className="px-6 py-3 text-gray-300 hover:text-white transition-colors"
+                  className="rs-btn-ghost"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleCreateOrder}
-                  disabled={submitting || !formData.clientName || !formData.clientEmail || orderItems.every(i => !i.productName)}
-                  className="flex items-center gap-2 px-6 py-3 rs-btn-primary disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+                  disabled={
+                    submitting ||
+                    !formData.clientName ||
+                    !formData.clientEmail ||
+                    orderItems.every((i) => !i.productName)
+                  }
+                  className="rs-btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitting ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     <>
-                      <Save className="w-5 h-5" />
+                      <Save className="w-3.5 h-3.5" />
                       Save as Draft
                     </>
                   )}

@@ -927,3 +927,40 @@ export const wipeAllAffiliateData = mutation({
   },
 });
 
+// NUCLEAR OPTION - delete every row in every non-reference table.
+// Use this when the database is in an orphan state and the cascade
+// wipes miss things. Intentionally has no auth check - it's a
+// terminal-only tool. Will be removed after use.
+export const wipeAllData = mutation({
+  args: {
+    confirm: v.literal("WIPE_ALL"),
+  },
+  handler: async (ctx, args) => {
+    const TABLES_TO_WIPE = [
+      "affiliates",
+      "deals",
+      "orders",
+      "payoutRequests",
+      "marketingLinks",
+      "supportTickets",
+      "activityLogs",
+      "leads",
+      "leadActivity",
+      "commissionPayouts",
+      "invoices",
+    ];
+
+    const counts: Record<string, number> = {};
+    for (const table of TABLES_TO_WIPE) {
+      const rows = await ctx.db.query(table as any).collect();
+      for (const row of rows) {
+        await ctx.db.delete(row._id);
+      }
+      counts[table] = rows.length;
+    }
+
+    console.log("[wipeAllData] nuclear wipe complete:", counts);
+    return { success: true, counts };
+  },
+});
+

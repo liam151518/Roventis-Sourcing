@@ -252,46 +252,50 @@ export default function InvoicePage() {
   };
 
   return (
-    <div className="flex h-full bg-[#0a0a0b]">
+    <div className="flex h-full" style={{ background: "var(--rs-bg-base)" }}>
       {/* Left Panel - Invoice Builder */}
-      <div className="w-[55%] border-r border-white/5 overflow-y-auto">
+      <div className="w-[55%] overflow-y-auto" style={{ borderRight: "1px solid var(--rs-border)" }}>
         <div className="p-6">
-          <h1 className="text-2xl font-bold text-white mb-2">Invoice Generator</h1>
-          <p className="text-gray-400 mb-6">Create professional invoices for your clients</p>
+          <span className="rs-overline">Invoicing</span>
+          <h1 className="rs-page-title text-2xl md:text-[28px] mt-1">Invoice Generator</h1>
+          <p className="rs-page-subtitle">Create professional invoices for your clients</p>
 
           {/* Invoice Details Section */}
-          <div className="mb-4 bg-[#0a0a0b] rounded-xl border border-white/5 overflow-hidden">
+          <div className="mb-4 rs-card overflow-hidden">
             <button
               onClick={() => toggleSection("invoiceDetails")}
-              className="w-full flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 transition-colors"
+              className="w-full flex items-center justify-between p-4 transition-colors hover:bg-[var(--rs-bg-overlay)]"
+              style={{ borderBottom: "1px solid var(--rs-border)" }}
             >
-              <span className="font-semibold text-white">Invoice Details</span>
+              <span className="text-sm font-semibold text-white">Invoice Details</span>
               {sections.invoiceDetails ? (
-                <ChevronUp className="w-4 h-4 text-gray-400" />
+                <ChevronUp className="w-4 h-4" style={{ color: "var(--rs-text-muted)" }} />
               ) : (
-                <ChevronDown className="w-4 h-4 text-gray-400" />
+                <ChevronDown className="w-4 h-4" style={{ color: "var(--rs-text-muted)" }} />
               )}
             </button>
             {sections.invoiceDetails && (
-              <div className="p-4 border-t border-white/5 space-y-4">
+              <div className="p-4 space-y-3" style={{ borderTop: "1px solid var(--rs-border)" }}>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">Invoice Number</label>
+                    <label className="block text-xs font-medium mb-1.5"
+                      style={{ color: "var(--rs-text-secondary)" }}>Invoice Number</label>
                     <input
                       type="text"
                       value={invoiceNumber}
                       onChange={(e) => setInvoiceNumber(e.target.value)}
                       placeholder="0001"
-                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="rs-input"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">Invoice Date</label>
+                    <label className="block text-xs font-medium mb-1.5"
+                      style={{ color: "var(--rs-text-secondary)" }}>Invoice Date</label>
                     <input
                       type="date"
                       value={invoiceDate}
                       onChange={(e) => setInvoiceDate(e.target.value)}
-                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="rs-input"
                     />
                   </div>
                 </div>
@@ -300,70 +304,75 @@ export default function InvoicePage() {
           </div>
 
           {/* Bill To Section */}
-          <div className="mb-4 bg-[#0a0a0b] rounded-xl border border-white/5 overflow-hidden">
+          <div className="mb-4 rs-card overflow-hidden">
             <button
               onClick={() => toggleSection("billTo")}
-              className="w-full flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 transition-colors"
+              className="w-full flex items-center justify-between p-4 transition-colors hover:bg-[var(--rs-bg-overlay)]"
             >
-              <span className="font-semibold text-white">Bill To (Client Details)</span>
+              <span className="text-sm font-semibold text-white">Bill To (Client Details)</span>
               {sections.billTo ? (
-                <ChevronUp className="w-4 h-4 text-gray-400" />
+                <ChevronUp className="w-4 h-4" style={{ color: "var(--rs-text-muted)" }} />
               ) : (
-                <ChevronDown className="w-4 h-4 text-gray-400" />
+                <ChevronDown className="w-4 h-4" style={{ color: "var(--rs-text-muted)" }} />
               )}
             </button>
             {sections.billTo && (
-              <div className="p-4 border-t border-white/5 space-y-4">
+              <div className="p-4 space-y-3" style={{ borderTop: "1px solid var(--rs-border)" }}>
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Company Name *</label>
+                  <label className="block text-xs font-medium mb-1.5"
+                      style={{ color: "var(--rs-text-secondary)" }}>Company Name *</label>
                   <input
                     type="text"
                     value={clientCompanyName}
                     onChange={(e) => setClientCompanyName(e.target.value)}
                     placeholder="Africa Hunt Lodge Pty Ltd"
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="rs-input"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Address Line 1</label>
+                  <label className="block text-xs font-medium mb-1.5"
+                      style={{ color: "var(--rs-text-secondary)" }}>Address Line 1</label>
                   <input
                     type="text"
                     value={clientAddress1}
                     onChange={(e) => setClientAddress1(e.target.value)}
                     placeholder="123 Main Street"
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="rs-input"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Address Line 2</label>
+                  <label className="block text-xs font-medium mb-1.5"
+                      style={{ color: "var(--rs-text-secondary)" }}>Address Line 2</label>
                   <input
                     type="text"
                     value={clientAddress2}
                     onChange={(e) => setClientAddress2(e.target.value)}
                     placeholder="Cape Town, 8001"
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="rs-input"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">VAT Number</label>
+                    <label className="block text-xs font-medium mb-1.5"
+                      style={{ color: "var(--rs-text-secondary)" }}>VAT Number</label>
                     <input
                       type="text"
                       value={clientVatNumber}
                       onChange={(e) => setClientVatNumber(e.target.value)}
                       placeholder="VAT123456789"
-                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="rs-input"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">Email</label>
+                    <label className="block text-xs font-medium mb-1.5"
+                      style={{ color: "var(--rs-text-secondary)" }}>Email</label>
                     <input
                       type="email"
                       value={clientEmail}
                       onChange={(e) => setClientEmail(e.target.value)}
                       placeholder="client@example.com"
-                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="rs-input"
                     />
                   </div>
                 </div>
@@ -372,48 +381,48 @@ export default function InvoicePage() {
           </div>
 
           {/* Project Summary Section */}
-          <div className="mb-4 bg-[#0a0a0b] rounded-xl border border-white/5 overflow-hidden">
+          <div className="mb-4 rs-card overflow-hidden">
             <button
               onClick={() => toggleSection("projectSummary")}
-              className="w-full flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 transition-colors"
+              className="w-full flex items-center justify-between p-4 transition-colors hover:bg-[var(--rs-bg-overlay)]"
             >
-              <span className="font-semibold text-white">Project Summary</span>
+              <span className="text-sm font-semibold text-white">Project Summary</span>
               {sections.projectSummary ? (
-                <ChevronUp className="w-4 h-4 text-gray-400" />
+                <ChevronUp className="w-4 h-4" style={{ color: "var(--rs-text-muted)" }} />
               ) : (
-                <ChevronDown className="w-4 h-4 text-gray-400" />
+                <ChevronDown className="w-4 h-4" style={{ color: "var(--rs-text-muted)" }} />
               )}
             </button>
             {sections.projectSummary && (
-              <div className="p-4 border-t border-white/5">
+              <div className="p-4" style={{ borderTop: "1px solid var(--rs-border)" }}>
                 <textarea
                   value={projectSummary}
                   onChange={(e) => setProjectSummary(e.target.value)}
                   placeholder="Custom branded headwear designed for Africa Hunt Lodge Pty Ltd."
                   rows={3}
-                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  className="rs-input rs-input--textarea"
                 />
               </div>
             )}
           </div>
 
           {/* Line Items Section */}
-          <div className="mb-4 bg-[#0a0a0b] rounded-xl border border-white/5 overflow-hidden">
+          <div className="mb-4 rs-card overflow-hidden">
             <button
               onClick={() => toggleSection("lineItems")}
-              className="w-full flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 transition-colors"
+              className="w-full flex items-center justify-between p-4 transition-colors hover:bg-[var(--rs-bg-overlay)]"
             >
-              <span className="font-semibold text-white">Line Items</span>
+              <span className="text-sm font-semibold text-white">Line Items</span>
               {sections.lineItems ? (
-                <ChevronUp className="w-4 h-4 text-gray-400" />
+                <ChevronUp className="w-4 h-4" style={{ color: "var(--rs-text-muted)" }} />
               ) : (
-                <ChevronDown className="w-4 h-4 text-gray-400" />
+                <ChevronDown className="w-4 h-4" style={{ color: "var(--rs-text-muted)" }} />
               )}
             </button>
             {sections.lineItems && (
-              <div className="p-4 border-t border-white/5">
+              <div className="p-4" style={{ borderTop: "1px solid var(--rs-border)" }}>
                 {lineItems.map((item, index) => (
-                  <div key={item.id} className="mb-4 p-4 bg-white/5 rounded-lg">
+                  <div key={item.id} className="mb-4 p-4 rounded-lg" style={{ background: "var(--rs-bg-base)", border: "1px solid var(--rs-border)" }}>
                     <div className="flex items-start gap-4">
                       {/* Image */}
                       <div className="shrink-0">
@@ -426,7 +435,11 @@ export default function InvoicePage() {
                             />
                             <button
                               onClick={() => updateLineItem(item.id, "imageDataUrl", "")}
-                              className="absolute -top-2 -right-2 p-1 bg-red-500/80 text-white rounded-full hover:bg-red-500"
+                              className="absolute -top-2 -right-2 p-1 rounded-full transition-colors"
+                              style={{
+                                background: "var(--rs-danger)",
+                                color: "white",
+                              }}
                             >
                               <X className="w-3 h-3" />
                             </button>
@@ -435,14 +448,24 @@ export default function InvoicePage() {
                           <div className="w-20 h-20 flex flex-col gap-1">
                             <button
                               onClick={() => handleOpenProductLibrary(item.id)}
-                              className="flex-1 flex flex-col items-center justify-center bg-white/5 border border-white/10 rounded-lg hover:border-blue-500/50 transition-colors"
+                              className="flex-1 flex flex-col items-center justify-center rounded-lg transition-colors hover:border-[var(--rs-border-focus)]"
+                              style={{
+                                background: "var(--rs-bg-base)",
+                                border: "1px solid var(--rs-border)",
+                              }}
                             >
-                              <ImageIcon className="w-5 h-5 text-gray-500" />
-                              <span className="text-xs text-gray-500">Select</span>
+                              <ImageIcon className="w-5 h-5" style={{ color: "var(--rs-text-muted)" }} />
+                              <span className="text-xs" style={{ color: "var(--rs-text-muted)" }}>Select</span>
                             </button>
-                            <label className="flex-1 flex flex-col items-center justify-center bg-white/5 border border-white/10 rounded-lg hover:border-blue-500/50 cursor-pointer transition-colors">
-                              <Upload className="w-5 h-5 text-gray-500" />
-                              <span className="text-xs text-gray-500">Upload</span>
+                            <label
+                              className="flex-1 flex flex-col items-center justify-center rounded-lg cursor-pointer transition-colors hover:border-[var(--rs-border-focus)]"
+                              style={{
+                                background: "var(--rs-bg-base)",
+                                border: "1px solid var(--rs-border)",
+                              }}
+                            >
+                              <Upload className="w-5 h-5" style={{ color: "var(--rs-text-muted)" }} />
+                              <span className="text-xs" style={{ color: "var(--rs-text-muted)" }}>Upload</span>
                               <input
                                 type="file"
                                 accept="image/png,image/jpeg,image/webp"
@@ -457,48 +480,55 @@ export default function InvoicePage() {
                       {/* Product fields */}
                       <div className="flex-1 grid grid-cols-2 gap-3">
                         <div className="col-span-2">
-                          <label className="block text-xs font-medium text-gray-500 mb-1">Product Name</label>
+                          <label className="block text-[11px] font-medium mb-1.5"
+                      style={{ color: "var(--rs-text-muted)" }}>Product Name</label>
                           <input
                             type="text"
                             value={item.productName}
                             onChange={(e) => updateLineItem(item.id, "productName", e.target.value)}
                             placeholder="Olive Green Hat"
-                            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-medium"
+                            className="rs-input" style={{ height: 36, fontSize: "0.8125rem", fontWeight: 500 }}
                           />
                         </div>
                         <div className="col-span-2">
-                          <label className="block text-xs font-medium text-gray-500 mb-1">Subtitle</label>
+                          <label className="block text-[11px] font-medium mb-1.5"
+                      style={{ color: "var(--rs-text-muted)" }}>Subtitle</label>
                           <input
                             type="text"
                             value={item.productSubtitle}
                             onChange={(e) => updateLineItem(item.id, "productSubtitle", e.target.value)}
                             placeholder="Custom Leather Patch"
-                            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            className="rs-input" style={{ height: 36, fontSize: "0.8125rem" }}
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-gray-500 mb-1">Unit Price (R)</label>
+                          <label className="block text-[11px] font-medium mb-1.5"
+                      style={{ color: "var(--rs-text-muted)" }}>Unit Price (R)</label>
                           <input
                             type="number"
                             value={item.unitPrice || ""}
                             onChange={(e) => updateLineItem(item.id, "unitPrice", parseFloat(e.target.value) || 0)}
                             placeholder="0.00"
-                            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            className="rs-input" style={{ height: 36, fontSize: "0.8125rem" }}
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-gray-500 mb-1">Qty</label>
+                          <label className="block text-[11px] font-medium mb-1.5"
+                      style={{ color: "var(--rs-text-muted)" }}>Qty</label>
                           <input
                             type="number"
                             value={item.quantity}
                             onChange={(e) => updateLineItem(item.id, "quantity", parseInt(e.target.value) || 0)}
                             min={1}
-                            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            className="rs-input" style={{ height: 36, fontSize: "0.8125rem" }}
                           />
                         </div>
-                        <div className="col-span-2 flex items-center justify-between bg-white/5 p-2 rounded-lg">
-                          <span className="text-sm text-gray-500">Amount:</span>
-                          <span className="text-sm font-semibold text-white">
+                        <div
+                          className="col-span-2 flex items-center justify-between p-2 rounded-lg"
+                          style={{ background: "var(--rs-bg-base)", border: "1px solid var(--rs-border)" }}
+                        >
+                          <span className="text-xs" style={{ color: "var(--rs-text-muted)" }}>Amount:</span>
+                          <span className="text-sm font-semibold text-white rs-stat">
                             R{item.amount.toFixed(2)}
                           </span>
                         </div>
@@ -508,7 +538,8 @@ export default function InvoicePage() {
                       <button
                         onClick={() => removeLineItem(item.id)}
                         disabled={lineItems.length === 1}
-                        className="p-2 text-gray-500 hover:text-red-400 transition-colors disabled:opacity-50"
+                        className="p-2 transition-colors disabled:opacity-50"
+                        style={{ color: "var(--rs-text-muted)" }}
                       >
                         <Trash2 className="w-5 h-5" />
                       </button>
@@ -518,7 +549,11 @@ export default function InvoicePage() {
 
                 <button
                   onClick={addLineItem}
-                  className="w-full py-3 border-2 border-dashed border-white/10 rounded-lg text-gray-500 hover:border-blue-500/50 hover:text-blue-400 transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3 border-2 border-dashed rounded-lg transition-colors flex items-center justify-center gap-2"
+                  style={{
+                    borderColor: "var(--rs-border)",
+                    color: "var(--rs-text-muted)",
+                  }}
                 >
                   <Plus className="w-4 h-4" />
                   Add Line Item
@@ -528,32 +563,33 @@ export default function InvoicePage() {
           </div>
 
           {/* Notes Section */}
-          <div className="mb-4 bg-[#0a0a0b] rounded-xl border border-white/5 overflow-hidden">
+          <div className="mb-4 rs-card overflow-hidden">
             <button
               onClick={() => toggleSection("notes")}
-              className="w-full flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 transition-colors"
+              className="w-full flex items-center justify-between p-4 transition-colors hover:bg-[var(--rs-bg-overlay)]"
             >
-              <span className="font-semibold text-white">Notes</span>
+              <span className="text-sm font-semibold text-white">Notes</span>
               {sections.notes ? (
-                <ChevronUp className="w-4 h-4 text-gray-400" />
+                <ChevronUp className="w-4 h-4" style={{ color: "var(--rs-text-muted)" }} />
               ) : (
-                <ChevronDown className="w-4 h-4 text-gray-400" />
+                <ChevronDown className="w-4 h-4" style={{ color: "var(--rs-text-muted)" }} />
               )}
             </button>
             {sections.notes && (
-              <div className="p-4 border-t border-white/5 space-y-2">
+              <div className="p-4 space-y-2" style={{ borderTop: "1px solid var(--rs-border)" }}>
                 {notes.map((note, index) => (
                   <div key={index} className="flex items-center gap-2">
-                    <span className="text-gray-500">•</span>
+                    <span style={{ color: "var(--rs-text-muted)" }}>•</span>
                     <input
                       type="text"
                       value={note}
                       onChange={(e) => updateNote(index, e.target.value)}
-                      className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      className="rs-input flex-1" style={{ height: 36, fontSize: "0.8125rem" }}
                     />
                     <button
                       onClick={() => removeNote(index)}
-                      className="p-2 text-gray-500 hover:text-red-400 transition-colors"
+                      className="p-2 transition-colors"
+                      style={{ color: "var(--rs-text-muted)" }}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -561,7 +597,11 @@ export default function InvoicePage() {
                 ))}
                 <button
                   onClick={addNote}
-                  className="w-full py-2 border-2 border-dashed border-white/10 rounded-lg text-gray-500 hover:border-blue-500/50 hover:text-blue-400 transition-colors flex items-center justify-center gap-2 text-sm"
+                  className="w-full py-2 border-2 border-dashed rounded-lg transition-colors flex items-center justify-center gap-2 text-xs"
+                  style={{
+                    borderColor: "var(--rs-border)",
+                    color: "var(--rs-text-muted)",
+                  }}
                 >
                   <Plus className="w-4 h-4" />
                   Add Note
@@ -572,50 +612,58 @@ export default function InvoicePage() {
         </div>
 
         {/* Action Buttons */}
-        <div className="sticky bottom-0 p-4 bg-[#0a0a0b] border-t border-white/5 flex gap-3">
+        <div
+          className="sticky bottom-0 p-4 flex gap-2"
+          style={{ background: "var(--rs-bg-base)", borderTop: "1px solid var(--rs-border)" }}
+        >
           <button
             onClick={handleDownloadPdf}
             disabled={isDownloading}
-            className="flex-1 py-3 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+            className="rs-btn-primary flex-1 justify-center disabled:opacity-50"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-3.5 h-3.5" />
             {isDownloading ? "Generating..." : "Download PDF"}
           </button>
-          <button className="flex-1 py-3 px-4 bg-white/5 text-white border border-white/10 rounded-lg hover:bg-white/10 transition-colors flex items-center justify-center gap-2">
-            <Save className="w-4 h-4" />
+          <button className="rs-btn-ghost flex-1 justify-center">
+            <Save className="w-3.5 h-3.5" />
             Save Invoice
           </button>
           <button
             onClick={() => setIsLoadFromDealOpen(true)}
-            className="flex-1 py-3 px-4 bg-white/5 text-white border border-white/10 rounded-lg hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+            className="rs-btn-ghost flex-1 justify-center"
           >
-            <FolderOpen className="w-4 h-4" />
+            <FolderOpen className="w-3.5 h-3.5" />
             Load from Deal
           </button>
         </div>
       </div>
 
       {/* Right Panel - Live Preview */}
-      <div className="w-[45%] overflow-hidden bg-[#0a0a0b] flex flex-col">
+      <div className="w-[45%] overflow-hidden flex flex-col" style={{ background: "var(--rs-bg-base)" }}>
         {/* Preview header */}
-        <div className="p-4 bg-white/5 border-b border-white/5 flex items-center justify-between">
-          <h2 className="font-semibold text-white flex items-center gap-2">
-            <Eye className="w-4 h-4" />
+        <div
+          className="p-4 flex items-center justify-between"
+          style={{ borderBottom: "1px solid var(--rs-border)" }}
+        >
+          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+            <Eye className="w-4 h-4" style={{ color: "var(--rs-text-accent)" }} />
             Live Preview
           </h2>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <button
               onClick={() => setPreviewScale((s) => Math.max(0.3, s - 0.05))}
-              className="p-2 hover:bg-white/10 rounded-lg"
+              className="p-1.5 rounded-md hover:bg-[var(--rs-bg-overlay)] transition-colors"
             >
-              <ZoomOut className="w-4 h-4 text-gray-400" />
+              <ZoomOut className="w-3.5 h-3.5" style={{ color: "var(--rs-text-muted)" }} />
             </button>
-            <span className="text-sm text-gray-400">{Math.round(previewScale * 100)}%</span>
+            <span className="text-xs px-1.5" style={{ color: "var(--rs-text-muted)" }}>
+              {Math.round(previewScale * 100)}%
+            </span>
             <button
               onClick={() => setPreviewScale((s) => Math.min(1, s + 0.05))}
-              className="p-2 hover:bg-white/10 rounded-lg"
+              className="p-1.5 rounded-md hover:bg-[var(--rs-bg-overlay)] transition-colors"
             >
-              <ZoomIn className="w-4 h-4 text-gray-400" />
+              <ZoomIn className="w-3.5 h-3.5" style={{ color: "var(--rs-text-muted)" }} />
             </button>
           </div>
         </div>

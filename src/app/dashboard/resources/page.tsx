@@ -74,8 +74,13 @@ export default function ResourcesPage() {
 
   if (!resources || !currentAffiliate) {
     return (
-      <div className="min-h-screen bg-[#0a0a0b] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="space-y-6">
+        <div className="rs-skeleton h-8 w-48" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="rs-skeleton h-28" />
+          <div className="rs-skeleton h-28" />
+          <div className="rs-skeleton h-28" />
+        </div>
       </div>
     );
   }
@@ -109,22 +114,31 @@ export default function ResourcesPage() {
     <div className="space-y-6">
       {/* Header */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
       >
         <span className="rs-overline">Resources</span>
-        <h1 className="rs-page-title">Download sales materials and resources</h1>
+        <h1 className="rs-page-title text-2xl md:text-[28px] mt-1">
+          Sales materials and resources
+        </h1>
+        <p className="rs-page-subtitle">
+          Download catalogs, scripts, and creative assets for your outreach.
+        </p>
       </motion.div>
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+        <Search
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
+          style={{ color: "var(--rs-text-muted)" }}
+        />
         <input
           type="text"
           placeholder="Search resources..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-12 pr-4 py-3 bg-[#141417] border border-white/5 rounded-[14px] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          className="rs-input pl-9"
+          style={{ height: 42 }}
         />
       </div>
 
@@ -137,13 +151,28 @@ export default function ResourcesPage() {
               setSelectedCategory(cat.id);
               setSearchQuery("");
             }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-[14px] text-sm font-medium whitespace-nowrap transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
               selectedCategory === cat.id
-                ? "bg-orange-600 text-white"
-                : "bg-[#141417] text-gray-400 hover:text-white border border-white/5 hover:border-white/10"
+                ? "text-white"
+                : "hover:text-white"
             }`}
+            style={{
+              background:
+                selectedCategory === cat.id
+                  ? "var(--rs-accent-soft)"
+                  : "var(--rs-bg-base)",
+              border: `1px solid ${
+                selectedCategory === cat.id
+                  ? "var(--rs-text-accent)"
+                  : "var(--rs-border)"
+              }`,
+              color:
+                selectedCategory === cat.id
+                  ? "var(--rs-text-accent)"
+                  : "var(--rs-text-secondary)",
+            }}
           >
-            <cat.icon className="w-4 h-4" />
+            <cat.icon className="w-3.5 h-3.5" />
             {cat.label}
           </button>
         ))}
@@ -152,44 +181,56 @@ export default function ResourcesPage() {
       {/* PRICE LIST SECTION */}
       {selectedCategory === "price_list" && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rs-card-[14px] border border-white/5 overflow-hidden"
+          className="rs-card overflow-hidden"
         >
-          <table className="w-full">
+          <table className="rs-table">
             <thead>
-              <tr className="border-b border-white/5">
-                <th className="text-left p-4 text-sm font-medium text-gray-400">Product</th>
-                <th className="text-center p-4 text-sm font-medium text-gray-400">50 pcs</th>
-                <th className="text-center p-4 text-sm font-medium text-gray-400">100 pcs</th>
-                <th className="text-center p-4 text-sm font-medium text-gray-400">500 pcs</th>
+              <tr>
+                <th>Product</th>
+                <th className="text-center">50 pcs</th>
+                <th className="text-center">100 pcs</th>
+                <th className="text-center">500 pcs</th>
               </tr>
             </thead>
             <tbody>
               {(products || [])
-                .filter(item => !searchQuery || item.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                .filter(
+                  (item) =>
+                    !searchQuery ||
+                    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+                )
                 .map((item: any, index: number) => (
-                  <tr key={index} className="border-b border-white/5 hover:bg-white/5">
-                    <td className="p-4 text-white font-medium">{item.name}</td>
-                    <td className="p-4 text-center">
+                  <tr key={index}>
+                    <td className="text-white font-medium">{item.name}</td>
+                    <td className="text-center">
                       {item.pricing?.confirmed ? (
-                        <span className="text-orange-400 font-semibold">{ZAR(item.pricing?.["50"] || item.pricing?.price50)}</span>
+                        <span style={{ color: "var(--rs-warning)" }} className="font-semibold rs-stat">
+                          {ZAR(item.pricing?.["50"] || item.pricing?.price50)}
+                        </span>
                       ) : (
-                        <span className="text-gray-500 italic">Coming Soon</span>
+                        <span className="text-xs italic" style={{ color: "var(--rs-text-muted)" }}>
+                          Coming Soon
+                        </span>
                       )}
                     </td>
-                    <td className="p-4 text-center">
+                    <td className="text-center">
                       {item.pricing?.confirmed ? (
-                        <span className="text-green-400 font-semibold">{ZAR(item.pricing?.["100"] || item.pricing?.price100)}</span>
+                        <span style={{ color: "var(--rs-success)" }} className="font-semibold rs-stat">
+                          {ZAR(item.pricing?.["100"] || item.pricing?.price100)}
+                        </span>
                       ) : (
-                        <span className="text-gray-500 italic">-</span>
+                        <span style={{ color: "var(--rs-text-muted)" }}>—</span>
                       )}
                     </td>
-                    <td className="p-4 text-center">
+                    <td className="text-center">
                       {item.pricing?.confirmed ? (
-                        <span className="text-blue-400 font-semibold">{ZAR(item.pricing?.["500"] || item.pricing?.price500)}</span>
+                        <span style={{ color: "var(--rs-info)" }} className="font-semibold rs-stat">
+                          {ZAR(item.pricing?.["500"] || item.pricing?.price500)}
+                        </span>
                       ) : (
-                        <span className="text-gray-500 italic">-</span>
+                        <span style={{ color: "var(--rs-text-muted)" }}>—</span>
                       )}
                     </td>
                   </tr>
@@ -209,15 +250,19 @@ export default function ResourcesPage() {
           {filteredProducts.map((product: any) => (
             <div
               key={product.id}
-              className="rs-card-xl border border-white/5 overflow-hidden"
+              className="rs-card overflow-hidden"
             >
               {/* Product Header - Click to expand */}
               <button
                 onClick={() => toggleProduct(product.id)}
-                className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
+                className="w-full flex items-center justify-between p-4 transition-colors hover:bg-[var(--rs-bg-overlay)]"
+                style={{ borderBottom: expandedProducts.has(product.id) ? "1px solid var(--rs-border)" : "0" }}
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 bg-white/5 rounded-lg overflow-hidden flex items-center justify-center">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-14 h-14 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0"
+                    style={{ background: "var(--rs-bg-base)" }}
+                  >
                     <img
                       src={product.colors?.[0]?.image || product.colors?.[0]?.imageUrl}
                       alt={product.name}
@@ -225,11 +270,16 @@ export default function ResourcesPage() {
                     />
                   </div>
                   <div className="text-left">
-                    <h3 className="text-white font-semibold">{product.name}</h3>
-                    <p className="text-gray-500 text-sm">{product.colors?.length || 0} color{(product.colors?.length || 0) > 1 ? 's' : ''} available</p>
+                    <h3 className="text-sm font-semibold text-white">{product.name}</h3>
+                    <p className="text-xs" style={{ color: "var(--rs-text-muted)" }}>
+                      {product.colors?.length || 0} color{(product.colors?.length || 0) > 1 ? "s" : ""} available
+                    </p>
                   </div>
                 </div>
-                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${expandedProducts.has(product.id) ? 'rotate-180' : ''}`} />
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${expandedProducts.has(product.id) ? "rotate-180" : ""}`}
+                  style={{ color: "var(--rs-text-muted)" }}
+                />
               </button>
 
               {/* Color Variants - Expanded */}
@@ -239,27 +289,34 @@ export default function ResourcesPage() {
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    className="border-t border-white/5"
                   >
-                    <div className="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                    <div className="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                       {product.colors.map((color: any, colorIndex: number) => (
                         <div
                           key={colorIndex}
-                          className="bg-white/5 rounded-lg overflow-hidden hover:ring-2 hover:ring-orange-500/50 transition-all"
+                          className="rounded-lg overflow-hidden transition-all"
+                          style={{
+                            background: "var(--rs-bg-base)",
+                            border: "1px solid var(--rs-border)",
+                          }}
                         >
-                          <div className="h-56 bg-white/5 p-2">
+                          <div className="h-44 p-1.5" style={{ background: "var(--rs-bg-base)" }}>
                             <img
                               src={color.image || color.imageUrl}
                               alt={`${product.name} - ${color.name}`}
                               className="w-full h-full object-cover rounded-md"
                             />
                           </div>
-                          <div className="p-2 border-t border-white/5">
-                            <p className="text-sm text-white text-center truncate">{color.name}</p>
+                          <div className="p-2" style={{ borderTop: "1px solid var(--rs-border)" }}>
+                            <p className="text-xs text-white text-center truncate">{color.name}</p>
                             <a
                               href={color.image || color.imageUrl}
                               download
-                              className="mt-2 flex items-center justify-center gap-1 w-full py-1.5 bg-orange-500/10 text-orange-400 hover:bg-orange-500/20 rounded text-xs transition-colors"
+                              className="mt-2 flex items-center justify-center gap-1 w-full py-1.5 rounded text-xs transition-colors"
+                              style={{
+                                background: "var(--rs-accent-soft)",
+                                color: "var(--rs-text-accent)",
+                              }}
                             >
                               <Download className="w-3 h-3" />
                               Download
@@ -283,47 +340,59 @@ export default function ResourcesPage() {
 
       {/* RESOURCES GRID (for other categories) */}
       {selectedCategory !== "script" && selectedCategory !== "price_list" && selectedCategory !== "product_images" && (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
           {filteredResources.map((resource: any, index: number) => {
             const FileIcon = getFileIcon(resource.fileType);
-            
+            const accent =
+              resource.fileType === "pdf"
+                ? { bg: "rgba(239,68,68,0.10)", color: "var(--rs-danger)" }
+                : resource.fileType === "video"
+                  ? { bg: "var(--rs-accent-soft)", color: "var(--rs-text-accent)" }
+                  : resource.fileType === "image"
+                    ? { bg: "rgba(236,72,153,0.10)", color: "#f472b6" }
+                    : { bg: "rgba(59,130,246,0.10)", color: "var(--rs-info)" };
+
             return (
               <motion.div
                 key={resource._id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="group rs-card-[14px] border border-white/5 p-6 hover:border-white/10 transition-all hover:shadow-lg hover:shadow-black/20 cursor-pointer"
+                transition={{ delay: index * 0.04 }}
+                className="rs-card p-5 cursor-pointer transition-all group"
                 onClick={() => setPreviewResource(resource)}
               >
-                <div className="flex items-start gap-4">
-                  <div className={`w-14 h-14 rounded-[14px] flex items-center justify-center ${
-                    resource.fileType === "pdf" ? "bg-red-500/10" :
-                    resource.fileType === "video" ? "bg-purple-500/10" :
-                    resource.fileType === "image" ? "bg-pink-500/10" :
-                    "bg-blue-500/10"
-                  }`}>
-                    <FileIcon className={`w-7 h-7 ${
-                      resource.fileType === "pdf" ? "text-red-400" :
-                      resource.fileType === "video" ? "text-purple-400" :
-                      resource.fileType === "image" ? "text-pink-400" :
-                      "text-blue-400"
-                    }`} />
+                <div className="flex items-start gap-3">
+                  <div
+                    className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: accent.bg }}
+                  >
+                    <FileIcon className="w-5 h-5" style={{ color: accent.color }} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-white group-hover:text-orange-400 transition-colors truncate">
+                    <h3 className="text-sm font-semibold text-white group-hover:text-[var(--rs-text-accent)] transition-colors truncate">
                       {resource.title}
                     </h3>
-                    <p className="text-sm text-gray-500 mt-1 line-clamp-2">{resource.description}</p>
+                    <p
+                      className="text-xs mt-1 line-clamp-2"
+                      style={{ color: "var(--rs-text-secondary)" }}
+                    >
+                      {resource.description}
+                    </p>
                   </div>
                 </div>
-                
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
-                  <span className={`text-xs px-3 py-1 rounded-full border ${getCategoryColor(resource.category)}`}>
+
+                <div
+                  className="flex items-center justify-between mt-4 pt-3"
+                  style={{ borderTop: "1px solid var(--rs-border)" }}
+                >
+                  <span className={`text-xs px-2 py-0.5 rounded-full border ${getCategoryColor(resource.category)}`}>
                     {resource.category.replace("_", " ")}
                   </span>
-                  <div className="flex items-center gap-1 text-gray-500 text-sm">
-                    <Download className="w-4 h-4" />
+                  <div
+                    className="flex items-center gap-1 text-xs"
+                    style={{ color: "var(--rs-text-muted)" }}
+                  >
+                    <Download className="w-3.5 h-3.5" />
                     {resource.downloadCount}
                   </div>
                 </div>
@@ -335,9 +404,14 @@ export default function ResourcesPage() {
 
       {/* No results message */}
       {selectedCategory !== "script" && selectedCategory !== "price_list" && selectedCategory !== "product_images" && filteredResources.length === 0 && (
-        <div className="text-center py-16">
-          <File className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-          <p className="text-gray-500">No resources found</p>
+        <div className="rs-empty-state py-16">
+          <div className="rs-empty-state-icon">
+            <File className="w-5 h-5" />
+          </div>
+          <div className="rs-empty-state-title">No resources found</div>
+          <div className="rs-empty-state-description">
+            Try a different search term or category.
+          </div>
         </div>
       )}
 
@@ -346,35 +420,41 @@ export default function ResourcesPage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="rs-modal-backdrop"
           onClick={() => setPreviewResource(null)}
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="rs-card-[14px] border border-white/10 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="rs-modal max-w-2xl w-full p-0"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-start justify-between p-6 border-b border-white/5">
+            <div className="rs-modal-header">
               <div>
-                <h2 className="text-xl font-semibold text-white">{previewResource.title}</h2>
-                <p className="text-gray-500 text-sm mt-1">Added {formatDate(previewResource.createdAt)}</p>
+                <h2 className="text-base font-semibold text-white">{previewResource.title}</h2>
+                <p className="text-xs mt-0.5" style={{ color: "var(--rs-text-muted)" }}>
+                  Added {formatDate(previewResource.createdAt)}
+                </p>
               </div>
               <button
                 onClick={() => setPreviewResource(null)}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                className="p-1.5 rounded-md hover:bg-white/5 transition-colors"
+                style={{ color: "var(--rs-text-secondary)" }}
+                aria-label="Close"
               >
-                <ChevronRight className="w-5 h-5 text-gray-400" />
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-            <div className="p-6">
-              <p className="text-gray-300">{previewResource.description}</p>
+            <div className="rs-modal-body space-y-4">
+              <p className="text-sm" style={{ color: "var(--rs-text-secondary)" }}>
+                {previewResource.description}
+              </p>
               <a
                 href={previewResource.fileUrl}
                 download
-                className="mt-6 flex items-center justify-center gap-2 w-full py-3 bg-orange-600 text-white rounded-[14px] hover:bg-orange-700 transition-colors"
+                className="rs-btn-primary w-full justify-center"
               >
-                <Download className="w-5 h-5" />
+                <Download className="w-3.5 h-3.5" />
                 Download
               </a>
             </div>

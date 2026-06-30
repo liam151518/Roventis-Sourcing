@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  DollarSign, 
-  Clock, 
-  CheckCircle, 
+import {
+  DollarSign,
+  Clock,
+  CheckCircle,
   TrendingUp,
-  ArrowUpRight,
   Send,
   X,
-  Package,
   AlertCircle,
+  CircleDollarSign,
+  Wallet,
 } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -26,33 +26,31 @@ export default function CommissionsPage() {
     api.affiliates.getCurrentAffiliate,
     { clerkUserId: userId || undefined }
   );
-  
-  // Use stable arguments for all useQuery hooks - always pass something
+
   const affiliateId = currentAffiliate?._id;
   const myOrders = useQuery(
-    api.orders.getMyOrders, 
+    api.orders.getMyOrders,
     affiliateId ? { affiliateId } : "skip"
   );
   const myPayoutRequests = useQuery(
-    api.commissions.getMyPayoutRequests, 
+    api.commissions.getMyPayoutRequests,
     affiliateId ? { affiliateId } : "skip"
   );
   const commissionSummary = useQuery(
-    api.admin.getCommissionSummary, 
+    api.admin.getCommissionSummary,
     affiliateId ? { affiliateId } : "skip"
   );
   const requestPayout = useMutation(api.commissions.requestPayout);
-  
-  // Get deals for breakdown table - use skip pattern too
+
   const dealsQuery = useQuery(
-    api.deals.getDealsByAffiliate, 
+    api.deals.getDealsByAffiliate,
     affiliateId ? { affiliateId } : "skip"
   );
-  
+
   const [showPayoutModal, setShowPayoutModal] = useState(false);
   const [payoutAmount, setPayoutAmount] = useState("");
   const [requesting, setRequesting] = useState(false);
-  const [toast, setToast] = useState<{message: string; type: "success" | "error"} | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   const deals = (dealsQuery || []) as any[];
 
@@ -60,11 +58,11 @@ export default function CommissionsPage() {
     return (
       <div className="space-y-6">
         <SkeletonBlock className="h-8 w-48" />
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <SkeletonBlock className="h-32" />
-          <SkeletonBlock className="h-32" />
-          <SkeletonBlock className="h-32" />
-          <SkeletonBlock className="h-32" />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <SkeletonBlock className="h-28" />
+          <SkeletonBlock className="h-28" />
+          <SkeletonBlock className="h-28" />
+          <SkeletonBlock className="h-28" />
         </div>
       </div>
     );
@@ -72,8 +70,7 @@ export default function CommissionsPage() {
 
   const userOrders = (myOrders || []) as any[];
   const userPayouts = (myPayoutRequests || []) as any[];
-  
-  // Get summary from the new query first, fallback to affiliate fields
+
   const summary = commissionSummary || {
     pendingApproval: 0,
     approved: 0,
@@ -85,96 +82,99 @@ export default function CommissionsPage() {
 
   const closedWonDeals = deals.filter((d: any) => d.status === "closed_won");
 
-  // Build commission breakdown
-  const breakdown = closedWonDeals.map((deal: any) => {
-    const order = userOrders.find((o: any) => o.dealId === deal._id);
-    let status: string;
-    let label: string;
-    
-    if (!order) {
-      status = "no_order";
-      label = "Deal Closed — No Order";
-    } else if (order.commissionStatus === "pending") {
-      status = "pending";
-      label = "Pending Approval";
-    } else if (order.commissionStatus === "approved") {
-      status = "approved";
-      label = "Approved";
-    } else if (order.commissionStatus === "paid") {
-      status = "paid";
-      label = "Paid";
-    } else {
-      status = "unknown";
-      label = order.commissionStatus || "Unknown";
-    }
-    
-    return {
-      dealId: deal._id,
-      deal: deal,
-      order: order,
-      clientName: deal.clientName,
-      clientCompany: deal.clientCompany,
-      dealValue: deal.dealValue,
-      commissionRate: deal.commissionRate,
-      commissionAmount: deal.commissionAmount,
-      status,
-      label,
-      orderId: order?._id,
-    };
-  }).sort((a, b) => b.deal.createdAt - a.deal.createdAt);
+  const breakdown = closedWonDeals
+    .map((deal: any) => {
+      const order = userOrders.find((o: any) => o.dealId === deal._id);
+      let status: string;
+      let label: string;
 
-  // Calculate breakdown counts
-  const noOrderCount = breakdown.filter(b => b.status === "no_order").length;
-  const pendingCount = breakdown.filter(b => b.status === "pending").length;
-  const approvedCount = breakdown.filter(b => b.status === "approved").length;
-  const paidCount = breakdown.filter(b => b.status === "paid").length;
+      if (!order) {
+        status = "no_order";
+        label = "Deal Closed — No Order";
+      } else if (order.commissionStatus === "pending") {
+        status = "pending";
+        label = "Pending Approval";
+      } else if (order.commissionStatus === "approved") {
+        status = "approved";
+        label = "Approved";
+      } else if (order.commissionStatus === "paid") {
+        status = "paid";
+        label = "Paid";
+      } else {
+        status = "unknown";
+        label = order.commissionStatus || "Unknown";
+      }
 
-  const stats = [
+      return {
+        dealId: deal._id,
+        deal: deal,
+        order: order,
+        clientName: deal.clientName,
+        clientCompany: deal.clientCompany,
+        dealValue: deal.dealValue,
+        commissionRate: deal.commissionRate,
+        commissionAmount: deal.commissionAmount,
+        status,
+        label,
+        orderId: order?._id,
+      };
+    })
+    .sort((a, b) => b.deal.createdAt - a.deal.createdAt);
+
+  const noOrderCount = breakdown.filter((b) => b.status === "no_order").length;
+  const pendingCount = breakdown.filter((b) => b.status === "pending").length;
+  const approvedCount = breakdown.filter((b) => b.status === "approved").length;
+  const paidCount = breakdown.filter((b) => b.status === "paid").length;
+
+  const stats: Array<{
+    label: string;
+    value: string;
+    subtext: string;
+    icon: typeof DollarSign;
+    iconClass: "accent" | "warning" | "info" | "success";
+  }> = [
     {
       label: "Total Earned",
       value: formatCurrency(summary.totalEarned),
       subtext: "All time",
-      icon: DollarSign,
-      color: "from-purple-500 to-pink-600",
-      bgColor: "bg-purple-500/10",
-      iconColor: "text-purple-400"
+      icon: CircleDollarSign,
+      iconClass: "accent",
     },
     {
       label: "Pending Approval",
       value: formatCurrency(summary.pendingApproval),
-      subtext: `${pendingCount} order${pendingCount !== 1 ? 's' : ''}`,
+      subtext: `${pendingCount} order${pendingCount !== 1 ? "s" : ""}`,
       icon: Clock,
-      color: "from-amber-500 to-orange-600",
-      bgColor: "bg-amber-500/10",
-      iconColor: "text-amber-400"
+      iconClass: "warning",
     },
     {
       label: "Approved",
       value: formatCurrency(summary.approved),
       subtext: "Awaiting payment",
       icon: CheckCircle,
-      color: "from-blue-500 to-indigo-600",
-      bgColor: "bg-blue-500/10",
-      iconColor: "text-blue-400"
+      iconClass: "info",
     },
     {
       label: "Total Paid",
       value: formatCurrency(summary.totalPaid),
       subtext: "All time",
-      icon: TrendingUp,
-      color: "from-emerald-500 to-teal-600",
-      bgColor: "bg-[var(--rs-success)]",
-      iconColor: "text-emerald-400"
+      icon: Wallet,
+      iconClass: "success",
     },
   ];
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "paid": return { bg: "bg-green-500/20", text: "text-green-400", label: "Paid" };
-      case "approved": return { bg: "bg-blue-500/20", text: "text-blue-400", label: "Approved" };
-      case "pending": return { bg: "bg-amber-500/20", text: "text-amber-400", label: "Pending Approval" };
-      case "no_order": return { bg: "bg-gray-500/20", text: "text-gray-400", label: "Deal Closed — No Order" };
-      default: return { bg: "bg-gray-500/20", text: "text-gray-400", label: status };
+      case "paid":
+        return { label: "Paid", tone: "paid" as const };
+      case "approved":
+        return { label: "Approved", tone: "paid" as const };
+      case "pending":
+        return { label: "Pending Approval", tone: "pending" as const };
+      case "no_order":
+        return { label: "Deal Closed — No Order", tone: "neutral" as const };
+      default:
+        return { label: status, tone: "neutral" as const };
     }
   };
 
@@ -209,13 +209,12 @@ export default function CommissionsPage() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  // Determine what message to show
   const showPayoutMessage = summary.pendingBalance === 0;
   const hasApprovedCommissions = summary.approved > 0;
   const hasAnyCommissions = summary.totalEarned > 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Toast */}
       <AnimatePresence>
         {toast && (
@@ -224,7 +223,9 @@ export default function CommissionsPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className={`fixed top-4 right-4 px-4 py-3 rounded-xl z-50 ${
-              toast.type === "success" ? "bg-[var(--rs-success)]" : "bg-[var(--rs-danger)]"
+              toast.type === "success"
+                ? "bg-[var(--rs-success)]"
+                : "bg-[var(--rs-danger)]"
             } text-white shadow-xl`}
           >
             {toast.message}
@@ -234,194 +235,247 @@ export default function CommissionsPage() {
 
       {/* Header */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+        className="flex flex-col md:flex-row md:items-end md:justify-between gap-4"
       >
         <div>
           <span className="rs-overline">Finance</span>
-          <h1 className="rs-page-title">Commissions</h1>
-          <p className="text-[var(--rs-text-muted)] mt-1">Track your commission earnings and payouts</p>
+          <h1 className="rs-page-title text-2xl md:text-[28px] mt-1">Commissions</h1>
+          <p className="rs-page-subtitle">
+            Track your commission earnings and payouts
+          </p>
         </div>
       </motion.div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
             <motion.div
               key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="group rs-card rounded-2xl border border-white/5 p-6 hover:border-white/10 transition-all relative overflow-hidden"
+              transition={{ delay: index * 0.05 }}
+              className="rs-card p-5"
             >
-              <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${stat.color} opacity-5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2`} />
-              <div className="flex items-start justify-between relative">
-                <div className={`w-12 h-12 ${stat.bgColor} rounded-xl flex items-center justify-center`}>
-                  <Icon className={`w-6 h-6 ${stat.iconColor}`} />
+              <div className="flex items-start justify-between mb-4">
+                <div className={`rs-icon-tile rs-icon-tile--${stat.iconClass}`}>
+                  <Icon className="w-4 h-4" />
                 </div>
               </div>
-              <div className="mt-4">
-                <div className="text-2xl font-semibold text-white">{stat.value}</div>
-                <div className="text-sm text-gray-500 mt-1">{stat.label}</div>
-                <div className="text-xs text-gray-600 mt-0.5">{stat.subtext}</div>
+              <div
+                className="text-2xl font-semibold rs-stat"
+                style={{ color: "var(--rs-text-primary)" }}
+              >
+                {stat.value}
+              </div>
+              <div
+                className="text-xs mt-1"
+                style={{ color: "var(--rs-text-secondary)" }}
+              >
+                {stat.label}
+              </div>
+              <div
+                className="text-[10px] mt-0.5"
+                style={{ color: "var(--rs-text-muted)" }}
+              >
+                {stat.subtext}
               </div>
             </motion.div>
           );
         })}
       </div>
 
-      {/* Commission Breakdown Table */}
+      {/* Commission Breakdown */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="rs-card rounded-2xl border border-white/5 overflow-hidden"
+        transition={{ delay: 0.15 }}
+        className="rs-card overflow-hidden"
       >
-        <div className="p-6 border-b border-white/5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">Commission Breakdown</h2>
-            <button 
-              onClick={() => setShowPayoutModal(true)}
-              disabled={showPayoutMessage}
-              className="inline-flex items-center gap-2 rs-btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Send className="w-4 h-4" />
-              Request Payout
-            </button>
+        <div className="rs-section-header">
+          <div>
+            <div className="rs-section-header-title">Commission Breakdown</div>
+            <div className="rs-section-header-description">
+              {breakdown.length} closed deal
+              {breakdown.length !== 1 ? "s" : ""}
+            </div>
           </div>
-          {showPayoutMessage && (
-            <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+          <button
+            onClick={() => setShowPayoutModal(true)}
+            disabled={showPayoutMessage}
+            className="rs-btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Send className="w-3.5 h-3.5" />
+            Request Payout
+          </button>
+        </div>
+        {showPayoutMessage && (
+          <div className="px-5 pt-4">
+            <div className="rs-callout rs-callout--info">
               {hasApprovedCommissions ? (
-                <p className="text-blue-400 text-sm flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  Your commission has been approved. Payment will be processed within 8–10 business days.
-                </p>
+                <>
+                  <Clock className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>
+                    Your commission has been approved. Payment will be
+                    processed within 8–10 business days.
+                  </span>
+                </>
               ) : hasAnyCommissions ? (
-                <p className="text-blue-400 text-sm flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  All commissions have been paid out.
-                </p>
+                <>
+                  <Clock className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>All commissions have been paid out.</span>
+                </>
               ) : (
-                <p className="text-blue-400 text-sm flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4" />
-                  No commissions ready for payout yet. Close a deal and submit your order to get started.
-                </p>
+                <>
+                  <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>
+                    No commissions ready for payout yet. Close a deal and
+                    submit your order to get started.
+                  </span>
+                </>
               )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-[#0a0a0b]">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deal / Client</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deal Value</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rate</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Commission</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {breakdown.map((item: any) => {
-                const badge = getStatusBadge(item.status);
-                return (
-                  <tr key={item.dealId} className="hover:bg-white/5 transition-colors">
-                    <td className="px-6 py-4">
-                      <div>
-                        <p className="text-white font-medium">{item.clientName}</p>
-                        {item.clientCompany && (
-                          <p className="text-gray-500 text-sm">{item.clientCompany}</p>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-white">
-                      {formatCurrency(item.dealValue)}
-                    </td>
-                    <td className="px-6 py-4 text-gray-400">
-                      {item.commissionRate}%
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-emerald-400 font-medium">
-                        {formatCurrency(item.commissionAmount)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <StatusBadge tone={item.status === "paid" || item.status === "approved" ? "paid" : item.status === "pending" ? "pending" : "neutral"}>
-                        {badge.label}
-                      </StatusBadge>
-                    </td>
-                  </tr>
-                );
-              })}
-              {breakdown.length === 0 && (
+          {breakdown.length === 0 ? (
+            <div className="rs-empty-state py-16">
+              <div className="rs-empty-state-icon">
+                <DollarSign className="w-5 h-5" />
+              </div>
+              <div className="rs-empty-state-title">No closed deals yet</div>
+              <div className="rs-empty-state-description">
+                Start closing deals to earn commissions.
+              </div>
+            </div>
+          ) : (
+            <table className="rs-table">
+              <thead>
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                    No closed deals yet. Start closing deals to earn commissions!
-                  </td>
+                  <th>Deal / Client</th>
+                  <th>Deal Value</th>
+                  <th>Rate</th>
+                  <th>Commission</th>
+                  <th>Status</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {breakdown.map((item: any) => {
+                  const badge = getStatusBadge(item.status);
+                  return (
+                    <tr key={item.dealId}>
+                      <td>
+                        <div>
+                          <div className="font-medium text-white">
+                            {item.clientName}
+                          </div>
+                          {item.clientCompany && (
+                            <div
+                              className="text-[11px]"
+                              style={{ color: "var(--rs-text-muted)" }}
+                            >
+                              {item.clientCompany}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="rs-stat">{formatCurrency(item.dealValue)}</td>
+                      <td style={{ color: "var(--rs-text-secondary)" }}>
+                        {item.commissionRate}%
+                      </td>
+                      <td
+                        className="font-medium rs-stat"
+                        style={{ color: "var(--rs-success)" }}
+                      >
+                        {formatCurrency(item.commissionAmount)}
+                      </td>
+                      <td>
+                        <StatusBadge tone={badge.tone}>{badge.label}</StatusBadge>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
       </motion.div>
 
       {/* Payout History */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="rs-card rounded-2xl border border-white/5 overflow-hidden"
+        transition={{ delay: 0.2 }}
+        className="rs-card overflow-hidden"
       >
-        <div className="p-6 border-b border-white/5">
-          <h2 className="text-lg font-semibold text-white">Payout History</h2>
+        <div className="rs-section-header">
+          <div>
+            <div className="rs-section-header-title">Payout History</div>
+            <div className="rs-section-header-description">
+              {userPayouts.length} request{userPayouts.length !== 1 ? "s" : ""}
+            </div>
+          </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-[#0a0a0b]">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Requested</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reference</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {userPayouts.map((payout: any) => {
-                let statusLabel = payout.status;
-                let statusClass = "text-gray-400";
-                if (payout.status === "paid") statusClass = "text-green-400";
-                if (payout.status === "processing" || payout.status === "requested") statusClass = "text-amber-400";
-                if (payout.status === "rejected") statusClass = "text-red-400";
-                
-                return (
-                  <tr key={payout._id} className="hover:bg-white/5 transition-colors">
-                    <td className="px-6 py-4 text-gray-400">
-                      {formatDate(payout.requestedAt)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-white font-semibold">{formatCurrency(payout.amount)}</span>
-                    </td>
-                    <td className={`px-6 py-4 capitalize ${statusClass}`}>
-                      {statusLabel}
-                    </td>
-                    <td className="px-6 py-4 text-gray-500 font-mono text-sm">
-                      {payout.referenceNumber || "-"}
-                    </td>
-                  </tr>
-                );
-              })}
-              {userPayouts.length === 0 && (
+          {userPayouts.length === 0 ? (
+            <div className="rs-empty-state py-16">
+              <div className="rs-empty-state-icon">
+                <Wallet className="w-5 h-5" />
+              </div>
+              <div className="rs-empty-state-title">No payout requests yet</div>
+              <div className="rs-empty-state-description">
+                Use Request Payout above when you have an approved balance.
+              </div>
+            </div>
+          ) : (
+            <table className="rs-table">
+              <thead>
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
-                    No payout requests yet.
-                  </td>
+                  <th>Date Requested</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Reference</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {userPayouts.map((payout: any) => {
+                  const tone =
+                    payout.status === "paid"
+                      ? "paid"
+                      : payout.status === "processing" ||
+                          payout.status === "requested"
+                        ? "pending"
+                        : payout.status === "rejected"
+                          ? "rejected"
+                          : "neutral";
+                  return (
+                    <tr key={payout._id}>
+                      <td style={{ color: "var(--rs-text-secondary)" }}>
+                        {formatDate(payout.requestedAt)}
+                      </td>
+                      <td className="font-medium rs-stat text-white">
+                        {formatCurrency(payout.amount)}
+                      </td>
+                      <td>
+                        <span className="capitalize" style={{ color: "var(--rs-text-primary)" }}>
+                          {payout.status}
+                        </span>
+                      </td>
+                      <td
+                        className="font-mono text-[11px]"
+                        style={{ color: "var(--rs-text-muted)" }}
+                      >
+                        {payout.referenceNumber || "—"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
       </motion.div>
 
@@ -432,7 +486,7 @@ export default function CommissionsPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+            className="rs-modal-backdrop"
             onClick={() => setShowPayoutModal(false)}
           >
             <motion.div
@@ -440,66 +494,110 @@ export default function CommissionsPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="rs-card rounded-2xl p-6 max-w-md w-full border border-[var(--rs-border)]"
+              className="rs-modal max-w-md w-full"
             >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-white">Request Payout</h3>
-                <button 
+              <div className="rs-modal-header">
+                <h3 className="text-base font-semibold text-white">Request Payout</h3>
+                <button
                   onClick={() => setShowPayoutModal(false)}
-                  className="text-gray-400 hover:text-white"
+                  className="p-1 rounded-md hover:bg-white/5 transition-colors"
+                  style={{ color: "var(--rs-text-secondary)" }}
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="p-4 bg-[var(--rs-info)]/10 border border-[var(--rs-info)]/20 rounded-xl mb-6">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-400">Available Balance</span>
-                  <span className="text-white font-bold text-xl">{formatCurrency(summary.pendingBalance)}</span>
+              <div className="rs-modal-body space-y-4">
+                <div
+                  className="p-4 rounded-xl flex items-center justify-between"
+                  style={{
+                    background: "rgba(59,130,246,0.08)",
+                    border: "1px solid rgba(59,130,246,0.20)",
+                  }}
+                >
+                  <span
+                    className="text-sm"
+                    style={{ color: "var(--rs-text-secondary)" }}
+                  >
+                    Available Balance
+                  </span>
+                  <span className="text-lg font-semibold text-white rs-stat">
+                    {formatCurrency(summary.pendingBalance)}
+                  </span>
                 </div>
-              </div>
 
-              <div className="space-y-4">
                 <div>
-                  <label className="block text-gray-400 text-sm mb-2">Amount (Min R500)</label>
+                  <label
+                    className="block text-xs font-medium mb-1.5"
+                    style={{ color: "var(--rs-text-secondary)" }}
+                  >
+                    Amount (Min R500)
+                  </label>
                   <input
                     type="number"
                     placeholder="Enter amount"
                     value={payoutAmount}
                     onChange={(e) => setPayoutAmount(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                    className="rs-input rs-input--textarea"
+                    style={{ height: 42 }}
                   />
                 </div>
 
-                <div className="p-4 bg-white/5 rounded-xl space-y-2">
-                  <p className="text-gray-400 text-sm">Payout to:</p>
-                  <p className="text-white font-medium">{currentAffiliate.bankName || "FNB"}</p>
-                  <p className="text-gray-400 text-sm">Account: {currentAffiliate.accountNumber ? "****" + currentAffiliate.accountNumber.slice(-4) : "Not set"}</p>
-                  <p className="text-gray-400 text-sm">Type: {currentAffiliate.accountType || "business"}</p>
+                <div
+                  className="p-4 rounded-xl space-y-1.5"
+                  style={{
+                    background: "var(--rs-bg-base)",
+                    border: "1px solid var(--rs-border)",
+                  }}
+                >
+                  <div
+                    className="text-[11px] uppercase tracking-wider"
+                    style={{ color: "var(--rs-text-muted)" }}
+                  >
+                    Payout to
+                  </div>
+                  <div className="text-sm font-medium text-white">
+                    {currentAffiliate.bankName || "FNB"}
+                  </div>
+                  <div
+                    className="text-xs"
+                    style={{ color: "var(--rs-text-secondary)" }}
+                  >
+                    Account:{" "}
+                    {currentAffiliate.accountNumber
+                      ? "****" + currentAffiliate.accountNumber.slice(-4)
+                      : "Not set"}
+                  </div>
+                  <div
+                    className="text-xs"
+                    style={{ color: "var(--rs-text-secondary)" }}
+                  >
+                    Type: {currentAffiliate.accountType || "business"}
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={() => setShowPayoutModal(false)}
-                  className="flex-1 py-3 border border-white/10 text-gray-300 rounded-xl hover:bg-white/5 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleRequestPayout}
-                  disabled={requesting || !payoutAmount}
-                  className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
-                >
-                  {requesting ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4" />
-                      Request
-                    </>
-                  )}
-                </button>
+                <div className="flex gap-2 pt-1">
+                  <button
+                    onClick={() => setShowPayoutModal(false)}
+                    className="rs-btn-ghost flex-1 justify-center"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleRequestPayout}
+                    disabled={requesting || !payoutAmount}
+                    className="rs-btn-primary flex-1 justify-center disabled:opacity-50"
+                  >
+                    {requesting ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <Send className="w-3.5 h-3.5" />
+                        Request
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </motion.div>
           </motion.div>
