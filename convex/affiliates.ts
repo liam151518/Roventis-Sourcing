@@ -186,3 +186,80 @@ export const updateAffiliateTier = mutation({
     return { success: true, previousTier: affiliate.tier, newTier: args.newTier };
   },
 });
+
+// ========== COACHING COURSE PROGRESS ==========
+//
+// The "Roventis Behavioral Sales Manual" (coaching course) lives in
+// src/components/coaching/coachingContent.ts. The client marks
+// lessons complete one-by-one. Once every lesson ID is in the
+// completed set, the course is considered done and the user can
+// claim leads. The lead-claim gate in convex/leads.ts enforces this.
+
+// Mark a single coaching lesson as complete for the current affiliate.
+// Idempotent - marking an already-complete lesson is a no-op.
+export const markCoachingLessonComplete = mutation({
+  args: {
+    clerkUserId: v.string(),
+    lessonId: v.string(),
+    totalLessonCount: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const byClerkId = await ctx.db
+      .query("affiliates")
+      .withIndex("by_clerk_id")
+      .filter((q) => q.eq(q.field("clerkUserId"), args.clerkUserId))
+      .first();
+
+    if (!byClerkId) {
+      throw new Error("Affiliate not found");
+    }
+
+    const completed: string[] = (byClerkId as any).coachingCompletedLessonIds ?? [];
+    if (completed.includes(args.lessonId)) {
+      return { success: true, alreadyComplete: true, courseComplete: completed.length >= args.totalLessonCount };
+    }
+
+    const next = Array.from(new Set([...completed, args.lessonId]));
+    const patch: Record<string, any> = { coachingCompletedLessonIds: next };
+
+    if (next.length >= args.totalLessonCount) {
+      patch.coachingCourseCompletedAt = Date.now();
+      // Once coaching is done, also lift the training gate so the
+      // user can claim leads. The DB training modules remain as
+      // optional additional training on top of this.
+      patch.isApprovedToSell = true;
+    }
+
+    await ctx.db.patch(byClerkId._id, patch);
+    return {
+      success: true,
+      alreadyComplete: false,
+      courseComplete: next.length >= args.totalLessonCount,
+    };
+  },
+});
+
+// Reset coaching progress (e.g. admin wants a user to retake the
+// course). Currently unused on the client; kept for future tooling.
+export const resetCoachingProgress = mutation({
+  args: { clerkUserId: v.string() },
+  handler: async (ctx, args) => {
+    const byClerkId = await ctx.db
+      .query("affiliates")
+      .withIndex("by_clerk_id")
+      .filter((q) => q.eq(q.field("clerkUserId"), args.clerkUserId))
+      .first();
+
+    if (!byClerkId) {
+      throw new Error("Affiliate not found");
+    }
+
+    await ctx.db.patch(byClerkId._id, {
+      coachingCompletedLessonIds: [],
+      coachingCourseCompletedAt: undefined,
+      // Don't unset isApprovedToSell here - that's a separate gate
+      // that may have been earned via DB training modules too.
+    });
+    return { success: true };
+  },
+});

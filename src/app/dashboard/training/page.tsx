@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   GraduationCap, 
   CheckCircle, 
@@ -11,11 +11,14 @@ import {
   BookOpen,
   Award,
   Video,
-  FileText
+  FileText,
+  Brain,
+  X
 } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@clerk/nextjs";
+import CoachingCourse from "@/components/coaching/CoachingCourse";
 
 export default function TrainingPage() {
   const { userId } = useAuth();
@@ -25,6 +28,7 @@ export default function TrainingPage() {
     { clerkUserId: userId || undefined }
   );
   const [selectedModule, setSelectedModule] = useState<any>(null);
+  const [showCoaching, setShowCoaching] = useState(false);
   
   if (!trainingModules || !currentAffiliate) {
     return (
@@ -35,7 +39,11 @@ export default function TrainingPage() {
   }
 
   const completedModules = currentAffiliate.trainingCompleted ? trainingModules.length : 0;
-  const progress = trainingModules.length > 0 ? Math.round((completedModules / trainingModules.length) * 100) : 0;
+  // Total items = coaching course (1) + DB training modules
+  const totalItems = 1 + trainingModules.length;
+  const isCoachingDone = typeof currentAffiliate.coachingCourseCompletedAt === "number";
+  const completedItems = (isCoachingDone ? 1 : 0) + completedModules;
+  const progress = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
 
   const getModuleIcon = (content: string) => {
     if (content.includes("video") || content.includes("Watch")) return Video;
@@ -71,7 +79,7 @@ export default function TrainingPage() {
             </div>
             <div>
               <h2 className="text-lg font-semibold text-white">Your Progress</h2>
-              <p className="text-gray-500 text-sm">{completedModules} of {trainingModules.length} modules completed</p>
+              <p className="text-gray-500 text-sm">{completedItems} of {totalItems} programs completed</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -84,6 +92,53 @@ export default function TrainingPage() {
               />
             </div>
             <span className="text-2xl font-bold text-white">{progress}%</span>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Physical Test Program - mandatory sales coaching, pre-software */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        onClick={() => setShowCoaching(true)}
+        className={`group rs-card p-6 cursor-pointer hover:border-white/10 transition-all hover:shadow-lg hover:shadow-black/20 ${
+          isCoachingDone ? "opacity-75" : ""
+        }`}
+      >
+        <div className="flex items-start justify-between mb-4">
+          <div className={`w-14 h-14 rounded-[14px] flex items-center justify-center ${
+            isCoachingDone ? "bg-[var(--rs-success)]/10" : "bg-violet-500/10"
+          }`}>
+            {isCoachingDone ? (
+              <CheckCircle className="w-7 h-7 text-[var(--rs-success)]" />
+            ) : (
+              <Brain className="w-7 h-7 text-violet-400" />
+            )}
+          </div>
+          <span className="px-2 py-1 bg-[var(--rs-danger)]/10 text-[var(--rs-danger)] text-xs rounded-full">Required</span>
+        </div>
+
+        <div className="flex items-center gap-2 text-xs text-violet-400 uppercase tracking-wider mb-2 font-medium">
+          <span>Physical Test Program</span>
+        </div>
+        <h3 className="text-lg font-semibold text-white group-hover:text-violet-400 transition-colors mb-2">
+          The Roventis Behavioral Sales Manual
+        </h3>
+        <p className="text-gray-500 text-sm mb-4 line-clamp-2">
+          A behaviorally engineered framework for high-ticket sourcing. Master the psychology behind every closed deal.
+        </p>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-gray-500 text-sm">
+            <Clock className="w-4 h-4" />
+            60+ min
+          </div>
+          <div className={`flex items-center gap-1 text-sm font-medium ${
+            isCoachingDone ? "text-emerald-400" : "text-violet-400"
+          }`}>
+            {isCoachingDone ? "Completed" : "Start"}
+            <ChevronRight className="w-4 h-4" />
           </div>
         </div>
       </motion.div>
@@ -210,6 +265,38 @@ export default function TrainingPage() {
           </motion.div>
         </motion.div>
       )}
+
+      {/* Coaching course modal - the "Physical Test Program" */}
+      <AnimatePresence>
+        {showCoaching && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 overflow-y-auto"
+            onClick={() => setShowCoaching(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="min-h-screen p-4 md:p-8 max-w-5xl mx-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-end mb-4">
+                <button
+                  onClick={() => setShowCoaching(false)}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#141417] border border-white/10 rounded-xl text-white hover:border-white/20 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                  Close
+                </button>
+              </div>
+              <CoachingCourse />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

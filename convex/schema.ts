@@ -28,6 +28,11 @@ export default defineSchema({
     trainingCompleted: v.boolean(),
     trainingScore: v.optional(v.number()),
     isApprovedToSell: v.optional(v.boolean()), // Must complete training to sell
+    // Coaching course ("The Roventis Behavioral Sales Manual") progress.
+    // Each completed lesson ID is appended. The course is complete when
+    // every lesson ID in coachingContent.ts is in this set.
+    coachingCompletedLessonIds: v.optional(v.array(v.string())),
+    coachingCourseCompletedAt: v.optional(v.number()),
     totalSales: v.number(),
     totalCommissionEarned: v.number(),
     totalCommissionPaid: v.number(),

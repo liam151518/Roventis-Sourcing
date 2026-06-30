@@ -22,11 +22,9 @@ import { api } from "@/convex/_generated/api";
 import { useAuth } from "@clerk/nextjs";
 import { formatDate } from "@/lib/utils";
 import productLibraryData from "@/data/productLibrary.json";
-import CoachingCourse from "@/components/coaching/CoachingCourse";
 import ScriptsLibrary from "@/components/scripts/ScriptsLibrary";
 
 const categories = [
-  { id: "coaching_sheet", label: "Coaching", icon: FileText },
   { id: "catalog", label: "Catalogs", icon: Presentation },
   { id: "price_list", label: "Prices", icon: FileText },
   { id: "product_images", label: "Products", icon: Package },
@@ -47,7 +45,6 @@ const getFileIcon = (type: string) => {
 
 const getCategoryColor = (category: string) => {
   switch (category) {
-    case "coaching_sheet": return "bg-blue-500/10 text-blue-400 border-blue-500/20";
     case "catalog": return "bg-purple-500/10 text-purple-400 border-purple-500/20";
     case "price_list": return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
     case "script": return "bg-amber-500/10 text-amber-400 border-amber-500/20";
@@ -71,7 +68,7 @@ export default function ResourcesPage() {
   );
   const products = productLibraryData.products || [];
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("coaching_sheet");
+  const [selectedCategory, setSelectedCategory] = useState("catalog");
   const [previewResource, setPreviewResource] = useState<any>(null);
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
 
@@ -279,18 +276,13 @@ export default function ResourcesPage() {
         </motion.div>
       )}
 
-      {/* COACHING SECTION */}
-      {selectedCategory === "coaching_sheet" && (
-        <CoachingCourse />
-      )}
-
       {/* SCRIPTS SECTION */}
       {selectedCategory === "script" && (
         <ScriptsLibrary />
       )}
 
       {/* RESOURCES GRID (for other categories) */}
-      {selectedCategory !== "coaching_sheet" && selectedCategory !== "script" && selectedCategory !== "price_list" && selectedCategory !== "product_images" && (
+      {selectedCategory !== "script" && selectedCategory !== "price_list" && selectedCategory !== "product_images" && (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredResources.map((resource: any, index: number) => {
             const FileIcon = getFileIcon(resource.fileType);
@@ -342,7 +334,7 @@ export default function ResourcesPage() {
       )}
 
       {/* No results message */}
-      {selectedCategory !== "coaching_sheet" && selectedCategory !== "script" && selectedCategory !== "price_list" && selectedCategory !== "product_images" && filteredResources.length === 0 && (
+      {selectedCategory !== "script" && selectedCategory !== "price_list" && selectedCategory !== "product_images" && filteredResources.length === 0 && (
         <div className="text-center py-16">
           <File className="w-12 h-12 text-gray-600 mx-auto mb-4" />
           <p className="text-gray-500">No resources found</p>

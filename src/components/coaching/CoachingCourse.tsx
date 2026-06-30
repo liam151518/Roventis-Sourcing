@@ -1,70 +1,77 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, CheckCircle2, Circle, ChevronLeft, ChevronRight } from "lucide-react";
+import { useMutation, useQuery } from "convex/react";
+import { useAuth } from "@clerk/nextjs";
+import { api } from "@/convex/_generated/api";
 import { courseTitle, courseSubtitle, courseAttribution, lessons } from "./coachingContent";
 import LessonView from "./LessonView";
 
-const STORAGE_KEY = "roventis_coaching_progress";
-
-interface ProgressData {
-  completedLessonIds: string[];
-}
-
 export default function CoachingCourse() {
-  const [completedLessonIds, setCompletedLessonIds] = useState<string[]>([]);
+  const { userId, isLoaded: isAuthLoaded } = useAuth();
+  const currentAffiliate = useQuery(api.affiliates.getCurrentAffiliate, { clerkUserId: userId || undefined });
+  const markComplete = useMutation(api.affiliates.markCoachingLessonComplete);
+
+  const completedLessonIds = useMemo(
+    () => (currentAffiliate?.coachingCompletedLessonIds ?? []) as string[],
+    [currentAffiliate]
+  );
+  const isCourseCompleted = typeof currentAffiliate?.coachingCourseCompletedAt === "number";
+
   const [currentLessonId, setCurrentLessonId] = useState<string>(lessons[0]?.id || "");
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [pendingComplete, setPendingComplete] = useState<Set<string>>(new Set());
 
+  // On first load, jump to the first incomplete lesson (or first if all done).
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const data: ProgressData = JSON.parse(stored);
-        setCompletedLessonIds(data.completedLessonIds || []);
-        const firstIncomplete = lessons.find(
-          (l) => !data.completedLessonIds?.includes(l.id)
-        );
-        if (firstIncomplete) {
-          setCurrentLessonId(firstIncomplete.id);
-        } else if (lessons.length > 0) {
-          setCurrentLessonId(lessons[0].id);
-        }
-      }
-    } catch (e) {
-      console.error("Failed to load progress:", e);
+    if (!isAuthLoaded || !currentAffiliate) return;
+    const firstIncomplete = lessons.find((l) => !completedLessonIds.includes(l.id));
+    if (firstIncomplete) {
+      setCurrentLessonId(firstIncomplete.id);
+    } else if (lessons.length > 0) {
+      setCurrentLessonId(lessons[0].id);
     }
-    setIsLoaded(true);
-  }, []);
-
-  const saveProgress = useCallback((completed: string[]) => {
-    try {
-      const data: ProgressData = { completedLessonIds: completed };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    } catch (e) {
-      console.error("Failed to save progress:", e);
-    }
-  }, []);
+  }, [isAuthLoaded, currentAffiliate, completedLessonIds]);
 
   const handleSelectLesson = (lessonId: string) => {
     setCurrentLessonId(lessonId);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleComplete = (lessonId: string) => {
-    if (!completedLessonIds.includes(lessonId)) {
-      const updated = [...completedLessonIds, lessonId];
-      setCompletedLessonIds(updated);
-      saveProgress(updated);
-    }
-    const currentIndex = lessons.findIndex((l) => l.id === lessonId);
-    if (currentIndex < lessons.length - 1) {
-      setTimeout(() => {
-        setCurrentLessonId(lessons[currentIndex + 1].id);
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }, 1500);
-    }
-  };
+  const handleComplete = useCallback(
+    async (lessonId: string) => {
+      if (!userId) return;
+      if (completedLessonIds.includes(lessonId) || pendingComplete.has(lessonId)) return;
+
+      // Optimistic UI - mark as in-flight, then patch locally after server confirm.
+      setPendingComplete((prev) => new Set(prev).add(lessonId));
+
+      try {
+        await markComplete({
+          clerkUserId: userId,
+          lessonId,
+          totalLessonCount: lessons.length,
+        });
+      } catch (err) {
+        console.error("Failed to mark coaching lesson complete:", err);
+      } finally {
+        setPendingComplete((prev) => {
+          const next = new Set(prev);
+          next.delete(lessonId);
+          return next;
+        });
+      }
+
+      const currentIndex = lessons.findIndex((l) => l.id === lessonId);
+      if (currentIndex < lessons.length - 1) {
+        setTimeout(() => {
+          setCurrentLessonId(lessons[currentIndex + 1].id);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }, 1500);
+      }
+    },
+    [userId, completedLessonIds, pendingComplete, markComplete]
+  );
 
   const currentLesson = lessons.find((l) => l.id === currentLessonId);
   const currentIndex = lessons.findIndex((l) => l.id === currentLessonId);
@@ -81,7 +88,7 @@ export default function CoachingCourse() {
     }
   };
 
-  if (!isLoaded) {
+  if (!isAuthLoaded || !currentAffiliate) {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-violet-500"></div>
@@ -91,7 +98,6 @@ export default function CoachingCourse() {
 
   const completedCount = lessons.filter((l) => completedLessonIds.includes(l.id)).length;
   const progress = (completedCount / lessons.length) * 100;
-  const isCourseCompleted = completedCount === lessons.length;
 
   return (
     <div className="space-y-6">
@@ -99,7 +105,7 @@ export default function CoachingCourse() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rs-card-[14px] border border-white/5 p-8"
+        className="rs-card border border-white/5 p-8"
       >
         <span className="rs-overline">BEHAVIORAL SALES COURSE</span>
         {isCourseCompleted && (
