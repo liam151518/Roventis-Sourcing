@@ -271,16 +271,16 @@ export default function AdminLeadsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="rs-page-header">
         <div>
-          <p className="rs-overline">Admin</p>
-          <h1 className="rs-page-title">Lead Management</h1>
-          <p className="text-[var(--rs-text-secondary)] text-sm mt-1">Manage leads, bulk upload, and track activity</p>
+          <span className="rs-overline">Admin</span>
+          <h1 className="rs-page-title mt-1">Lead Management</h1>
+          <p className="rs-page-subtitle">Manage leads, bulk upload, and track activity</p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-white/10">
+      <div className="flex gap-2 border-b" style={{ borderColor: "var(--rs-border)" }}>
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -289,15 +289,17 @@ export default function AdminLeadsPage() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors relative ${
-                isActive ? "text-white" : "text-gray-400 hover:text-white"
+                isActive ? "text-white" : ""
               }`}
+              style={isActive ? undefined : { color: "var(--rs-text-secondary)" }}
             >
               <Icon className="w-4 h-4" />
               {tab.label}
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--rs-accent)]"
+                  className="absolute bottom-0 left-0 right-0 h-0.5"
+                  style={{ background: "var(--rs-accent)" }}
                 />
               )}
             </button>
@@ -317,16 +319,16 @@ export default function AdminLeadsPage() {
           >
             {/* Template download */}
             <div className="rs-card p-6">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-4">
                 <div>
                   <h3 className="text-white font-semibold">CSV Template</h3>
-                  <p className="text-gray-400 text-sm mt-1">
+                  <p className="text-sm mt-1" style={{ color: "var(--rs-text-secondary)" }}>
                     Download this template and fill in your leads data
                   </p>
                 </div>
                 <button
                   onClick={handleDownloadTemplate}
-                  className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl text-sm font-medium transition-colors"
+                  className="rs-btn-ghost flex items-center gap-2 px-4 py-2 text-sm"
                 >
                   <Download className="w-4 h-4" />
                   Download Template
@@ -337,7 +339,8 @@ export default function AdminLeadsPage() {
             {/* File drop zone */}
             <div
               onClick={() => document.getElementById("fileInput")?.click()}
-              className="rs-card border-2 border-dashed border-white/10 hover:border-[var(--rs-accent)]/50 transition-colors cursor-pointer text-center"
+              className="rs-card border-2 border-dashed p-10 transition-colors cursor-pointer text-center"
+              style={{ borderColor: "var(--rs-border)" }}
             >
               <input
                 id="fileInput"
@@ -351,19 +354,19 @@ export default function AdminLeadsPage() {
               />
               {uploadedFile ? (
                 <div className="flex items-center justify-center gap-3">
-                  <FileSpreadsheet className="w-10 h-10 text-green-400" />
+                  <FileSpreadsheet className="w-10 h-10" style={{ color: "rgb(74,222,128)" }} />
                   <div className="text-left">
                     <p className="text-white font-medium">{uploadedFile.name}</p>
-                    <p className="text-gray-400 text-sm">{parsedLeads.length} leads detected</p>
+                    <p className="text-sm" style={{ color: "var(--rs-text-secondary)" }}>{parsedLeads.length} leads detected</p>
                   </div>
                 </div>
               ) : (
                 <>
-                  <Upload className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+                  <Upload className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--rs-text-muted)" }} />
                   <p className="text-white font-medium">
                     Drop your CSV or Excel file here
                   </p>
-                  <p className="text-gray-400 text-sm mt-1">
+                  <p className="text-sm mt-1" style={{ color: "var(--rs-text-secondary)" }}>
                     or click to browse
                   </p>
                 </>
@@ -380,7 +383,7 @@ export default function AdminLeadsPage() {
                   <button
                     onClick={handleUploadBatch}
                     disabled={uploading}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-600 text-white rounded-xl text-sm font-medium transition-colors"
+                    className="rs-btn-primary flex items-center gap-2 text-sm disabled:opacity-60"
                   >
                     {uploading ? (
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -393,41 +396,42 @@ export default function AdminLeadsPage() {
 
                 <div className="rs-card overflow-hidden">
                   <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="rs-table w-full">
                       <thead>
-                        <tr className="border-b border-white/5">
-                          <th className="text-left p-4 text-gray-400 text-sm font-medium">Company</th>
-                          <th className="text-left p-4 text-gray-400 text-sm font-medium">Contact</th>
-                          <th className="text-left p-4 text-gray-400 text-sm font-medium">Location</th>
-                          <th className="text-left p-4 text-gray-400 text-sm font-medium">Industry</th>
-                          <th className="text-left p-4 text-gray-400 text-sm font-medium">Pool</th>
-                          <th className="text-left p-4 text-gray-400 text-sm font-medium">Budget</th>
+                        <tr>
+                          <th>Company</th>
+                          <th>Contact</th>
+                          <th>Location</th>
+                          <th>Industry</th>
+                          <th>Pool</th>
+                          <th>Budget</th>
                         </tr>
                       </thead>
                       <tbody>
                         {parsedLeads.slice(0, 20).map((lead, i) => (
-                          <tr key={i} className="border-b border-white/5">
-                            <td className="p-4 text-white">{lead.companyName}</td>
-                            <td className="p-4 text-gray-300">{lead.contactName}</td>
-                            <td className="p-4 text-gray-300">
+                          <tr key={i}>
+                            <td>{lead.companyName}</td>
+                            <td>{lead.contactName}</td>
+                            <td>
                               {lead.city}
                               {lead.province && `, ${lead.province}`}
                             </td>
-                            <td className="p-4 text-gray-300">{lead.industry}</td>
-                            <td className="p-4">
+                            <td>{lead.industry}</td>
+                            <td>
                               <span
-                                className={`px-2 py-1 rounded text-xs font-medium ${
+                                className="rs-pill"
+                                style={
                                   lead.poolTier === "premium"
-                                    ? "bg-[var(--rs-info)]/10 text-[var(--rs-info)]"
+                                    ? { background: "rgba(124,58,237,0.10)", color: "var(--rs-text-accent)", borderColor: "rgba(124,58,237,0.20)" }
                                     : lead.poolTier === "priority"
-                                    ? "bg-[var(--rs-info)]/10 text-[var(--rs-info)]"
-                                    : "bg-gray-500/10 text-gray-400"
-                                }`}
+                                    ? { background: "rgba(59,130,246,0.10)", color: "rgb(96,165,250)", borderColor: "rgba(59,130,246,0.20)" }
+                                    : { background: "rgba(255,255,255,0.04)", color: "var(--rs-text-secondary)", borderColor: "var(--rs-border)" }
+                                }
                               >
                                 {lead.poolTier}
                               </span>
                             </td>
-                            <td className="p-4 text-gray-300">
+                            <td>
                               {lead.estimatedBudget && formatCurrency(lead.estimatedBudget)}
                             </td>
                           </tr>
@@ -436,7 +440,7 @@ export default function AdminLeadsPage() {
                     </table>
                   </div>
                   {parsedLeads.length > 20 && (
-                    <div className="p-4 text-center text-gray-400 text-sm">
+                    <div className="p-4 text-center text-sm" style={{ color: "var(--rs-text-secondary)" }}>
                       ...and {parsedLeads.length - 20} more leads
                     </div>
                   )}
@@ -446,14 +450,14 @@ export default function AdminLeadsPage() {
 
             {/* Result */}
             {uploadResult && (
-              <div className="rs-card p-6" style={{ borderColor: 'var(--rs-success)', borderWidth: 1 }}>
+              <div className="rs-callout rs-callout--success">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-green-500/10 rounded-xl flex items-center justify-center">
-                    <Check className="w-5 h-5 text-green-400" />
+                  <div className="rs-icon-tile rs-icon-tile--success">
+                    <Check className="w-5 h-5" />
                   </div>
                   <div>
                     <p className="text-white font-medium">Upload Complete</p>
-                    <p className="text-gray-400 text-sm">
+                    <p className="text-sm" style={{ color: "var(--rs-text-secondary)" }}>
                       {uploadResult.inserted} inserted, {uploadResult.skipped} duplicates skipped
                     </p>
                   </div>
@@ -472,70 +476,72 @@ export default function AdminLeadsPage() {
             className="space-y-4"
           >
             {/* Filters */}
-            <div className="flex flex-wrap gap-3">
-              <div className="flex-1 min-w-[200px]">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                  <input
-                    type="text"
-                    placeholder="Search leads..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 bg-[#141417] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
-                  />
+            <div className="rs-card p-4">
+              <div className="flex flex-wrap gap-3">
+                <div className="flex-1 min-w-[200px]">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--rs-text-muted)" }} />
+                    <input
+                      type="text"
+                      placeholder="Search leads..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="rs-input w-full pl-10"
+                    />
+                  </div>
                 </div>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="rs-input md:w-44"
+                >
+                  <option value="">All Status</option>
+                  <option value="available">Available</option>
+                  <option value="claimed">Claimed</option>
+                  <option value="converted">Converted</option>
+                  <option value="expired">Expired</option>
+                  <option value="retired">Retired</option>
+                </select>
+                <select
+                  value={poolFilter}
+                  onChange={(e) => setPoolFilter(e.target.value)}
+                  className="rs-input md:w-44"
+                >
+                  <option value="">All Pools</option>
+                  <option value="standard">Standard</option>
+                  <option value="priority">Priority</option>
+                  <option value="premium">Premium</option>
+                </select>
               </div>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-2 bg-[#141417] border border-white/10 rounded-xl text-white focus:outline-none focus:border-blue-500"
-              >
-                <option value="">All Status</option>
-                <option value="available">Available</option>
-                <option value="claimed">Claimed</option>
-                <option value="converted">Converted</option>
-                <option value="expired">Expired</option>
-                <option value="retired">Retired</option>
-              </select>
-              <select
-                value={poolFilter}
-                onChange={(e) => setPoolFilter(e.target.value)}
-                className="px-4 py-2 bg-[#141417] border border-white/10 rounded-xl text-white focus:outline-none focus:border-blue-500"
-              >
-                <option value="">All Pools</option>
-                <option value="standard">Standard</option>
-                <option value="priority">Priority</option>
-                <option value="premium">Premium</option>
-              </select>
             </div>
 
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="rs-card p-4">
-                <p className="text-gray-400 text-sm">Total</p>
-                <p className="text-2xl font-bold text-white">{allLeads?.length || 0}</p>
+                <p className="text-xs font-medium tracking-wide uppercase" style={{ color: "var(--rs-text-muted)" }}>Total</p>
+                <p className="rs-stat text-2xl text-white mt-1">{allLeads?.length || 0}</p>
               </div>
               <div className="rs-card p-4">
-                <p className="text-gray-400 text-sm">Available</p>
-                <p className="text-2xl font-bold text-emerald-400">
+                <p className="text-xs font-medium tracking-wide uppercase" style={{ color: "var(--rs-text-muted)" }}>Available</p>
+                <p className="rs-stat text-2xl mt-1" style={{ color: "rgb(74,222,128)" }}>
                   {allLeads?.filter((l) => l.status === "available").length || 0}
                 </p>
               </div>
               <div className="rs-card p-4">
-                <p className="text-gray-400 text-sm">Claimed</p>
-                <p className="text-2xl font-bold text-blue-400">
+                <p className="text-xs font-medium tracking-wide uppercase" style={{ color: "var(--rs-text-muted)" }}>Claimed</p>
+                <p className="rs-stat text-2xl mt-1" style={{ color: "rgb(96,165,250)" }}>
                   {allLeads?.filter((l) => l.status === "claimed").length || 0}
                 </p>
               </div>
               <div className="rs-card p-4">
-                <p className="text-gray-400 text-sm">Converted</p>
-                <p className="text-2xl font-bold text-purple-400">
+                <p className="text-xs font-medium tracking-wide uppercase" style={{ color: "var(--rs-text-muted)" }}>Converted</p>
+                <p className="rs-stat text-2xl mt-1" style={{ color: "var(--rs-text-accent)" }}>
                   {allLeads?.filter((l) => l.status === "converted").length || 0}
                 </p>
               </div>
               <div className="rs-card p-4">
-                <p className="text-gray-400 text-sm">Retired</p>
-                <p className="text-2xl font-bold text-gray-400">
+                <p className="text-xs font-medium tracking-wide uppercase" style={{ color: "var(--rs-text-muted)" }}>Retired</p>
+                <p className="rs-stat text-2xl mt-1" style={{ color: "var(--rs-text-secondary)" }}>
                   {allLeads?.filter((l) => l.status === "retired").length || 0}
                 </p>
               </div>
@@ -544,98 +550,100 @@ export default function AdminLeadsPage() {
             {/* Table */}
             <div className="rs-card overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="rs-table w-full">
                   <thead>
-                    <tr className="border-b border-white/5">
-                      <th className="text-left p-4 text-gray-400 text-sm font-medium w-10">
+                    <tr>
+                      <th className="w-10">
                         <button
                           onClick={toggleSelectAllVisible}
-                          className="flex items-center justify-center text-gray-400 hover:text-white transition-colors"
+                          className="flex items-center justify-center hover:text-white transition-colors"
+                          style={{ color: "var(--rs-text-secondary)" }}
                           title={allVisibleSelected ? "Deselect all" : "Select all visible"}
                         >
                           {allVisibleSelected ? (
-                            <CheckSquare className="w-4 h-4 text-[var(--rs-accent)]" />
+                            <CheckSquare className="w-4 h-4" style={{ color: "var(--rs-text-accent)" }} />
                           ) : someVisibleSelected ? (
-                            <CheckSquare className="w-4 h-4 text-[var(--rs-accent)]/60" />
+                            <CheckSquare className="w-4 h-4" style={{ color: "rgba(124,58,237,0.55)" }} />
                           ) : (
                             <Square className="w-4 h-4" />
                           )}
                         </button>
                       </th>
-                      <th className="text-left p-4 text-gray-400 text-sm font-medium">Company</th>
-                      <th className="text-left p-4 text-gray-400 text-sm font-medium">Location</th>
-                      <th className="text-left p-4 text-gray-400 text-sm font-medium">Industry</th>
-                      <th className="text-left p-4 text-gray-400 text-sm font-medium">Pool</th>
-                      <th className="text-left p-4 text-gray-400 text-sm font-medium">Status</th>
-                      <th className="text-left p-4 text-gray-400 text-sm font-medium">Budget</th>
-                      <th className="text-left p-4 text-gray-400 text-sm font-medium">Actions</th>
+                      <th>Company</th>
+                      <th>Location</th>
+                      <th>Industry</th>
+                      <th>Pool</th>
+                      <th>Status</th>
+                      <th>Budget</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredLeads.slice(0, 50).map((lead) => (
                       <tr
                         key={lead._id}
-                        className={`border-b border-white/5 transition-colors ${
-                          selectedLeadIds.has(lead._id) ? "bg-[var(--rs-accent)]/10" : "hover:bg-white/5"
-                        }`}
+                        style={selectedLeadIds.has(lead._id) ? { background: "var(--rs-accent-soft)" } : undefined}
                       >
-                        <td className="p-4 w-10">
+                        <td className="w-10">
                           <button
                             onClick={() => toggleLeadSelection(lead._id)}
-                            className="flex items-center justify-center text-gray-400 hover:text-white transition-colors"
+                            className="flex items-center justify-center hover:text-white transition-colors"
+                            style={{ color: "var(--rs-text-secondary)" }}
                             title={selectedLeadIds.has(lead._id) ? "Deselect" : "Select"}
                           >
                             {selectedLeadIds.has(lead._id) ? (
-                              <CheckSquare className="w-4 h-4 text-[var(--rs-accent)]" />
+                              <CheckSquare className="w-4 h-4" style={{ color: "var(--rs-text-accent)" }} />
                             ) : (
                               <Square className="w-4 h-4" />
                             )}
                           </button>
                         </td>
-                        <td className="p-4">
-                          <p className="text-white font-medium">{lead.companyName}</p>
-                          <p className="text-gray-400 text-sm">{lead.contactName}</p>
+                        <td>
+                          <p className="font-medium text-white">{lead.companyName}</p>
+                          <p className="text-xs" style={{ color: "var(--rs-text-secondary)" }}>{lead.contactName}</p>
                         </td>
-                        <td className="p-4 text-gray-300">
+                        <td style={{ color: "var(--rs-text-secondary)" }}>
                           {lead.city}
                           {lead.province && `, ${lead.province}`}
                         </td>
-                        <td className="p-4 text-gray-300">{lead.industry}</td>
-                        <td className="p-4">
+                        <td style={{ color: "var(--rs-text-secondary)" }}>{lead.industry}</td>
+                        <td>
                           <span
-                            className={`px-2 py-1 rounded text-xs font-medium ${
+                            className="rs-pill"
+                            style={
                               lead.poolTier === "premium"
-                                ? "bg-[var(--rs-info)]/10 text-[var(--rs-info)]"
+                                ? { background: "rgba(124,58,237,0.10)", color: "var(--rs-text-accent)", borderColor: "rgba(124,58,237,0.20)" }
                                 : lead.poolTier === "priority"
-                                ? "bg-[var(--rs-info)]/10 text-[var(--rs-info)]"
-                                : "bg-gray-500/10 text-gray-400"
-                            }`}
+                                ? { background: "rgba(59,130,246,0.10)", color: "rgb(96,165,250)", borderColor: "rgba(59,130,246,0.20)" }
+                                : { background: "rgba(255,255,255,0.04)", color: "var(--rs-text-secondary)", borderColor: "var(--rs-border)" }
+                            }
                           >
                             {lead.poolTier}
                           </span>
                         </td>
-                        <td className="p-4">
+                        <td>
                           <span
-                            className={`px-2 py-1 rounded text-xs font-medium ${
+                            className="rs-pill"
+                            style={
                               lead.status === "available"
-                                ? "bg-[var(--rs-success)]/10 text-[var(--rs-success)]"
+                                ? { background: "rgba(34,197,94,0.10)", color: "rgb(74,222,128)", borderColor: "rgba(34,197,94,0.20)" }
                                 : lead.status === "claimed"
-                                ? "bg-[var(--rs-info)]/10 text-[var(--rs-info)]"
+                                ? { background: "rgba(59,130,246,0.10)", color: "rgb(96,165,250)", borderColor: "rgba(59,130,246,0.20)" }
                                 : lead.status === "converted"
-                                ? "bg-[var(--rs-info)]/10 text-[var(--rs-info)]"
+                                ? { background: "rgba(124,58,237,0.10)", color: "var(--rs-text-accent)", borderColor: "rgba(124,58,237,0.20)" }
                                 : lead.status === "retired"
-                                ? "bg-gray-500/10 text-gray-400"
-                                : "bg-[var(--rs-danger)]/10 text-[var(--rs-danger)]"
-                            }`}
+                                ? { background: "rgba(255,255,255,0.04)", color: "var(--rs-text-secondary)", borderColor: "var(--rs-border)" }
+                                : { background: "rgba(239,68,68,0.10)", color: "rgb(248,113,113)", borderColor: "rgba(239,68,68,0.20)" }
+                            }
                           >
                             {lead.status}
                           </span>
                         </td>
-                        <td className="p-4 text-gray-300">
+                        <td style={{ color: "var(--rs-text-secondary)" }}>
                           {lead.estimatedBudget && formatCurrency(lead.estimatedBudget)}
                         </td>
-                        <td className="p-4">
-                          <div className="flex items-center gap-2">
+                        <td>
+                          <div className="flex items-center gap-1">
                             {lead.status === "claimed" && (
                               <button
                                 onClick={() =>
@@ -644,7 +652,8 @@ export default function AdminLeadsPage() {
                                     adminClerkUserId: currentUserId,
                                   })
                                 }
-                                className="p-2 text-gray-400 hover:text-[var(--rs-warning)] hover:bg-[var(--rs-warning)]/10 rounded-lg transition-colors"
+                                className="rs-btn-ghost p-2"
+                                style={{ color: "var(--rs-warning)" }}
                                 title="Force Release"
                               >
                                 <RefreshCw className="w-4 h-4" />
@@ -657,7 +666,8 @@ export default function AdminLeadsPage() {
                                   adminClerkUserId: currentUserId,
                                 })
                               }
-                              className="p-2 text-gray-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-lg transition-colors"
+                              className="rs-btn-ghost p-2"
+                              style={{ color: "rgb(251,146,60)" }}
                               title="Retire"
                             >
                               <Lock className="w-4 h-4" />
@@ -669,7 +679,8 @@ export default function AdminLeadsPage() {
                                   adminClerkUserId: currentUserId,
                                 })
                               }
-                              className="p-2 text-gray-400 hover:text-[var(--rs-danger)] hover:bg-[var(--rs-danger)]/10 rounded-lg transition-colors"
+                              className="rs-btn-ghost p-2"
+                              style={{ color: "rgb(248,113,113)" }}
                               title="Delete"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -682,13 +693,14 @@ export default function AdminLeadsPage() {
                 </table>
               </div>
               {filteredLeads.length === 0 && (
-                <div className="p-12 text-center text-gray-400">
-                  No leads found
+                <div className="rs-empty-state">
+                  <p className="rs-empty-state-title">No leads found</p>
+                  <p className="rs-empty-state-description">Upload a CSV or adjust filters.</p>
                 </div>
               )}
             </div>
 
-            {/* Floating action bar - shows when 1+ leads selected */}
+            {/* Floating action bar */}
             <AnimatePresence>
               {selectedLeadIds.size > 0 && (
                 <motion.div
@@ -698,20 +710,21 @@ export default function AdminLeadsPage() {
                   transition={{ type: "spring", damping: 25, stiffness: 300 }}
                   className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
                 >
-                  <div className="flex items-center gap-3 px-4 py-3 bg-[#1a1a1f] border border-white/10 rounded-2xl shadow-2xl">
+                  <div className="rs-card flex items-center gap-3 px-4 py-3 shadow-2xl" style={{ boxShadow: "0 12px 32px rgba(0,0,0,0.6)" }}>
                     <span className="text-white text-sm font-medium">
                       {selectedLeadIds.size} lead{selectedLeadIds.size === 1 ? "" : "s"} selected
                     </span>
-                    <div className="h-5 w-px bg-white/10" />
+                    <div className="h-5 w-px" style={{ background: "var(--rs-border)" }} />
                     <button
                       onClick={clearSelection}
-                      className="text-gray-400 hover:text-white text-sm font-medium transition-colors"
+                      className="rs-btn-ghost text-sm px-3 py-1.5"
                     >
                       Clear
                     </button>
                     <button
                       onClick={handleBulkDeleteClick}
-                      className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-sm font-medium transition-colors"
+                      className="rs-btn-primary flex items-center gap-2 px-4 py-2 text-sm"
+                      style={{ background: "rgba(239,68,68,0.85)" }}
                     >
                       <Trash2 className="w-4 h-4" />
                       Delete selected
@@ -728,7 +741,7 @@ export default function AdminLeadsPage() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+                  className="rs-modal-backdrop"
                   onClick={() => !bulkDeleting && setBulkDeleteConfirm({ open: false, count: 0 })}
                 >
                   <motion.div
@@ -736,15 +749,15 @@ export default function AdminLeadsPage() {
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.95, opacity: 0 }}
                     onClick={(e) => e.stopPropagation()}
-                    className="bg-[#1a1a1f] border border-white/10 rounded-2xl p-6 max-w-md w-full shadow-2xl"
+                    className="rs-modal max-w-md w-full p-6"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <AlertCircle className="w-5 h-5 text-red-400" />
+                      <div className="rs-icon-tile rs-icon-tile--danger">
+                        <AlertCircle className="w-5 h-5" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-white font-semibold text-lg">Delete {bulkDeleteConfirm.count} lead{bulkDeleteConfirm.count === 1 ? "" : "s"}?</h3>
-                        <p className="text-gray-400 text-sm mt-2">
+                        <h3 className="text-lg font-semibold text-white">Delete {bulkDeleteConfirm.count} lead{bulkDeleteConfirm.count === 1 ? "" : "s"}?</h3>
+                        <p className="text-sm mt-2" style={{ color: "var(--rs-text-secondary)" }}>
                           This action cannot be undone. Any deals previously created from these leads
                           will keep their data, but lose the link back to the lead.
                         </p>
@@ -754,14 +767,15 @@ export default function AdminLeadsPage() {
                       <button
                         onClick={() => setBulkDeleteConfirm({ open: false, count: 0 })}
                         disabled={bulkDeleting}
-                        className="px-4 py-2 text-gray-400 hover:text-white text-sm font-medium transition-colors disabled:opacity-50"
+                        className="rs-btn-ghost text-sm disabled:opacity-50"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={handleBulkDeleteConfirm}
                         disabled={bulkDeleting}
-                        className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 disabled:bg-gray-600 text-white rounded-xl text-sm font-medium transition-colors"
+                        className="rs-btn-primary flex items-center gap-2 text-sm disabled:opacity-60"
+                        style={{ background: "rgba(239,68,68,0.85)" }}
                       >
                         {bulkDeleting ? (
                           <>
@@ -793,46 +807,46 @@ export default function AdminLeadsPage() {
           >
             <div className="rs-card overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="rs-table w-full">
                   <thead>
-                    <tr className="border-b border-white/5">
-                      <th className="text-left p-4 text-gray-400 text-sm font-medium">Time</th>
-                      <th className="text-left p-4 text-gray-400 text-sm font-medium">Action</th>
-                      <th className="text-left p-4 text-gray-400 text-sm font-medium">Lead</th>
-                      <th className="text-left p-4 text-gray-400 text-sm font-medium">Details</th>
+                    <tr>
+                      <th>Time</th>
+                      <th>Action</th>
+                      <th>Lead</th>
+                      <th>Details</th>
                     </tr>
                   </thead>
                   <tbody>
                     {allActivity?.slice(0, 50).map((activity) => (
-                      <tr key={activity._id} className="border-b border-white/5">
-                        <td className="p-4 text-gray-300">
+                      <tr key={activity._id}>
+                        <td style={{ color: "var(--rs-text-secondary)" }}>
                           {new Date(activity.createdAt).toLocaleString()}
                         </td>
-                        <td className="p-4">
+                        <td>
                           <span
-                            className={`px-2 py-1 rounded text-xs font-medium ${
+                            className="rs-pill"
+                            style={
                               activity.action === "uploaded"
-                                ? "bg-green-500/10 text-green-400"
+                                ? { background: "rgba(34,197,94,0.10)", color: "rgb(74,222,128)", borderColor: "rgba(34,197,94,0.20)" }
                                 : activity.action === "claimed"
-                                ? "bg-[var(--rs-info)]/10 text-[var(--rs-info)]"
+                                ? { background: "rgba(59,130,246,0.10)", color: "rgb(96,165,250)", borderColor: "rgba(59,130,246,0.20)" }
                                 : activity.action === "converted"
-                                ? "bg-[var(--rs-info)]/10 text-[var(--rs-info)]"
-                                : activity.action === "released" ||
-                                  activity.action === "expired"
-                                ? "bg-[var(--rs-warning)]/10 text-[var(--rs-warning)]"
+                                ? { background: "rgba(124,58,237,0.10)", color: "var(--rs-text-accent)", borderColor: "rgba(124,58,237,0.20)" }
+                                : activity.action === "released" || activity.action === "expired"
+                                ? { background: "rgba(245,158,11,0.10)", color: "rgb(251,191,36)", borderColor: "rgba(245,158,11,0.20)" }
                                 : activity.action === "retired"
-                                ? "bg-gray-500/10 text-gray-400"
-                                : "bg-orange-500/10 text-orange-400"
-                            }`}
+                                ? { background: "rgba(255,255,255,0.04)", color: "var(--rs-text-secondary)", borderColor: "var(--rs-border)" }
+                                : { background: "rgba(249,115,22,0.10)", color: "rgb(251,146,60)", borderColor: "rgba(249,115,22,0.20)" }
+                            }
                           >
                             {activity.action}
                           </span>
                         </td>
-                        <td className="p-4 text-white">
-                          {allLeads?.find((l) => l._id === activity.leadId)?.companyName || 
+                        <td className="text-white">
+                          {allLeads?.find((l) => l._id === activity.leadId)?.companyName ||
                            activity.leadId.slice(0, 8)}
                         </td>
-                        <td className="p-4 text-gray-300 text-sm">
+                        <td className="text-sm" style={{ color: "var(--rs-text-secondary)" }}>
                           {activity.meta && JSON.stringify(JSON.parse(activity.meta))}
                         </td>
                       </tr>
@@ -841,8 +855,8 @@ export default function AdminLeadsPage() {
                 </table>
               </div>
               {(!allActivity || allActivity.length === 0) && (
-                <div className="p-12 text-center text-gray-400">
-                  No activity yet
+                <div className="rs-empty-state">
+                  <p className="rs-empty-state-title">No activity yet</p>
                 </div>
               )}
             </div>

@@ -17,13 +17,6 @@ const ticketStatuses = [
   { value: "closed", label: "Closed", color: "bg-gray-500/20 text-gray-400", icon: CheckCircle },
 ];
 
-const priorityColors: Record<string, string> = {
-  low: "bg-[var(--rs-info)]/10 text-[var(--rs-info)]",
-  medium: "bg-[var(--rs-warning)]/10 text-[var(--rs-warning)]",
-  high: "bg-[var(--rs-danger)]/10 text-[var(--rs-danger)]",
-  urgent: "bg-[var(--rs-danger)]/10 text-[var(--rs-danger)]",
-};
-
 const categoryLabels: Record<string, string> = {
   deal: "Deal",
   product: "Product",
@@ -125,8 +118,8 @@ export default function AdminTicketsPage() {
 
   if (!tickets) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--rs-bg-base)" }}>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2" style={{ borderColor: "var(--rs-accent)" }} />
       </div>
     );
   }
@@ -136,21 +129,22 @@ export default function AdminTicketsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="rs-page-header flex items-center justify-between gap-4">
         <div>
           <span className="rs-overline">Admin</span>
-          <h1 className="rs-page-title">Support Tickets</h1>
-          <p className="text-gray-500 mt-1">Manage and respond to affiliate support requests</p>
+          <h1 className="rs-page-title mt-1">Support Tickets</h1>
+          <p className="rs-page-subtitle">Manage and respond to affiliate support requests</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="px-4 py-2 bg-red-500/20 rounded-xl">
-            <span className="text-red-400 font-medium">{openTickets} open</span>
-          </div>
+          <span
+            className="rs-pill"
+            style={{ background: "rgba(239,68,68,0.10)", color: "rgb(248,113,113)", borderColor: "rgba(239,68,68,0.25)" }}
+          >
+            {openTickets} open
+          </span>
           <button
             onClick={() => setShowClosed(!showClosed)}
-            className={`px-4 py-2 rounded-xl transition-colors ${
-              showClosed ? "bg-gray-600 text-white" : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-            }`}
+            className={showClosed ? "rs-btn-primary" : "rs-btn-ghost"}
           >
             {showClosed ? "Hide Closed" : "Show Closed"}
           </button>
@@ -158,24 +152,21 @@ export default function AdminTicketsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {ticketStatuses.map(status => {
           const count = tickets.filter((t: any) => t.status === status.value).length;
           return (
             <button
               key={status.value}
               onClick={() => setStatusFilter(status.value)}
-              className={`p-4 rounded-xl border transition-all ${
-                statusFilter === status.value 
-                  ? "border-white/20 bg-white/5" 
-                  : "border-white/5 hover:border-white/10"
-              }`}
+              className="rs-card rs-card-interactive p-4 text-left"
+              style={statusFilter === status.value ? { borderColor: "var(--rs-border-strong)" } : undefined}
             >
               <div className="flex items-center gap-2">
-                <status.icon className={`w-4 h-4 ${status.color.replace("bg-", "text-").replace("/20", "")}`} />
-                <span className="text-gray-400 text-sm">{status.label}</span>
+                <status.icon className="w-4 h-4" style={{ color: "var(--rs-text-secondary)" }} />
+                <span className="text-sm" style={{ color: "var(--rs-text-secondary)" }}>{status.label}</span>
               </div>
-              <p className="rs-stat mt-1">{count}</p>
+              <p className="rs-stat mt-2">{count}</p>
             </button>
           );
         })}
@@ -183,19 +174,19 @@ export default function AdminTicketsPage() {
 
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--rs-text-muted)" }} />
           <input
             type="text"
             placeholder="Search tickets by subject or user..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-[#141417] border border-white/5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+            className="rs-input w-full pl-10"
           />
         </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-3 bg-[#141417] border border-white/5 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          className="rs-input md:w-48"
         >
           <option value="all">All Status</option>
           {ticketStatuses.map(s => (
@@ -206,12 +197,13 @@ export default function AdminTicketsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Ticket List */}
-        <div className="lg:col-span-1 bg-[#141417] rounded-2xl border border-white/5 overflow-hidden">
+        <div className="lg:col-span-1 rs-card overflow-hidden p-0">
           <div className="max-h-[700px] overflow-y-auto">
             {sortedTickets.length === 0 ? (
-              <div className="p-8 text-center">
-                <Ticket className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-500">No tickets found</p>
+              <div className="rs-empty-state py-12">
+                <Ticket className="rs-empty-state-icon" style={{ width: 48, height: 48 }} />
+                <p className="rs-empty-state-title">No tickets found</p>
+                <p className="rs-empty-state-description">Try a different search or filter.</p>
               </div>
             ) : (
               sortedTickets.map((ticket: any) => {
@@ -223,61 +215,86 @@ export default function AdminTicketsPage() {
                 return (
                   <div
                     key={ticket._id}
-                    className={`border-b border-white/5 ${
-                      isSelected ? "bg-[var(--rs-accent-soft)]" : "hover:bg-white/5"
-                    }`}
+                    className="border-b"
+                    style={{
+                      borderColor: "var(--rs-border)",
+                      background: isSelected ? "var(--rs-accent-soft)" : "transparent",
+                    }}
                   >
                     <div
                       onClick={() => setSelectedTicket(ticket)}
-                      className="p-4 cursor-pointer"
+                      className="p-4 cursor-pointer transition-colors"
+                      style={!isSelected ? { cursor: "pointer" } : undefined}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             {ticket.status === "closed" && (
-                              <span className="text-gray-500">✓</span>
+                              <span style={{ color: "var(--rs-text-muted)" }}>✓</span>
                             )}
-                            <p className={`font-medium truncate ${
-                              ticket.status === "closed" ? "text-gray-500" : "text-white"
-                            }`}>
+                            <p
+                              className="font-medium truncate"
+                              style={ticket.status === "closed" ? { color: "var(--rs-text-muted)" } : { color: "var(--rs-text-primary)" }}
+                            >
                               {ticket.subject}
                             </p>
                           </div>
-                          <p className="text-gray-500 text-sm truncate">
+                          <p className="text-sm truncate" style={{ color: "var(--rs-text-muted)" }}>
                             {ticket.affiliate?.firstName} {ticket.affiliate?.lastName}
                           </p>
                         </div>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
+                        <span
+                          className="rs-pill"
+                          style={
+                            ticket.status === "open"
+                              ? { background: "rgba(239,68,68,0.10)", color: "rgb(248,113,113)", borderColor: "rgba(239,68,68,0.25)" }
+                              : ticket.status === "in_progress"
+                              ? { background: "rgba(245,158,11,0.10)", color: "rgb(251,191,36)", borderColor: "rgba(245,158,11,0.25)" }
+                              : ticket.status === "resolved"
+                              ? { background: "rgba(16,185,129,0.10)", color: "rgb(74,222,128)", borderColor: "rgba(16,185,129,0.25)" }
+                              : { background: "rgba(255,255,255,0.04)", color: "var(--rs-text-secondary)", borderColor: "var(--rs-border)" }
+                          }
+                        >
                           {statusInfo.label}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 mt-2">
-                        <span className={`px-2 py-0.5 rounded-full text-xs ${priorityColors[ticket.priority]}`}>
+                        <span
+                          className="rs-pill"
+                          style={
+                            ticket.priority === "high" || ticket.priority === "urgent"
+                              ? { background: "rgba(239,68,68,0.10)", color: "rgb(248,113,113)", borderColor: "rgba(239,68,68,0.25)" }
+                              : ticket.priority === "medium"
+                              ? { background: "rgba(245,158,11,0.10)", color: "rgb(251,191,36)", borderColor: "rgba(245,158,11,0.25)" }
+                              : { background: "rgba(59,130,246,0.10)", color: "rgb(96,165,250)", borderColor: "rgba(59,130,246,0.25)" }
+                          }
+                        >
                           {ticket.priority}
                         </span>
-                        <span className="text-gray-600 text-xs">
+                        <span className="text-xs" style={{ color: "var(--rs-text-muted)" }}>
                           {categoryLabels[ticket.category]}
                         </span>
-                        <span className="text-gray-600 text-xs ml-auto">
+                        <span className="text-xs ml-auto" style={{ color: "var(--rs-text-muted)" }}>
                           {formatRelativeTime(ticket.updatedAt)}
                         </span>
                       </div>
                     </div>
 
                     {/* Collapsible Message Preview */}
-                    <div className="px-4 pb-2">
+                    <div className="px-4 pb-3">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleThread(ticket._id);
                         }}
-                        className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-400"
+                        className="flex items-center gap-1 text-xs"
+                        style={{ color: "var(--rs-text-muted)" }}
                       >
                         <MessageCircle className="w-3 h-3" />
                         {messageCount} message{messageCount !== 1 ? "s" : ""}
                         {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                       </button>
-                      
+
                       <AnimatePresence>
                         {isExpanded && (
                           <motion.div
@@ -287,24 +304,27 @@ export default function AdminTicketsPage() {
                             className="mt-2 space-y-2 overflow-hidden"
                           >
                             {/* Original message */}
-                            <div className="bg-white/5 rounded-lg p-3">
-                              <p className="text-gray-400 text-xs mb-1">
+                            <div className="rounded-lg p-3" style={{ background: "var(--rs-bg-base)", border: "1px solid var(--rs-border)" }}>
+                              <p className="text-xs mb-1" style={{ color: "var(--rs-text-muted)" }}>
                                 {ticket.affiliate?.firstName} · Original
                               </p>
-                              <p className="text-gray-300 text-sm line-clamp-3">{ticket.description}</p>
+                              <p className="text-sm line-clamp-3" style={{ color: "var(--rs-text-secondary)" }}>{ticket.description}</p>
                             </div>
                             {/* Last few messages */}
                             {ticket.messages?.slice(-3).map((msg: any, idx: number) => (
-                              <div 
-                                key={idx} 
-                                className={`rounded-lg p-3 ${
-                                  msg.sender === "admin" ? "bg-green-600/10 ml-4" : "bg-white/5 mr-4"
-                                }`}
+                              <div
+                                key={idx}
+                                className="rounded-lg p-3"
+                                style={
+                                  msg.sender === "admin"
+                                    ? { background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.15)", marginLeft: 16 }
+                                    : { background: "var(--rs-bg-base)", border: "1px solid var(--rs-border)", marginRight: 16 }
+                                }
                               >
-                                <p className="text-gray-400 text-xs mb-1">
+                                <p className="text-xs mb-1" style={{ color: "var(--rs-text-muted)" }}>
                                   {msg.sender === "admin" ? "Admin" : ticket.affiliate?.firstName} · {formatRelativeTime(msg.createdAt)}
                                 </p>
-                                <p className="text-gray-300 text-sm line-clamp-2">{msg.content}</p>
+                                <p className="text-sm line-clamp-2" style={{ color: "var(--rs-text-secondary)" }}>{msg.content}</p>
                               </div>
                             ))}
                           </motion.div>
@@ -319,34 +339,54 @@ export default function AdminTicketsPage() {
         </div>
 
         {/* Ticket Detail / Chat View */}
-        <div className="lg:col-span-2 bg-[#141417] rounded-2xl border border-white/5 overflow-hidden">
+        <div className="lg:col-span-2 rs-card overflow-hidden p-0">
           {selectedTicket ? (
             <div className="h-[700px] flex flex-col">
               {/* Header */}
-              <div className="p-4 border-b border-white/5">
+              <div className="p-4" style={{ borderBottom: "1px solid var(--rs-border)" }}>
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <h3 className="text-lg font-semibold text-white">{selectedTicket.subject}</h3>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusInfo(selectedTicket.status).color}`}>
+                      <span
+                        className="rs-pill"
+                        style={
+                          selectedTicket.status === "open"
+                            ? { background: "rgba(239,68,68,0.10)", color: "rgb(248,113,113)", borderColor: "rgba(239,68,68,0.25)" }
+                            : selectedTicket.status === "in_progress"
+                            ? { background: "rgba(245,158,11,0.10)", color: "rgb(251,191,36)", borderColor: "rgba(245,158,11,0.25)" }
+                            : selectedTicket.status === "resolved"
+                            ? { background: "rgba(16,185,129,0.10)", color: "rgb(74,222,128)", borderColor: "rgba(16,185,129,0.25)" }
+                            : { background: "rgba(255,255,255,0.04)", color: "var(--rs-text-secondary)", borderColor: "var(--rs-border)" }
+                        }
+                      >
                         {getStatusInfo(selectedTicket.status).label}
                       </span>
                     </div>
-                    <p className="text-gray-500 text-sm mt-1">
+                    <p className="text-sm mt-1" style={{ color: "var(--rs-text-muted)" }}>
                       From: {selectedTicket.affiliate?.firstName} {selectedTicket.affiliate?.lastName} · {selectedTicket.affiliate?.email}
                     </p>
-                    <div className="flex items-center gap-3 mt-2">
-                      <span className={`px-2 py-0.5 rounded-full text-xs ${priorityColors[selectedTicket.priority]}`}>
+                    <div className="flex items-center gap-3 mt-2 flex-wrap">
+                      <span
+                        className="rs-pill"
+                        style={
+                          selectedTicket.priority === "high" || selectedTicket.priority === "urgent"
+                            ? { background: "rgba(239,68,68,0.10)", color: "rgb(248,113,113)", borderColor: "rgba(239,68,68,0.25)" }
+                            : selectedTicket.priority === "medium"
+                            ? { background: "rgba(245,158,11,0.10)", color: "rgb(251,191,36)", borderColor: "rgba(245,158,11,0.25)" }
+                            : { background: "rgba(59,130,246,0.10)", color: "rgb(96,165,250)", borderColor: "rgba(59,130,246,0.25)" }
+                        }
+                      >
                         {selectedTicket.priority} priority
                       </span>
-                      <span className="text-gray-600 text-xs">
+                      <span className="text-xs" style={{ color: "var(--rs-text-muted)" }}>
                         {categoryLabels[selectedTicket.category]}
                       </span>
-                      <span className="text-gray-600 text-xs">
+                      <span className="text-xs" style={{ color: "var(--rs-text-muted)" }}>
                         Created: {formatDate(selectedTicket.createdAt)}
                       </span>
                       {selectedTicket.resolvedAt && (
-                        <span className="text-green-500 text-xs">
+                        <span className="text-xs" style={{ color: "rgb(74,222,128)" }}>
                           Resolved: {formatDate(selectedTicket.resolvedAt)}
                         </span>
                       )}
@@ -358,7 +398,7 @@ export default function AdminTicketsPage() {
                         <select
                           value={selectedTicket.status}
                           onChange={(e) => handleStatusChange(selectedTicket._id, e.target.value)}
-                          className="bg-transparent border border-white/10 rounded-lg px-3 py-2 text-white text-sm"
+                          className="rs-input text-sm py-2"
                         >
                           {ticketStatuses.map(s => (
                             <option key={s.value} value={s.value}>{s.label}</option>
@@ -366,7 +406,8 @@ export default function AdminTicketsPage() {
                         </select>
                         <button
                           onClick={() => handleResolveAndClose(selectedTicket._id)}
-                          className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg text-sm font-medium transition-colors"
+                          className="rs-btn-primary"
+                          style={{ background: "rgb(16,185,129)", color: "white" }}
                         >
                           Resolve & Close
                         </button>
@@ -375,7 +416,8 @@ export default function AdminTicketsPage() {
                     {selectedTicket.status === "closed" && (
                       <button
                         onClick={() => handleDelete(selectedTicket._id)}
-                        className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                        className="rs-btn-ghost p-2"
+                        style={{ color: "rgb(248,113,113)", background: "rgba(239,68,68,0.10)", borderColor: "rgba(239,68,68,0.20)" }}
                         title="Delete ticket"
                       >
                         <Trash2 className="w-5 h-5" />
@@ -388,17 +430,23 @@ export default function AdminTicketsPage() {
               {/* Messages / Chat */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {/* Original Message */}
-                <div className="bg-white/5 rounded-2xl rounded-tl-sm p-4 max-w-[85%]">
+                <div
+                  className="rounded-2xl rounded-tl-sm p-4 max-w-[85%]"
+                  style={{ background: "var(--rs-bg-base)", border: "1px solid var(--rs-border)" }}
+                >
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-6 h-6 rounded-full bg-[var(--rs-accent)] flex items-center justify-center text-xs font-medium text-white">
+                    <div
+                      className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium text-white"
+                      style={{ background: "var(--rs-accent)" }}
+                    >
                       {selectedTicket.affiliate?.firstName?.[0]}{selectedTicket.affiliate?.lastName?.[0]}
                     </div>
-                    <span className="text-gray-400 text-xs">
+                    <span className="text-xs" style={{ color: "var(--rs-text-secondary)" }}>
                       {selectedTicket.affiliate?.firstName} {selectedTicket.affiliate?.lastName}
                     </span>
-                    <span className="text-gray-600 text-xs">· {formatDate(selectedTicket.createdAt)}</span>
+                    <span className="text-xs" style={{ color: "var(--rs-text-muted)" }}>· {formatDate(selectedTicket.createdAt)}</span>
                   </div>
-                  <p className="text-white whitespace-pre-wrap">{selectedTicket.description}</p>
+                  <p className="whitespace-pre-wrap" style={{ color: "var(--rs-text-primary)" }}>{selectedTicket.description}</p>
                 </div>
 
                 {/* Chat Messages */}
@@ -409,26 +457,34 @@ export default function AdminTicketsPage() {
                       key={idx}
                       className={`flex ${isAdmin ? "justify-end" : "justify-start"}`}
                     >
-                      <div className={`max-w-[85%] rounded-2xl p-4 ${
-                        isAdmin 
-                          ? "bg-[var(--rs-accent)] text-white rounded-tr-sm" 
-                          : "bg-white/5 text-white rounded-tl-sm"
-                      }`}>
+                      <div
+                        className={`max-w-[85%] rounded-2xl p-4 ${
+                          isAdmin ? "rounded-tr-sm" : "rounded-tl-sm"
+                        }`}
+                        style={
+                          isAdmin
+                            ? { background: "var(--rs-accent)", color: "white" }
+                            : { background: "var(--rs-bg-base)", border: "1px solid var(--rs-border)", color: "var(--rs-text-primary)" }
+                        }
+                      >
                         <div className="flex items-center gap-2 mb-2">
                           {isAdmin ? (
                             <>
-                              <span className="text-xs text-blue-200 font-medium">You (Admin)</span>
-                              <span className="text-blue-300 text-xs">· {formatRelativeTime(msg.createdAt)}</span>
+                              <span className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.85)" }}>You (Admin)</span>
+                              <span className="text-xs" style={{ color: "rgba(255,255,255,0.70)" }}>· {formatRelativeTime(msg.createdAt)}</span>
                             </>
                           ) : (
                             <>
-                              <div className="w-6 h-6 rounded-full bg-[var(--rs-accent)] flex items-center justify-center text-xs font-medium text-white">
+                              <div
+                                className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium text-white"
+                                style={{ background: "var(--rs-accent)" }}
+                              >
                                 {selectedTicket.affiliate?.firstName?.[0]}
                               </div>
-                              <span className="text-gray-400 text-xs">
+                              <span className="text-xs" style={{ color: "var(--rs-text-secondary)" }}>
                                 {selectedTicket.affiliate?.firstName}
                               </span>
-                              <span className="text-gray-600 text-xs">· {formatRelativeTime(msg.createdAt)}</span>
+                              <span className="text-xs" style={{ color: "var(--rs-text-muted)" }}>· {formatRelativeTime(msg.createdAt)}</span>
                             </>
                           )}
                         </div>
@@ -442,7 +498,7 @@ export default function AdminTicketsPage() {
 
               {/* Reply Input */}
               {selectedTicket.status !== "closed" ? (
-                <div className="p-4 border-t border-white/5">
+                <div className="p-4" style={{ borderTop: "1px solid var(--rs-border)" }}>
                   <div className="flex gap-3">
                     <input
                       type="text"
@@ -450,31 +506,31 @@ export default function AdminTicketsPage() {
                       value={replyMessage}
                       onChange={(e) => setReplyMessage(e.target.value)}
                       onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleReply()}
-                      className="flex-1 px-4 py-3 bg-black border border-white/5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                      className="rs-input flex-1"
                     />
                     <button
                       onClick={handleReply}
                       disabled={!replyMessage.trim()}
-                      className="px-6 py-3 bg-[var(--rs-accent)] text-white rounded-xl hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                      className="rs-btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Send className="w-5 h-5" />
                       Send
                     </button>
                   </div>
-                  <p className="text-gray-500 text-xs mt-2">Press Enter to send, Shift+Enter for new line</p>
+                  <p className="text-xs mt-2" style={{ color: "var(--rs-text-muted)" }}>Press Enter to send, Shift+Enter for new line</p>
                 </div>
               ) : (
-                <div className="p-4 border-t border-white/5 bg-gray-900/50">
-                  <p className="text-gray-500 text-sm text-center">This ticket is closed. Reply to reopen.</p>
+                <div className="p-4 text-center" style={{ borderTop: "1px solid var(--rs-border)", background: "rgba(255,255,255,0.02)" }}>
+                  <p className="text-sm" style={{ color: "var(--rs-text-muted)" }}>This ticket is closed. Reply to reopen.</p>
                 </div>
               )}
             </div>
           ) : (
             <div className="h-[700px] flex items-center justify-center">
-              <div className="text-center">
-                <Ticket className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-white mb-2">Select a Ticket</h3>
-                <p className="text-gray-500">Choose a ticket from the list to view the conversation</p>
+              <div className="rs-empty-state">
+                <Ticket className="rs-empty-state-icon" style={{ width: 64, height: 64 }} />
+                <p className="rs-empty-state-title">Select a Ticket</p>
+                <p className="rs-empty-state-description">Choose a ticket from the list to view the conversation.</p>
               </div>
             </div>
           )}

@@ -61,94 +61,99 @@ export default function AdminPricingPage() {
 
   return (
     <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <h1 className="text-2xl font-semibold text-white">Pricing Management</h1>
-        <p className="text-gray-500 mt-1">Manage product pricing for quotes and invoices</p>
-      </motion.div>
-
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-        <input
-          type="text"
-          placeholder="Search products..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-12 pr-4 py-3 bg-[#141417] border border-white/5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-        />
+      <div className="rs-page-header">
+        <div>
+          <span className="rs-overline">Admin</span>
+          <h1 className="rs-page-title mt-1">Pricing Management</h1>
+          <p className="rs-page-subtitle">Manage product pricing for quotes and invoices</p>
+        </div>
       </div>
 
-      <div className="bg-[#0a0a0b] rounded-xl border border-white/5 overflow-hidden">
-        <table className="w-full">
+      <div className="rs-card p-4">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--rs-text-muted)" }} />
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="rs-input w-full pl-11"
+          />
+        </div>
+      </div>
+
+      <div className="rs-card overflow-hidden">
+        <table className="rs-table w-full">
           <thead>
-            <tr className="border-b border-white/5">
-              <th className="text-left p-4 text-xs font-medium text-gray-400 uppercase">Product</th>
-              <th className="text-center p-4 text-xs font-medium text-gray-400 uppercase">50 pcs</th>
-              <th className="text-center p-4 text-xs font-medium text-gray-400 uppercase">100 pcs</th>
-              <th className="text-center p-4 text-xs font-medium text-gray-400 uppercase">500 pcs</th>
-              <th className="text-center p-4 text-xs font-medium text-gray-400 uppercase">Status</th>
-              <th className="text-right p-4 text-xs font-medium text-gray-400 uppercase">Actions</th>
+            <tr>
+              <th>Product</th>
+              <th className="text-center">50 pcs</th>
+              <th className="text-center">100 pcs</th>
+              <th className="text-center">500 pcs</th>
+              <th className="text-center">Status</th>
+              <th className="text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5">
+          <tbody>
             {filteredProducts.map((product: any) => (
-              <tr key={product.id} className="hover:bg-white/5">
-                <td className="p-4">
+              <tr key={product.id}>
+                <td>
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center">
-                      <Package className="w-6 h-6 text-gray-500" />
+                    <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: "var(--rs-bg-base)", border: "1px solid var(--rs-border)" }}>
+                      <Package className="w-5 h-5" style={{ color: "var(--rs-text-secondary)" }} />
                     </div>
                     <div>
                       <p className="font-medium text-white">{product.name}</p>
-                      <p className="text-xs text-gray-500">{product.category}</p>
+                      <p className="text-xs" style={{ color: "var(--rs-text-secondary)" }}>{product.category}</p>
                     </div>
                   </div>
                 </td>
-                
+
                 {editingProduct === product.id && editForm ? (
                   <>
-                    <td className="p-4">
+                    <td className="text-center">
                       <input
                         type="number"
                         value={editForm["50"]}
                         onChange={(e) => setEditForm({...editForm, "50": e.target.value})}
-                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-center"
+                        className="rs-input text-center w-24 mx-auto py-1.5"
                       />
                     </td>
-                    <td className="p-4">
+                    <td className="text-center">
                       <input
                         type="number"
                         value={editForm["100"]}
                         onChange={(e) => setEditForm({...editForm, "100": e.target.value})}
-                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-center"
+                        className="rs-input text-center w-24 mx-auto py-1.5"
                       />
                     </td>
-                    <td className="p-4">
+                    <td className="text-center">
                       <input
                         type="number"
                         value={editForm["500"]}
                         onChange={(e) => setEditForm({...editForm, "500": e.target.value})}
-                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-center"
+                        className="rs-input text-center w-24 mx-auto py-1.5"
                       />
                     </td>
-                    <td className="p-4 text-center">
+                    <td className="text-center">
                       <button
                         onClick={() => setEditForm({...editForm, confirmed: !editForm.confirmed})}
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          editForm.confirmed ? "bg-green-500/20 text-green-400" : "bg-gray-500/20 text-gray-400"
-                        }`}
+                        className="rs-pill text-xs"
+                        style={
+                          editForm.confirmed
+                            ? { background: "rgba(34,197,94,0.10)", color: "rgb(74,222,128)", borderColor: "rgba(34,197,94,0.20)" }
+                            : { background: "rgba(255,255,255,0.04)", color: "var(--rs-text-secondary)", borderColor: "var(--rs-border)" }
+                        }
                       >
                         {editForm.confirmed ? "Confirmed" : "Unconfirmed"}
                       </button>
                     </td>
-                    <td className="p-4 text-right">
+                    <td className="text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button onClick={handleSave} className="p-2 bg-green-500/20 text-green-400 rounded-lg">
+                        <button onClick={handleSave} className="rs-btn-ghost p-2" style={{ color: "rgb(74,222,128)", background: "rgba(34,197,94,0.10)", borderColor: "rgba(34,197,94,0.20)" }} aria-label="Save">
                           <Save className="w-4 h-4" />
                         </button>
-                        <button onClick={handleCancel} className="p-2 bg-red-500/20 text-red-400 rounded-lg">
+                        <button onClick={handleCancel} className="rs-btn-ghost p-2" style={{ color: "rgb(248,113,113)", background: "rgba(239,68,68,0.10)", borderColor: "rgba(239,68,68,0.20)" }} aria-label="Cancel">
                           <X className="w-4 h-4" />
                         </button>
                       </div>
@@ -156,38 +161,38 @@ export default function AdminPricingPage() {
                   </>
                 ) : (
                   <>
-                    <td className="p-4 text-center">
+                    <td className="text-center">
                       {product.pricing?.confirmed ? (
-                        <span className="text-orange-400 font-medium">{ZAR(product.pricing["50"])}</span>
+                        <span className="font-medium" style={{ color: "rgb(251,146,60)" }}>{ZAR(product.pricing["50"])}</span>
                       ) : (
-                        <span className="text-gray-500">-</span>
+                        <span style={{ color: "var(--rs-text-muted)" }}>—</span>
                       )}
                     </td>
-                    <td className="p-4 text-center">
+                    <td className="text-center">
                       {product.pricing?.confirmed ? (
-                        <span className="text-green-400 font-medium">{ZAR(product.pricing["100"])}</span>
+                        <span className="font-medium" style={{ color: "rgb(74,222,128)" }}>{ZAR(product.pricing["100"])}</span>
                       ) : (
-                        <span className="text-gray-500">-</span>
+                        <span style={{ color: "var(--rs-text-muted)" }}>—</span>
                       )}
                     </td>
-                    <td className="p-4 text-center">
+                    <td className="text-center">
                       {product.pricing?.confirmed ? (
-                        <span className="text-blue-400 font-medium">{ZAR(product.pricing["500"])}</span>
+                        <span className="font-medium" style={{ color: "rgb(96,165,250)" }}>{ZAR(product.pricing["500"])}</span>
                       ) : (
-                        <span className="text-gray-500">-</span>
+                        <span style={{ color: "var(--rs-text-muted)" }}>—</span>
                       )}
                     </td>
-                    <td className="p-4 text-center">
+                    <td className="text-center">
                       {product.pricing?.confirmed ? (
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400">Confirmed</span>
+                        <span className="rs-pill text-xs" style={{ background: "rgba(34,197,94,0.10)", color: "rgb(74,222,128)", borderColor: "rgba(34,197,94,0.20)" }}>Confirmed</span>
                       ) : product.pricing ? (
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400">Pending</span>
+                        <span className="rs-pill text-xs" style={{ background: "rgba(245,158,11,0.10)", color: "rgb(251,191,36)", borderColor: "rgba(245,158,11,0.20)" }}>Pending</span>
                       ) : (
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400">Coming Soon</span>
+                        <span className="rs-pill text-xs" style={{ background: "rgba(255,255,255,0.04)", color: "var(--rs-text-secondary)", borderColor: "var(--rs-border)" }}>Coming Soon</span>
                       )}
                     </td>
-                    <td className="p-4 text-right">
-                      <button onClick={() => handleEdit(product)} className="p-2 text-gray-500 hover:text-blue-400">
+                    <td className="text-right">
+                      <button onClick={() => handleEdit(product)} className="rs-btn-ghost p-2" aria-label="Edit">
                         <Edit2 className="w-4 h-4" />
                       </button>
                     </td>
@@ -199,7 +204,7 @@ export default function AdminPricingPage() {
         </table>
       </div>
 
-      <div className="flex items-center justify-between text-sm text-gray-500">
+      <div className="flex items-center justify-between text-xs px-1" style={{ color: "var(--rs-text-secondary)" }}>
         <p>Showing {filteredProducts.length} products</p>
         <p>* Prices in ZAR</p>
       </div>

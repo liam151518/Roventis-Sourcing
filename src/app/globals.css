@@ -978,6 +978,13 @@ body {
 .rs-sidebar-item--active .rs-sidebar-icon {
   color: var(--rs-text-accent);
 }
+.rs-sidebar-item.is-active {
+  background: var(--rs-accent-soft);
+  color: var(--rs-text-primary);
+}
+.rs-sidebar-item.is-active svg {
+  color: var(--rs-text-accent);
+}
 
 /* === CONSOLIDATED USER-PAGE TOKENS ===
    Replaces the dozens of one-off bg-[#141417] / bg-[#0a0a0b] / border-white/5 /

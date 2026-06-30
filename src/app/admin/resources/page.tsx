@@ -246,59 +246,59 @@ export default function AdminResourcesPage() {
 
   if (!resources) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--rs-bg-base)" }}>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2" style={{ borderColor: "var(--rs-accent)" }} />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="rs-page-header flex items-center justify-between gap-4">
         <div>
-          <p className="rs-overline">Admin</p>
-          <h1 className="rs-page-title">Resources</h1>
-          <p className="text-gray-500 mt-1">Manage and publish resources for affiliates</p>
+          <span className="rs-overline">Admin</span>
+          <h1 className="rs-page-title mt-1">Resources</h1>
+          <p className="rs-page-subtitle">Manage and publish resources for affiliates</p>
         </div>
         <button
           onClick={() => handleOpenModal()}
-          className="flex items-center gap-2 px-4 py-2 rs-btn-primary transition-colors"
+          className="rs-btn-primary flex items-center gap-2"
         >
           <Plus className="w-5 h-5" />
           Add Resource
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="rs-card p-4">
-          <p className="text-gray-400 text-sm">Total Resources</p>
-          <p className="text-2xl font-semibold text-white">{stats.total}</p>
+          <p className="text-sm" style={{ color: "var(--rs-text-secondary)" }}>Total Resources</p>
+          <p className="rs-stat mt-1">{stats.total}</p>
         </div>
-        <div className="rs-card p-4" style={{ borderColor: 'var(--rs-success)', borderWidth: 1 }}>
-          <p className="text-gray-400 text-sm">Published</p>
-          <p className="text-2xl font-semibold text-green-400">{stats.published}</p>
+        <div className="rs-card p-4" style={{ borderColor: "rgba(16,185,129,0.25)" }}>
+          <p className="text-sm" style={{ color: "var(--rs-text-secondary)" }}>Published</p>
+          <p className="rs-stat mt-1" style={{ color: "rgb(74,222,128)" }}>{stats.published}</p>
         </div>
-        <div className="rs-card p-4" style={{ borderColor: 'var(--rs-warning)', borderWidth: 1 }}>
-          <p className="text-gray-400 text-sm">Drafts</p>
-          <p className="text-2xl font-semibold text-yellow-400">{stats.drafts}</p>
+        <div className="rs-card p-4" style={{ borderColor: "rgba(245,158,11,0.25)" }}>
+          <p className="text-sm" style={{ color: "var(--rs-text-secondary)" }}>Drafts</p>
+          <p className="rs-stat mt-1" style={{ color: "rgb(251,191,36)" }}>{stats.drafts}</p>
         </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--rs-text-muted)" }} />
           <input
             type="text"
             placeholder="Search resources..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-[#141417] border border-white/5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+            className="rs-input w-full pl-10"
           />
         </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-3 bg-[#141417] border border-white/5 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          className="rs-input md:w-48"
         >
           {statusFilters.map(filter => (
             <option key={filter.value} value={filter.value}>{filter.label}</option>
@@ -307,7 +307,7 @@ export default function AdminResourcesPage() {
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
-          className="px-4 py-3 bg-[#141417] border border-white/5 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          className="rs-input md:w-48"
         >
           <option value="all">All Categories</option>
           {categories.map(cat => (
@@ -321,7 +321,8 @@ export default function AdminResourcesPage() {
           <div className="flex justify-end">
             <button
               onClick={() => openProductModal()}
-              className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-xl font-medium transition-colors"
+              className="rs-btn-primary flex items-center gap-2"
+              style={{ background: "rgb(234,88,12)", color: "white" }}
             >
               <Plus className="w-4 h-4" />
               Add Product
@@ -329,12 +330,14 @@ export default function AdminResourcesPage() {
           </div>
 
           {filteredProducts.length === 0 ? (
-            <div className="text-center py-16">
-              <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-500">No products yet</p>
+            <div className="rs-empty-state rs-card">
+              <FileText className="rs-empty-state-icon" style={{ width: 48, height: 48 }} />
+              <p className="rs-empty-state-title">No products yet</p>
+              <p className="rs-empty-state-description">Add a product to get started.</p>
               <button
                 onClick={() => openProductModal()}
-                className="mt-4 px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-xl font-medium transition-colors"
+                className="rs-btn-primary mt-4"
+                style={{ background: "rgb(234,88,12)", color: "white" }}
               >
                 Add Your First Product
               </button>
@@ -344,26 +347,30 @@ export default function AdminResourcesPage() {
               {filteredProducts.map((product: any) => (
                 <motion.div
                   key={product.id}
-                  className="rs-card overflow-hidden"
+                  className="rs-card rs-card-interactive overflow-hidden"
                 >
                   <div className="flex items-center gap-4 p-4">
-                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-white/5 flex-shrink-0">
+                    <div
+                      className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0"
+                      style={{ background: "var(--rs-bg-base)", border: "1px solid var(--rs-border)" }}
+                    >
                       {product.colors?.[0]?.image ? (
                         <img src={product.colors[0].image} alt={product.name} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <ImageIcon className="w-6 h-6 text-gray-600" />
+                          <ImageIcon className="w-6 h-6" style={{ color: "var(--rs-text-muted)" }} />
                         </div>
                       )}
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-white">{product.name}</h3>
-                      <p className="text-sm text-gray-500">{product.colors?.length || 0} colors</p>
+                      <p className="text-sm" style={{ color: "var(--rs-text-muted)" }}>{product.colors?.length || 0} colors</p>
                     </div>
                     <div className="flex gap-2">
                       <button
                         onClick={() => openProductModal(product)}
-                        className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg"
+                        className="rs-btn-ghost p-2"
+                        title="Edit"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
@@ -373,7 +380,9 @@ export default function AdminResourcesPage() {
                             deleteProduct({ id: product._id });
                           }
                         }}
-                        className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg"
+                        className="rs-btn-ghost p-2"
+                        style={{ color: "rgb(248,113,113)", background: "rgba(239,68,68,0.10)", borderColor: "rgba(239,68,68,0.20)" }}
+                        title="Delete"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -387,12 +396,13 @@ export default function AdminResourcesPage() {
       ) : (
         <div>
           {filteredResources.length === 0 ? (
-            <div className="text-center py-16">
-              <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-500">No resources found</p>
+            <div className="rs-empty-state rs-card">
+              <FileText className="rs-empty-state-icon" style={{ width: 48, height: 48 }} />
+              <p className="rs-empty-state-title">No resources found</p>
+              <p className="rs-empty-state-description">Add your first resource to get started.</p>
               <button
                 onClick={() => handleOpenModal()}
-                className="mt-4 px-4 py-2 rs-btn-primary transition-colors"
+                className="rs-btn-primary mt-4"
               >
                 Add Your First Resource
               </button>
@@ -405,38 +415,49 @@ export default function AdminResourcesPage() {
                   layout
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className={`bg-[#141417] rounded-[14px] border p-6 hover:border-white/10 transition-colors ${
-                    resource.isDraft ? "border-yellow-500/30" : "border-white/5"
-                  }`}
+                  className="rs-card rs-card-interactive p-6"
+                  style={resource.isDraft ? { borderColor: "rgba(245,158,11,0.30)" } : undefined}
                 >
                   <div className="flex items-start gap-4">
-                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
-                      resource.fileType === "pdf" ? "bg-red-500/10" :
-                      resource.fileType === "video" ? "bg-purple-500/10" :
-                      resource.fileType === "image" ? "bg-pink-500/10" :
-                      "bg-blue-500/10"
-                    }`}>
+                    <div
+                      className="w-14 h-14 rounded-xl flex items-center justify-center"
+                      style={
+                        resource.fileType === "pdf"
+                          ? { background: "rgba(239,68,68,0.10)" }
+                          : resource.fileType === "video"
+                          ? { background: "rgba(168,85,247,0.10)" }
+                          : resource.fileType === "image"
+                          ? { background: "rgba(236,72,153,0.10)" }
+                          : { background: "rgba(59,130,246,0.10)" }
+                      }
+                    >
                       {getFileIcon(resource.fileType)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold text-white truncate">{resource.title}</h3>
                         {resource.isDraft && (
-                          <span className="px-2 py-0.5 text-xs bg-yellow-500/20 text-yellow-400 rounded-full">
+                          <span
+                            className="rs-pill"
+                            style={{ background: "rgba(245,158,11,0.10)", color: "rgb(251,191,36)", borderColor: "rgba(245,158,11,0.25)" }}
+                          >
                             Draft
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-500 mt-1 line-clamp-2">{resource.description}</p>
+                      <p className="text-sm mt-1 line-clamp-2" style={{ color: "var(--rs-text-secondary)" }}>{resource.description}</p>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-xs px-3 py-1 rounded-full ${categoryColors[resource.category]}`}>
+
+                  <div className="flex items-center justify-between mt-4 pt-4" style={{ borderTop: "1px solid var(--rs-border)" }}>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span
+                        className="rs-pill"
+                        style={{ background: "var(--rs-accent-soft)", color: "rgb(167,139,250)", borderColor: "rgba(167,139,250,0.25)" }}
+                      >
                         {categories.find(c => c.value === resource.category)?.label}
                       </span>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs" style={{ color: "var(--rs-text-muted)" }}>
                         {resource.downloadCount} downloads
                       </span>
                     </div>
@@ -444,7 +465,8 @@ export default function AdminResourcesPage() {
                       {resource.isDraft ? (
                         <button
                           onClick={() => handlePublish(resource)}
-                          className="p-2 text-gray-400 hover:text-green-400 hover:bg-green-500/10 rounded-lg transition-colors"
+                          className="rs-btn-ghost p-2"
+                          style={{ color: "rgb(74,222,128)", background: "rgba(16,185,129,0.10)", borderColor: "rgba(16,185,129,0.20)" }}
                           title="Publish"
                         >
                           <Eye className="w-4 h-4" />
@@ -452,7 +474,8 @@ export default function AdminResourcesPage() {
                       ) : (
                         <button
                           onClick={() => handleUnpublish(resource)}
-                          className="p-2 text-gray-400 hover:text-yellow-400 hover:bg-yellow-500/10 rounded-lg transition-colors"
+                          className="rs-btn-ghost p-2"
+                          style={{ color: "rgb(251,191,36)", background: "rgba(245,158,11,0.10)", borderColor: "rgba(245,158,11,0.20)" }}
                           title="Unpublish"
                         >
                           <EyeOff className="w-4 h-4" />
@@ -460,21 +483,22 @@ export default function AdminResourcesPage() {
                       )}
                       <button
                         onClick={() => handleOpenModal(resource)}
-                        className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
+                        className="rs-btn-ghost p-2"
                         title="Edit"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(resource._id)}
-                        className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                        className="rs-btn-ghost p-2"
+                        style={{ color: "rgb(248,113,113)", background: "rgba(239,68,68,0.10)", borderColor: "rgba(239,68,68,0.20)" }}
                         title="Delete"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-600 mt-2">
+                  <p className="text-xs mt-2" style={{ color: "var(--rs-text-muted)" }}>
                     {resource.isDraft ? `Last updated: ${formatDate(resource.updatedAt || resource.createdAt)}` : `Published: ${formatDate(resource.createdAt)}`}
                   </p>
                 </motion.div>
@@ -490,7 +514,7 @@ export default function AdminResourcesPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+            className="rs-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4"
             onClick={handleCloseModal}
           >
             <motion.div
@@ -498,72 +522,73 @@ export default function AdminResourcesPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-[#141417] border border-white/10 rounded-[14px] w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              className="rs-modal w-full max-w-2xl max-h-[90vh] overflow-y-auto"
             >
-              <div className="flex items-center justify-between p-6 border-b border-white/5">
+              <div className="rs-modal-header">
                 <h2 className="text-xl font-semibold text-white">
                   {editingResource ? "Edit Resource" : "Add New Resource"}
                 </h2>
                 <button
                   onClick={handleCloseModal}
-                  className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                  className="rs-btn-ghost p-2"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              <form onSubmit={handleSubmit} className="rs-modal-body space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Title *</label>
+                  <label className="block text-sm font-medium mb-2" style={{ color: "var(--rs-text-secondary)" }}>Title *</label>
                   <input
                     type="text"
                     required
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    className="rs-input w-full"
                     placeholder="Resource title"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Description *</label>
+                  <label className="block text-sm font-medium mb-2" style={{ color: "var(--rs-text-secondary)" }}>Description *</label>
                   <textarea
                     required
                     rows={3}
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none"
+                    className="rs-input rs-input--textarea w-full"
                     placeholder="Describe this resource..."
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">File Type *</label>
+                    <label className="block text-sm font-medium mb-2" style={{ color: "var(--rs-text-secondary)" }}>File Type *</label>
                     <div className="grid grid-cols-2 gap-2">
                       {fileTypes.map((type) => (
                         <button
                           key={type.value}
                           type="button"
                           onClick={() => setFormData({ ...formData, fileType: type.value as any })}
-                          className={`flex items-center justify-center gap-2 p-3 rounded-xl border transition-colors ${
+                          className="flex items-center justify-center gap-2 p-3 rounded-xl border text-sm transition-colors"
+                          style={
                             formData.fileType === type.value
-                              ? "border-blue-500 bg-blue-500/10 text-blue-400"
-                              : "border-white/10 text-gray-400 hover:border-white/20"
-                          }`}
+                              ? { borderColor: "var(--rs-accent)", background: "var(--rs-accent-soft)", color: "var(--rs-accent)" }
+                              : { borderColor: "var(--rs-border)", color: "var(--rs-text-secondary)" }
+                          }
                         >
                           <type.icon className="w-4 h-4" />
-                          <span className="text-sm">{type.value.toUpperCase()}</span>
+                          <span>{type.value.toUpperCase()}</span>
                         </button>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Category *</label>
+                    <label className="block text-sm font-medium mb-2" style={{ color: "var(--rs-text-secondary)" }}>Category *</label>
                     <select
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
-                      className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                      className="rs-input w-full"
                     >
                       {categories.filter(c => c.value !== "products").map((cat) => (
                         <option key={cat.value} value={cat.value}>{cat.label}</option>
@@ -573,7 +598,7 @@ export default function AdminResourcesPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium mb-2" style={{ color: "var(--rs-text-secondary)" }}>
                     {formData.fileType === "link" ? "Link URL *" : "File URL (optional)"}
                   </label>
                   <input
@@ -581,7 +606,7 @@ export default function AdminResourcesPage() {
                     required={formData.fileType === "link"}
                     value={formData.fileUrl}
                     onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })}
-                    className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    className="rs-input w-full"
                     placeholder={formData.fileType === "link" ? "https://example.com" : "https://storage.example.com/file.pdf"}
                   />
                 </div>
@@ -592,23 +617,24 @@ export default function AdminResourcesPage() {
                       type="checkbox"
                       checked={!formData.isDraft}
                       onChange={(e) => setFormData({ ...formData, isDraft: !e.target.checked, isPublic: e.target.checked })}
-                      className="w-5 h-5 rounded border-white/20 bg-black/30 text-blue-600 focus:ring-blue-500"
+                      className="w-5 h-5 rounded"
+                      style={{ borderColor: "var(--rs-border)", background: "var(--rs-bg-base)" }}
                     />
-                    <span className="text-sm text-gray-300">Publish immediately</span>
+                    <span className="text-sm" style={{ color: "var(--rs-text-secondary)" }}>Publish immediately</span>
                   </label>
                 </div>
 
-                <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/5">
+                <div className="flex items-center justify-end gap-3 pt-4" style={{ borderTop: "1px solid var(--rs-border)" }}>
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+                    className="rs-btn-ghost"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2 rs-btn-primary transition-colors"
+                    className="rs-btn-primary"
                   >
                     {editingResource ? "Save Changes" : "Create Resource"}
                   </button>
@@ -625,7 +651,7 @@ export default function AdminResourcesPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+            className="rs-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4"
             onClick={() => setShowProductModal(false)}
           >
             <motion.div
@@ -633,50 +659,50 @@ export default function AdminResourcesPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-[#141417] border border-white/10 rounded-[14px] w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              className="rs-modal w-full max-w-2xl max-h-[90vh] overflow-y-auto"
             >
-              <div className="flex items-center justify-between p-6 border-b border-white/5">
+              <div className="rs-modal-header">
                 <h2 className="text-xl font-semibold text-white">
                   {editingProduct ? "Edit Product" : "Add New Product"}
                 </h2>
                 <button
                   onClick={() => setShowProductModal(false)}
-                  className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                  className="rs-btn-ghost p-2"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <form onSubmit={handleProductSubmit} className="p-6 space-y-6">
+              <form onSubmit={handleProductSubmit} className="rs-modal-body space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Product Name *</label>
+                  <label className="block text-sm font-medium mb-2" style={{ color: "var(--rs-text-secondary)" }}>Product Name *</label>
                   <input
                     type="text"
                     required
                     value={productFormData.name}
                     onChange={(e) => setProductFormData({ ...productFormData, name: e.target.value })}
-                    className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50"
+                    className="rs-input w-full"
                     placeholder="e.g. Workmen Tee"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Description</label>
+                  <label className="block text-sm font-medium mb-2" style={{ color: "var(--rs-text-secondary)" }}>Description</label>
                   <textarea
                     rows={2}
                     value={productFormData.description}
                     onChange={(e) => setProductFormData({ ...productFormData, description: e.target.value })}
-                    className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 resize-none"
+                    className="rs-input rs-input--textarea w-full"
                     placeholder="Product description..."
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Category</label>
+                  <label className="block text-sm font-medium mb-2" style={{ color: "var(--rs-text-secondary)" }}>Category</label>
                   <select
                     value={productFormData.category}
                     onChange={(e) => setProductFormData({ ...productFormData, category: e.target.value })}
-                    className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50"
+                    className="rs-input w-full"
                   >
                     {productCategories.map((cat) => (
                       <option key={cat.value} value={cat.value}>{cat.label}</option>
@@ -686,11 +712,12 @@ export default function AdminResourcesPage() {
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium text-gray-300">Colors & Images</label>
+                    <label className="text-sm font-medium" style={{ color: "var(--rs-text-secondary)" }}>Colors & Images</label>
                     <button
                       type="button"
                       onClick={addProductColor}
-                      className="text-sm text-orange-400 hover:text-orange-300"
+                      className="text-sm font-medium"
+                      style={{ color: "rgb(251,146,60)" }}
                     >
                       + Add Color
                     </button>
@@ -702,18 +729,20 @@ export default function AdminResourcesPage() {
                           type="text"
                           value={color.name}
                           onChange={(e) => updateProductColor(index, "name", e.target.value)}
-                          className="flex-1 px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm"
+                          className="rs-input flex-1"
                           placeholder="Color name (e.g. Navy)"
                         />
-                        {/* Image Preview */}
-                        <div className="w-10 h-10 rounded-lg overflow-hidden bg-white/5 border border-white/10 flex-shrink-0">
+                        <div
+                          className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0"
+                          style={{ background: "var(--rs-bg-base)", border: "1px solid var(--rs-border)" }}
+                        >
                           {color.imageUrl || (color as any).image ? (
                             <img src={color.imageUrl || (color as any).image} alt="preview" className="w-full h-full object-cover" />
                           ) : (
-                            <ImageIcon className="w-6 h-6 text-gray-600 m-auto" />
+                            <ImageIcon className="w-6 h-6 m-auto" style={{ color: "var(--rs-text-muted)" }} />
                           )}
                         </div>
-                        <label className="px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-sm text-gray-400 cursor-pointer hover:bg-black/50">
+                        <label className="rs-btn-ghost cursor-pointer text-xs">
                           <input
                             type="file"
                             accept="image/*"
@@ -729,69 +758,52 @@ export default function AdminResourcesPage() {
                               }
                             }}
                           />
-                          <span className="text-xs">Upload</span>
+                          <span>Upload</span>
                         </label>
                         <input
                           type="url"
                           value={color.imageUrl}
                           onChange={(e) => updateProductColor(index, "imageUrl", e.target.value)}
-                          className="flex-1 px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm"
+                          className="rs-input flex-1"
                           placeholder="Or paste URL"
                         />
                         <button
                           type="button"
                           onClick={() => removeProductColor(index)}
-                          className="p-2 text-red-400 hover:text-red-300"
+                          className="rs-btn-ghost p-2"
+                          style={{ color: "rgb(248,113,113)", background: "rgba(239,68,68,0.10)", borderColor: "rgba(239,68,68,0.20)" }}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     ))}
                     {productFormData.colors.length === 0 && (
-                      <p className="text-gray-500 text-sm">No colors added yet</p>
+                      <p className="text-sm" style={{ color: "var(--rs-text-muted)" }}>No colors added yet</p>
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Pricing (ZAR)</label>
+                  <label className="block text-sm font-medium mb-2" style={{ color: "var(--rs-text-secondary)" }}>Pricing (ZAR)</label>
                   <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label className="text-xs text-gray-500">50 pcs</label>
-                      <input
-                        type="number"
-                        value={productFormData.pricing.price50}
-                        onChange={(e) => setProductFormData({ 
-                          ...productFormData, 
-                          pricing: { ...productFormData.pricing, price50: Number(e.target.value) } 
-                        })}
-                        className="w-full px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-gray-500">100 pcs</label>
-                      <input
-                        type="number"
-                        value={productFormData.pricing.price100}
-                        onChange={(e) => setProductFormData({ 
-                          ...productFormData, 
-                          pricing: { ...productFormData.pricing, price100: Number(e.target.value) } 
-                        })}
-                        className="w-full px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-gray-500">500 pcs</label>
-                      <input
-                        type="number"
-                        value={productFormData.pricing.price500}
-                        onChange={(e) => setProductFormData({ 
-                          ...productFormData, 
-                          pricing: { ...productFormData.pricing, price500: Number(e.target.value) } 
-                        })}
-                        className="w-full px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-white"
-                      />
-                    </div>
+                    {[
+                      { label: "50 pcs", key: "price50" as const },
+                      { label: "100 pcs", key: "price100" as const },
+                      { label: "500 pcs", key: "price500" as const },
+                    ].map((tier) => (
+                      <div key={tier.key}>
+                        <label className="text-xs block mb-1" style={{ color: "var(--rs-text-muted)" }}>{tier.label}</label>
+                        <input
+                          type="number"
+                          value={productFormData.pricing[tier.key]}
+                          onChange={(e) => setProductFormData({
+                            ...productFormData,
+                            pricing: { ...productFormData.pricing, [tier.key]: Number(e.target.value) }
+                          })}
+                          className="rs-input w-full"
+                        />
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -800,27 +812,29 @@ export default function AdminResourcesPage() {
                     <input
                       type="checkbox"
                       checked={productFormData.pricing.confirmed}
-                      onChange={(e) => setProductFormData({ 
-                        ...productFormData, 
-                        pricing: { ...productFormData.pricing, confirmed: e.target.checked } 
+                      onChange={(e) => setProductFormData({
+                        ...productFormData,
+                        pricing: { ...productFormData.pricing, confirmed: e.target.checked }
                       })}
-                      className="w-5 h-5 rounded border-white/20 bg-black/30 text-orange-600 focus:ring-orange-500"
+                      className="w-5 h-5 rounded"
+                      style={{ borderColor: "var(--rs-border)", background: "var(--rs-bg-base)" }}
                     />
-                    <span className="text-sm text-gray-300">Pricing Confirmed</span>
+                    <span className="text-sm" style={{ color: "var(--rs-text-secondary)" }}>Pricing Confirmed</span>
                   </label>
                 </div>
 
-                <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/5">
+                <div className="flex items-center justify-end gap-3 pt-4" style={{ borderTop: "1px solid var(--rs-border)" }}>
                   <button
                     type="button"
                     onClick={() => setShowProductModal(false)}
-                    className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+                    className="rs-btn-ghost"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-xl font-medium transition-colors"
+                    className="rs-btn-primary"
+                    style={{ background: "rgb(234,88,12)", color: "white" }}
                   >
                     {editingProduct ? "Save Changes" : "Create Product"}
                   </button>

@@ -11,18 +11,18 @@ export default function AdminLeaderboardPage() {
 
   if (!leaderboard) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--rs-bg-base)" }}>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2" style={{ borderColor: "var(--rs-accent)" }} />
       </div>
     );
   }
 
   const getTierBorder = (tier: string) => {
     switch (tier) {
-      case "platinum": return "border-violet-500/30";
-      case "gold": return "border-amber-400/30";
-      case "silver": return "border-white/10";
-      default: return "border-white/5";
+      case "platinum": return "rgba(167,139,250,0.30)";
+      case "gold": return "rgba(251,191,36,0.30)";
+      case "silver": return "rgba(255,255,255,0.10)";
+      default: return "var(--rs-border)";
     }
   };
 
@@ -35,17 +35,19 @@ export default function AdminLeaderboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-          <p className="rs-overline">Admin</p>
-          <h1 className="rs-page-title">Leaderboard</h1>
-          <p className="text-gray-500 mt-1">Top performing affiliates by sales</p>
+      <div className="rs-page-header">
+        <div>
+          <span className="rs-overline">Admin</span>
+          <h1 className="rs-page-title mt-1">Leaderboard</h1>
+          <p className="rs-page-subtitle">Top performing affiliates by sales</p>
         </div>
+      </div>
 
       {leaderboard.length === 0 ? (
-        <div className="bg-[#141417] rounded-[14px] border border-white/5 p-12 text-center">
-          <Trophy className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-white mb-2">No Data Yet</h3>
-          <p className="text-gray-500">Complete some deals to see the leaderboard</p>
+        <div className="rs-empty-state rs-card">
+          <Trophy className="rs-empty-state-icon" style={{ width: 48, height: 48 }} />
+          <p className="rs-empty-state-title">No Data Yet</p>
+          <p className="rs-empty-state-description">Complete some deals to see the leaderboard.</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -55,10 +57,11 @@ export default function AdminLeaderboardPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className={`rs-card p-6 ${getTierBorder(entry.affiliate.tier)} border`}
+              className="rs-card p-6"
+              style={{ borderColor: getTierBorder(entry.affiliate.tier) }}
             >
               <div className="flex items-center gap-6">
-                <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-black/30 rounded-xl">
+                <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-xl" style={{ background: "var(--rs-bg-base)", border: "1px solid var(--rs-border)" }}>
                   {getMedalIcon(index) ? (
                     <span className="text-2xl">{getMedalIcon(index)}</span>
                   ) : (
@@ -71,34 +74,40 @@ export default function AdminLeaderboardPage() {
                     <h3 className="text-lg font-semibold text-white truncate">
                       {entry.affiliate.firstName} {entry.affiliate.lastName}
                     </h3>
-                    <span className={`px-2 py-0.5 text-xs rounded-full bg-black/30 capitalize ${
-                      entry.affiliate.tier === "platinum" ? "text-indigo-300" :
-                      entry.affiliate.tier === "gold" ? "text-yellow-300" :
-                      entry.affiliate.tier === "silver" ? "text-gray-300" :
-                      "text-amber-300"
-                    }`}>
+                    <span
+                      className="rs-pill capitalize"
+                      style={
+                        entry.affiliate.tier === "platinum"
+                          ? { background: "rgba(167,139,250,0.10)", color: "rgb(167,139,250)", borderColor: "rgba(167,139,250,0.25)" }
+                          : entry.affiliate.tier === "gold"
+                          ? { background: "rgba(251,191,36,0.10)", color: "rgb(251,191,36)", borderColor: "rgba(251,191,36,0.25)" }
+                          : entry.affiliate.tier === "silver"
+                          ? { background: "rgba(255,255,255,0.06)", color: "rgb(229,231,235)", borderColor: "rgba(255,255,255,0.15)" }
+                          : { background: "rgba(245,158,11,0.10)", color: "rgb(251,146,60)", borderColor: "rgba(245,158,11,0.25)" }
+                      }
+                    >
                       {entry.affiliate.tier}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-400 truncate">{entry.affiliate.email}</p>
+                  <p className="text-sm truncate" style={{ color: "var(--rs-text-secondary)" }}>{entry.affiliate.email}</p>
                 </div>
 
                 <div className="flex items-center gap-8">
                   <div className="text-center">
-                    <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Deals</p>
+                    <p className="text-xs uppercase tracking-wider mb-1" style={{ color: "var(--rs-text-muted)" }}>Deals</p>
                     <p className="text-xl font-semibold text-white">{entry.dealCount}</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Conversion</p>
+                    <p className="text-xs uppercase tracking-wider mb-1" style={{ color: "var(--rs-text-muted)" }}>Conversion</p>
                     <p className="text-xl font-semibold text-white">{entry.conversionRate.toFixed(1)}%</p>
                   </div>
                   <div className="text-center min-w-[120px]">
-                    <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Total Sales</p>
+                    <p className="text-xs uppercase tracking-wider mb-1" style={{ color: "var(--rs-text-muted)" }}>Total Sales</p>
                     <p className="text-xl font-semibold text-white">{formatCurrency(entry.totalSales)}</p>
                   </div>
                   <div className="text-center min-w-[120px]">
-                    <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Commission</p>
-                    <p className="text-xl font-semibold text-emerald-400">{formatCurrency(entry.totalCommission)}</p>
+                    <p className="text-xs uppercase tracking-wider mb-1" style={{ color: "var(--rs-text-muted)" }}>Commission</p>
+                    <p className="text-xl font-semibold" style={{ color: "rgb(74,222,128)" }}>{formatCurrency(entry.totalCommission)}</p>
                   </div>
                 </div>
               </div>

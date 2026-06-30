@@ -69,8 +69,10 @@ export default function AdminOverviewPage() {
             className="rs-card p-5 group"
           >
             <div className="flex items-start justify-between mb-4">
-              <div className="w-9 h-9 rounded-lg bg-[var(--rs-accent-soft)] border border-violet-500/15 flex items-center justify-center group-hover:border-violet-500/30 transition-colors">
-                <stat.icon className="w-4 h-4 text-violet-400" />
+              <div className="w-9 h-9 rounded-lg bg-[var(--rs-accent-soft)] border flex items-center justify-center transition-colors"
+                style={{ borderColor: "rgba(167,139,250,0.15)" }}
+              >
+                <stat.icon className="w-4 h-4" style={{ color: "rgb(167,139,250)" }} />
               </div>
               <span className="text-[11px] font-medium" style={{ color: 'var(--rs-text-muted)' }}>—</span>
             </div>
@@ -99,11 +101,11 @@ export default function AdminOverviewPage() {
           <div className="space-y-4">
             {(stats as any).recentActivity?.slice(0, 5).map((activity: any, i: number) => (
               <div key={i} className="flex items-center gap-3 text-sm">
-                <div className="w-2 h-2 rounded-full bg-violet-500" />
-                <span className="text-slate-400">{activity.message}</span>
-                <span className="ml-auto text-xs text-slate-600">{activity.time}</span>
+                <div className="w-2 h-2 rounded-full" style={{ background: "var(--rs-accent)" }} />
+                <span style={{ color: "var(--rs-text-secondary)" }}>{activity.message}</span>
+                <span className="ml-auto text-xs" style={{ color: "var(--rs-text-muted)" }}>{activity.time}</span>
               </div>
-            )) || <p className="text-slate-500 text-sm">No recent activity</p>}
+            )) || <p className="text-sm" style={{ color: "var(--rs-text-muted)" }}>No recent activity</p>}
           </div>
         </motion.div>
 
@@ -118,14 +120,17 @@ export default function AdminOverviewPage() {
             {(stats as any).topAffiliates?.slice(0, 5).map((affiliate: any, i: number) => (
               <div key={i} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-full bg-violet-500/20 text-violet-400 text-xs flex items-center justify-center font-medium">
+                  <span
+                    className="w-6 h-6 rounded-full text-xs flex items-center justify-center font-medium"
+                    style={{ background: "var(--rs-accent-soft)", color: "var(--rs-accent)", border: "1px solid rgba(167,139,250,0.20)" }}
+                  >
                     {i + 1}
                   </span>
-                  <span className="text-slate-300 text-sm">{affiliate.name}</span>
+                  <span className="text-sm" style={{ color: "var(--rs-text-primary)" }}>{affiliate.name}</span>
                 </div>
-                <span className="text-slate-400 text-sm font-mono">{formatCurrency(affiliate.commission)}</span>
+                <span className="text-sm font-mono" style={{ color: "var(--rs-text-secondary)" }}>{formatCurrency(affiliate.commission)}</span>
               </div>
-            )) || <p className="text-slate-500 text-sm">No affiliates yet</p>}
+            )) || <p className="text-sm" style={{ color: "var(--rs-text-muted)" }}>No affiliates yet</p>}
           </div>
         </motion.div>
       </div>

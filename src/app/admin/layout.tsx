@@ -66,20 +66,25 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--rs-bg-base)" }}>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2" style={{ borderColor: "var(--rs-accent)" }} />
       </div>
     );
   }
 
   if (isLoaded && !userId) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-semibold text-white mb-4">Admin Access Required</h1>
-          <p className="text-gray-400 mb-6">Please sign in to access the admin dashboard</p>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--rs-bg-base)" }}>
+        <div className="text-center rs-card p-8 max-w-md">
+          <div className="rs-icon-tile rs-icon-tile--accent mx-auto mb-4 w-12 h-12">
+            <LayoutDashboard className="w-5 h-5" />
+          </div>
+          <h1 className="text-lg font-semibold text-white mb-2">Admin Access Required</h1>
+          <p className="text-sm mb-6" style={{ color: "var(--rs-text-secondary)" }}>
+            Please sign in to access the admin dashboard.
+          </p>
           <SignInButton mode="modal">
-            <button className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-500 transition-colors">
+            <button className="rs-btn-primary w-full justify-center">
               Sign In
             </button>
           </SignInButton>
@@ -90,11 +95,16 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
   if (isLoaded && userId && !isAdminUser) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-semibold text-white mb-4">Access Denied</h1>
-          <p className="text-gray-400 mb-6">You do not have permission to access this page</p>
-          <Link href="/dashboard" className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-500 transition-colors">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--rs-bg-base)" }}>
+        <div className="text-center rs-card p-8 max-w-md">
+          <div className="rs-icon-tile rs-icon-tile--danger mx-auto mb-4 w-12 h-12">
+            <LayoutDashboard className="w-5 h-5" />
+          </div>
+          <h1 className="text-lg font-semibold text-white mb-2">Access Denied</h1>
+          <p className="text-sm mb-6" style={{ color: "var(--rs-text-secondary)" }}>
+            You do not have permission to access this page.
+          </p>
+          <Link href="/dashboard" className="rs-btn-primary w-full justify-center">
             Go to Dashboard
           </Link>
         </div>
@@ -103,7 +113,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-black flex">
+    <div className="min-h-screen flex" style={{ background: "var(--rs-bg-base)" }}>
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
@@ -130,7 +140,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
           <div className="p-4 flex items-center justify-center border-b" style={{ borderColor: 'var(--rs-border)' }}>
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="flex items-center gap-2 hover:bg-white/5 rounded-xl p-2 transition-colors"
+              className="flex items-center gap-2 rounded-xl p-2 transition-colors hover:bg-white/5"
             >
               <div className={`relative h-12 ${collapsed ? 'w-12' : 'w-[160px]'} flex-shrink-0 transition-all`}>
                 <Image
@@ -155,36 +165,31 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
               return (
                 <Fragment key={item.href}>
-                  {showSectionTitle && sectionLabel && !collapsed && (
-                    <div className="pt-4 pb-2 px-3">
-                      <span className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--rs-text-muted)' }}>
-                        {sectionLabel}
-                      </span>
+                  {showSectionTitle && sectionLabel && (
+                    <div className={`pt-4 pb-2 px-3 ${collapsed ? "invisible" : ""}`}>
+                      <span className="rs-overline text-[10px]">{sectionLabel}</span>
                     </div>
                   )}
                   <Link
                   key={item.href}
                   href={item.href}
                   title={collapsed ? item.label : undefined}
-                  className={`group flex items-center gap-2 px-3 py-2 rounded-xl font-medium transition-all relative ${
+                  className={`rs-sidebar-item group flex items-center gap-2 font-medium transition-all relative ${
                     collapsed ? "justify-center px-1" : ""
                   } ${
-                    isActive
-                      ? "text-white"
-                      : "text-gray-400 hover:text-white hover:bg-white/5"
+                    isActive ? "is-active" : ""
                   }`}
-                  style={isActive ? { background: 'var(--rs-accent-soft)' } : undefined}
                   onClick={() => setSidebarOpen(false)}
                 >
                   {isActive && (
-                    <motion.div
-                      layoutId="activeNav"
-                      className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-7 bg-gradient-to-b from-violet-400 to-violet-600 rounded-r-full"
-                      style={{ boxShadow: '0 0 12px rgba(124,58,237,0.5)' }}
+                    <motion.span
+                      layoutId="adminActiveNav"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-7 rounded-r-full"
+                      style={{ background: "var(--rs-accent)", boxShadow: "0 0 12px rgba(124,58,237,0.55)" }}
                     />
                   )}
                   <item.icon className={`w-5 h-5 flex-shrink-0 transition-colors ${
-                    isActive ? "text-violet-400" : "text-gray-500 group-hover:text-gray-300"
+                    isActive ? "" : ""
                   }`} />
                   <span className={`transition-all duration-200 ${collapsed ? 'w-0 opacity-0 hidden' : 'opacity-100'}`}>
                     {item.label}
@@ -199,16 +204,16 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
             <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
               {!collapsed && (
                 <>
-                  <button className="relative p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                  <button className="rs-btn-ghost p-2 relative" aria-label="Notifications">
                     <Bell className="w-5 h-5" />
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" />
+                    <span className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ background: "var(--rs-accent)" }} />
                   </button>
                   <button
                     onClick={() => signOut({ redirectUrl: "/" })}
-                    className="flex items-center gap-2 px-3 py-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                    className="rs-btn-ghost flex items-center gap-2 text-sm"
                   >
                     <LogOut className="w-5 h-5" />
-                    <span className="text-sm">Sign Out</span>
+                    Sign Out
                   </button>
                 </>
               )}
@@ -245,9 +250,9 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
             position="bottom-right"
             toastOptions={{
               style: {
-                background: "#141417",
-                border: "1px solid rgba(255,255,255,0.06)",
-                color: "#f5f5f7",
+                background: "var(--rs-bg-raised)",
+                border: "1px solid var(--rs-border)",
+                color: "var(--rs-text-primary)",
                 borderRadius: "12px",
                 boxShadow: "0 12px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)",
               },

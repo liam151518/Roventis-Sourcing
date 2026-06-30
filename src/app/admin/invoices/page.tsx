@@ -172,34 +172,31 @@ export default function AdminInvoicesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
-      >
+      <div className="rs-page-header flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-white">Invoice Settings</h1>
-          <p className="text-gray-500 mt-1">Customize your invoice template and company details</p>
+          <span className="rs-overline">Admin</span>
+          <h1 className="rs-page-title mt-1">Invoice Settings</h1>
+          <p className="rs-page-subtitle">Customize your invoice template and company details</p>
         </div>
         <button
           onClick={handleSave}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="rs-btn-primary flex items-center gap-2"
         >
           <Save className="w-4 h-4" />
           Save Changes
         </button>
-      </motion.div>
+      </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-white/10 pb-4 overflow-x-auto">
+      <div className="flex gap-2 pb-4 overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
               activeTab === tab.id
-                ? "bg-blue-600 text-white"
-                : "bg-white/5 text-gray-400 hover:bg-white/10"
+                ? "rs-btn-primary"
+                : "rs-btn-ghost"
             }`}
           >
             <tab.icon className="w-4 h-4" />
@@ -211,97 +208,97 @@ export default function AdminInvoicesPage() {
       {/* Content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Settings Panel */}
-        <div className="bg-[#0a0a0b] rounded-xl border border-white/5 p-6">
+        <div className="rs-card p-6">
           {activeTab === "company" && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white">Company Information</h3>
-              
+              <h3 className="rs-section-header-title text-lg">Company Information</h3>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Company Name</label>
+                  <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Company Name</label>
                   <input
                     type="text"
                     value={companyInfo.name}
                     onChange={(e) => setCompanyInfo({...companyInfo, name: e.target.value})}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
+                    className="rs-input w-full"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Email</label>
+                  <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Email</label>
                   <input
                     type="text"
                     value={companyInfo.email}
                     onChange={(e) => setCompanyInfo({...companyInfo, email: e.target.value})}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
+                    className="rs-input w-full"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Phone</label>
+                  <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Phone</label>
                   <input
                     type="text"
                     value={companyInfo.phone}
                     onChange={(e) => setCompanyInfo({...companyInfo, phone: e.target.value})}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
+                    className="rs-input w-full"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Website</label>
+                  <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Website</label>
                   <input
                     type="text"
                     value={companyInfo.website}
                     onChange={(e) => setCompanyInfo({...companyInfo, website: e.target.value})}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
+                    className="rs-input w-full"
                   />
                 </div>
               </div>
 
-              <h3 className="text-lg font-semibold text-white pt-4">Bank Details</h3>
+              <h3 className="rs-section-header-title text-lg pt-4">Bank Details</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Bank</label>
+                  <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Bank</label>
                   <input
                     type="text"
                     value={companyInfo.bankName}
                     onChange={(e) => setCompanyInfo({...companyInfo, bankName: e.target.value})}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
+                    className="rs-input w-full"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Account Number</label>
+                  <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Account Number</label>
                   <input
                     type="text"
                     value={companyInfo.accountNumber}
                     onChange={(e) => setCompanyInfo({...companyInfo, accountNumber: e.target.value})}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
+                    className="rs-input w-full"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Branch Code</label>
+                  <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Branch Code</label>
                   <input
                     type="text"
                     value={companyInfo.branchCode}
                     onChange={(e) => setCompanyInfo({...companyInfo, branchCode: e.target.value})}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
+                    className="rs-input w-full"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Account Holder</label>
+                  <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Account Holder</label>
                   <input
                     type="text"
                     value={companyInfo.accountHolder}
                     onChange={(e) => setCompanyInfo({...companyInfo, accountHolder: e.target.value})}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
+                    className="rs-input w-full"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Tagline (Footer)</label>
+                <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Tagline (Footer)</label>
                 <input
                   type="text"
                   value={companyInfo.tagline}
                   onChange={(e) => setCompanyInfo({...companyInfo, tagline: e.target.value})}
-                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
+                  className="rs-input w-full"
                 />
               </div>
             </div>
@@ -309,86 +306,42 @@ export default function AdminInvoicesPage() {
 
           {activeTab === "colors" && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white">Invoice Colors</h3>
-              
+              <h3 className="rs-section-header-title text-lg">Invoice Colors</h3>
+
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">Primary Color</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      value={colors.primary}
-                      onChange={(e) => setColors({...colors, primary: e.target.value})}
-                      className="w-12 h-10 rounded-lg cursor-pointer"
-                    />
-                    <input
-                      type="text"
-                      value={colors.primary}
-                      onChange={(e) => setColors({...colors, primary: e.target.value})}
-                      className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
-                    />
+                {[
+                  { label: "Primary Color", key: "primary" as const },
+                  { label: "Divider Color", key: "divider" as const },
+                  { label: "Secondary Color", key: "secondary" as const },
+                  { label: "Accent Color", key: "accent" as const },
+                ].map((c) => (
+                  <div key={c.key}>
+                    <label className="block text-xs uppercase tracking-wide mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>{c.label}</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="color"
+                        value={colors[c.key]}
+                        onChange={(e) => setColors({...colors, [c.key]: e.target.value})}
+                        className="w-12 h-10 rounded-lg cursor-pointer border-0 p-0"
+                      />
+                      <input
+                        type="text"
+                        value={colors[c.key]}
+                        onChange={(e) => setColors({...colors, [c.key]: e.target.value})}
+                        className="rs-input flex-1"
+                      />
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">Divider Color</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      value={colors.divider}
-                      onChange={(e) => setColors({...colors, divider: e.target.value})}
-                      className="w-12 h-10 rounded-lg cursor-pointer"
-                    />
-                    <input
-                      type="text"
-                      value={colors.divider}
-                      onChange={(e) => setColors({...colors, divider: e.target.value})}
-                      className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">Secondary Color</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      value={colors.secondary}
-                      onChange={(e) => setColors({...colors, secondary: e.target.value})}
-                      className="w-12 h-10 rounded-lg cursor-pointer"
-                    />
-                    <input
-                      type="text"
-                      value={colors.secondary}
-                      onChange={(e) => setColors({...colors, secondary: e.target.value})}
-                      className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">Accent Color</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      value={colors.accent}
-                      onChange={(e) => setColors({...colors, accent: e.target.value})}
-                      className="w-12 h-10 rounded-lg cursor-pointer"
-                    />
-                    <input
-                      type="text"
-                      value={colors.accent}
-                      onChange={(e) => setColors({...colors, accent: e.target.value})}
-                      className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
-                    />
-                  </div>
-                </div>
+                ))}
               </div>
 
-              <div className="mt-6 p-4 bg-white/5 rounded-lg">
-                <h4 className="text-sm font-medium text-white mb-2">Preview</h4>
-                <div className="flex gap-4">
-                  <div className="w-8 h-8 rounded" style={{backgroundColor: colors.primary}}></div>
-                  <div className="w-8 h-8 rounded" style={{backgroundColor: colors.divider}}></div>
-                  <div className="w-8 h-8 rounded" style={{backgroundColor: colors.secondary}}></div>
-                  <div className="w-8 h-8 rounded" style={{backgroundColor: colors.accent}}></div>
+              <div className="rs-card p-4 mt-6">
+                <h4 className="text-sm font-medium text-white mb-3">Preview</h4>
+                <div className="flex gap-3">
+                  <div className="w-10 h-10 rounded" style={{backgroundColor: colors.primary}}></div>
+                  <div className="w-10 h-10 rounded" style={{backgroundColor: colors.divider}}></div>
+                  <div className="w-10 h-10 rounded" style={{backgroundColor: colors.secondary}}></div>
+                  <div className="w-10 h-10 rounded" style={{backgroundColor: colors.accent}}></div>
                 </div>
               </div>
             </div>
@@ -396,9 +349,9 @@ export default function AdminInvoicesPage() {
 
           {activeTab === "notes" && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white">Default Notes</h3>
-              <p className="text-sm text-gray-400">These notes will appear on all invoices by default</p>
-              
+              <h3 className="rs-section-header-title text-lg">Default Notes</h3>
+              <p className="text-sm" style={{ color: "var(--rs-text-secondary)" }}>These notes will appear on all invoices by default</p>
+
               {defaultNotes.map((note, index) => (
                 <div key={index} className="flex gap-2">
                   <input
@@ -409,20 +362,23 @@ export default function AdminInvoicesPage() {
                       newNotes[index] = e.target.value;
                       setDefaultNotes(newNotes);
                     }}
-                    className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white"
+                    className="rs-input flex-1"
                   />
                   <button
                     onClick={() => setDefaultNotes(defaultNotes.filter((_, i) => i !== index))}
-                    className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg"
+                    className="rs-btn-ghost p-2"
+                    style={{ color: "rgb(248,113,113)", background: "rgba(239,68,68,0.10)", borderColor: "rgba(239,68,68,0.20)" }}
+                    aria-label="Remove"
                   >
                     ×
                   </button>
                 </div>
               ))}
-              
+
               <button
                 onClick={() => setDefaultNotes([...defaultNotes, ""])}
-                className="w-full py-2 border-2 border-dashed border-white/10 rounded-lg text-gray-400 hover:border-white/20 hover:text-white transition-colors"
+                className="w-full py-2.5 border-2 border-dashed rounded-xl text-sm font-medium transition-colors"
+                style={{ borderColor: "var(--rs-border)", color: "var(--rs-text-secondary)" }}
               >
                 + Add Note
               </button>
@@ -431,13 +387,13 @@ export default function AdminInvoicesPage() {
         </div>
 
         {/* Preview Panel */}
-        <div className="bg-[#141417] rounded-xl border border-white/5 p-4 overflow-auto max-h-[80vh]">
-          <h3 className="text-lg font-semibold text-white mb-4 sticky top-0 bg-[#141417] py-2">Live Preview</h3>
+        <div className="rs-card p-4 overflow-auto max-h-[80vh]">
+          <h3 className="rs-section-header-title text-lg mb-4 sticky top-0 py-2 z-10" style={{ background: "var(--rs-bg-raised)" }}>Live Preview</h3>
           <div className="bg-white shadow-lg scale-[0.45] origin-top">
-            <InvoicePreview 
-              invoiceData={defaultInvoiceData} 
-              logoBase64={logoBase64} 
-              scale={1} 
+            <InvoicePreview
+              invoiceData={defaultInvoiceData}
+              logoBase64={logoBase64}
+              scale={1}
               settings={{
                 companyName: companyInfo.name,
                 companyEmail: companyInfo.email,

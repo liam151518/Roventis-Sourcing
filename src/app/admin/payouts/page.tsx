@@ -179,60 +179,60 @@ export default function AdminPayoutsPage() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className={`fixed top-4 right-4 px-4 py-3 rounded-xl z-50 ${
-              toast.type === "success" ? "bg-[var(--rs-success)]" : "bg-[var(--rs-danger)]"
-            } text-white shadow-xl`}
+            className={`rs-callout fixed top-4 right-4 z-50 max-w-sm ${toast.type === "success" ? "rs-callout--success" : "rs-callout--danger"}`}
           >
-            {toast.message}
+            <p className="text-sm font-medium text-white">{toast.message}</p>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="rs-page-header flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <p className="rs-overline">Admin</p>
-          <h1 className="rs-page-title">Commission Approvals & Payouts</h1>
-          <p className="text-gray-500 mt-1">Validate orders and manage affiliate commission payments</p>
+          <span className="rs-overline">Admin</span>
+          <h1 className="rs-page-title mt-1">Commission Approvals & Payouts</h1>
+          <p className="rs-page-subtitle">Validate orders and manage affiliate commission payments</p>
         </div>
         <button
           onClick={handleRecalculate}
-          className="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-xl text-sm font-medium transition-colors"
+          className="rs-btn-ghost px-4 py-2 text-sm"
         >
           Recalculate Commissions
         </button>
       </div>
 
       {/* Main Tabs */}
-      <div className="flex gap-2 border-b border-white/10">
+      <div className="flex gap-2 border-b" style={{ borderColor: "var(--rs-border)" }}>
         <button
           onClick={() => setActiveTab("commissions")}
           className={`px-4 py-3 text-sm font-medium transition-colors relative ${
-            activeTab === "commissions" ? "text-white" : "text-gray-500 hover:text-white"
+            activeTab === "commissions" ? "text-white" : ""
           }`}
+          style={activeTab === "commissions" ? undefined : { color: "var(--rs-text-secondary)" }}
         >
           <span className="flex items-center gap-2">
             <DollarSign className="w-4 h-4" />
             Commission Approvals
           </span>
           {activeTab === "commissions" && (
-            <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500" />
+            <motion.div layoutId="payoutsActiveTab" className="absolute bottom-0 left-0 right-0 h-0.5" style={{ background: "var(--rs-accent)" }} />
           )}
         </button>
         <button
           onClick={() => setActiveTab("payouts")}
           className={`px-4 py-3 text-sm font-medium transition-colors relative ${
-            activeTab === "payouts" ? "text-white" : "text-gray-500 hover:text-white"
+            activeTab === "payouts" ? "text-white" : ""
           }`}
+          style={activeTab === "payouts" ? undefined : { color: "var(--rs-text-secondary)" }}
         >
           <span className="flex items-center gap-2">
             <Banknote className="w-4 h-4" />
             Payout Requests
-            <span className="px-2 py-0.5 bg-amber-500/20 text-amber-400 text-xs rounded-full">
+            <span className="rs-pill text-xs px-2 py-0.5" style={{ background: "rgba(245,158,11,0.10)", color: "rgb(251,191,36)", borderColor: "rgba(245,158,11,0.20)" }}>
               {pendingPayouts.length}
             </span>
           </span>
           {activeTab === "payouts" && (
-            <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-500" />
+            <motion.div layoutId="payoutsActiveTab" className="absolute bottom-0 left-0 right-0 h-0.5" style={{ background: "var(--rs-accent)" }} />
           )}
         </button>
       </div>
@@ -242,50 +242,45 @@ export default function AdminPayoutsPage() {
         <>
           {/* Summary Strip */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="rs-card p-6" style={{ borderColor: 'var(--rs-warning)', borderWidth: 1 }}>
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-[var(--rs-warning)]/10">
-                  <Clock className="w-6 h-6 text-[var(--rs-warning)]" />
-                </div>
-                <div>
-                  <p className="text-gray-400 text-sm">Pending Approval</p>
-                  <p className="text-2xl font-semibold text-white">{formatCurrency(totalPendingApproval)}</p>
-                </div>
+            <div className="rs-card p-6 flex items-center gap-3" style={{ borderColor: "var(--rs-warning)" }}>
+              <div className="rs-icon-tile rs-icon-tile--warning">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-medium tracking-wide uppercase" style={{ color: "var(--rs-text-secondary)" }}>Pending Approval</p>
+                <p className="rs-stat text-2xl text-white mt-1">{formatCurrency(totalPendingApproval)}</p>
               </div>
             </div>
-            <div className="rs-card p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-blue-500/10">
-                  <CheckCircle className="w-6 h-6 text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-gray-400 text-sm">Approved — Awaiting Payment</p>
-                  <p className="text-2xl font-semibold text-white">{formatCurrency(totalApprovedAwaitingPayment)}</p>
-                </div>
+            <div className="rs-card p-6 flex items-center gap-3">
+              <div className="rs-icon-tile rs-icon-tile--info">
+                <CheckCircle className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-medium tracking-wide uppercase" style={{ color: "var(--rs-text-secondary)" }}>Approved — Awaiting Payment</p>
+                <p className="rs-stat text-2xl text-white mt-1">{formatCurrency(totalApprovedAwaitingPayment)}</p>
               </div>
             </div>
-            <div className="rs-card p-6" style={{ borderColor: 'var(--rs-success)', borderWidth: 1 }}>
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-[var(--rs-success)]/10">
-                  <DollarSign className="w-6 h-6 text-[var(--rs-success)]" />
-                </div>
-                <div>
-                  <p className="text-gray-400 text-sm">Paid This Month</p>
-                  <p className="text-2xl font-semibold text-white">{formatCurrency(totalPaidThisMonth)}</p>
-                </div>
+            <div className="rs-card p-6 flex items-center gap-3" style={{ borderColor: "var(--rs-success)" }}>
+              <div className="rs-icon-tile rs-icon-tile--success">
+                <DollarSign className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-medium tracking-wide uppercase" style={{ color: "var(--rs-text-secondary)" }}>Paid This Month</p>
+                <p className="rs-stat text-2xl text-white mt-1">{formatCurrency(totalPaidThisMonth)}</p>
               </div>
             </div>
           </div>
 
           {/* Sub-tabs for commission status */}
-          <div className="flex gap-2 border-b border-white/10">
+          <div className="flex gap-2 border-b" style={{ borderColor: "var(--rs-border)" }}>
             {(["pending", "approved", "paid"] as const).map((status) => (
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
                 className={`px-4 py-2 text-sm font-medium transition-colors ${
-                  statusFilter === status ? "text-white" : "text-gray-500 hover:text-white"
+                  statusFilter === status ? "text-white" : ""
                 }`}
+                style={statusFilter === status ? undefined : { color: "var(--rs-text-secondary)" }}
               >
                 {status === "pending" && `Pending (${pendingOrders.length})`}
                 {status === "approved" && `Approved (${approvedOrders.length})`}
@@ -294,72 +289,77 @@ export default function AdminPayoutsPage() {
             ))}
           </div>
 
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-            <input
-              type="text"
-              placeholder="Search by client or affiliate name..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-[#141417] border border-white/5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-            />
+          <div className="rs-card p-4">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--rs-text-muted)" }} />
+              <input
+                type="text"
+                placeholder="Search by client or affiliate name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="rs-input w-full pl-11"
+              />
+            </div>
           </div>
 
           {/* Orders Table */}
-          <div className="rs-card p-6">
+          <div className="rs-card overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="rs-table w-full">
                 <thead>
-                  <tr className="border-b border-white/5">
-                    <th className="text-left p-4 text-gray-400 font-medium">Order</th>
-                    <th className="text-left p-4 text-gray-400 font-medium">Affiliate</th>
-                    <th className="text-left p-4 text-gray-400 font-medium">Client</th>
-                    <th className="text-left p-4 text-gray-400 font-medium">Total</th>
-                    <th className="text-left p-4 text-gray-400 font-medium">Commission</th>
-                    <th className="text-left p-4 text-gray-400 font-medium">Status</th>
-                    {statusFilter !== "paid" && <th className="text-left p-4 text-gray-400 font-medium">Actions</th>}
+                  <tr>
+                    <th>Order</th>
+                    <th>Affiliate</th>
+                    <th>Client</th>
+                    <th>Total</th>
+                    <th>Commission</th>
+                    <th>Status</th>
+                    {statusFilter !== "paid" && <th>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
                   {getOrdersForTab(statusFilter as any).map((order: any) => (
-                    <tr key={order._id} className="border-b border-white/5 hover:bg-white/5">
-                      <td className="p-4">
-                        <p className="text-white font-medium">#{order._id.slice(-8)}</p>
-                        <p className="text-gray-500 text-xs">{formatDate(order.createdAt)}</p>
+                    <tr key={order._id}>
+                      <td>
+                        <p className="font-medium text-white">#{order._id.slice(-8)}</p>
+                        <p className="text-xs" style={{ color: "var(--rs-text-secondary)" }}>{formatDate(order.createdAt)}</p>
                       </td>
-                      <td className="p-4">
+                      <td>
                         <div>
                           <p className="text-white">{order.affiliate?.firstName} {order.affiliate?.lastName}</p>
-                          <p className="text-gray-500 text-xs">{order.affiliate?.email}</p>
+                          <p className="text-xs" style={{ color: "var(--rs-text-secondary)" }}>{order.affiliate?.email}</p>
                         </div>
                       </td>
-                      <td className="p-4">
+                      <td>
                         <p className="text-white">{order.clientName}</p>
-                        {order.clientCompany && <p className="text-gray-500 text-sm">{order.clientCompany}</p>}
+                        {order.clientCompany && <p className="text-xs" style={{ color: "var(--rs-text-secondary)" }}>{order.clientCompany}</p>}
                       </td>
-                      <td className="p-4 text-white font-medium">{formatCurrency(order.totalAmount)}</td>
-                      <td className="p-4">
-                        <p className={`font-medium ${
-                          order.commissionStatus === "paid" ? "text-[var(--rs-success)]" :
-                          order.commissionStatus === "approved" ? "text-blue-400" :
-                          "text-[var(--rs-warning)]"
-                        }`}>
+                      <td className="font-medium">{formatCurrency(order.totalAmount)}</td>
+                      <td>
+                        <p className="font-medium" style={{
+                          color: order.commissionStatus === "paid"
+                            ? "rgb(74,222,128)"
+                            : order.commissionStatus === "approved"
+                            ? "rgb(96,165,250)"
+                            : "rgb(251,191,36)"
+                        }}>
                           {formatCurrency(order.commissionAmount || 0)}
                         </p>
                       </td>
-                      <td className="p-4">
+                      <td>
                         <StatusBadge tone={order.status === "submitted" || order.status === "supplier_confirmed" || order.status === "in_transit" ? "active" : order.status === "delivered" || order.status === "installed" ? "paid" : "neutral"}>
                           {order.status?.replace("_", " ")}
                         </StatusBadge>
                       </td>
                       {statusFilter !== "paid" && (
-                        <td className="p-4">
+                        <td>
                           <div className="flex flex-col gap-2">
                             {statusFilter === "pending" && (
                               <button
                                 onClick={() => handleApprove(order._id)}
                                 disabled={processingId === order._id}
-                                className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-600 text-white text-xs font-medium rounded-lg flex items-center gap-1.5"
+                                className="rs-btn-primary flex items-center gap-1.5 text-xs px-3 py-1.5 disabled:opacity-60"
+                                style={{ background: "rgba(245,158,11,0.85)" }}
                               >
                                 {processingId === order._id ? (
                                   <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -376,12 +376,13 @@ export default function AdminPayoutsPage() {
                                   placeholder="Payment ref..."
                                   value={paymentRef[order._id] || ""}
                                   onChange={(e) => setPaymentRef({ ...paymentRef, [order._id]: e.target.value })}
-                                  className="px-2 py-1 bg-white/5 border border-white/10 rounded text-white text-xs"
+                                  className="rs-input text-xs px-2 py-1"
                                 />
                                 <button
                                   onClick={() => handleMarkPaid(order._id)}
                                   disabled={processingId === order._id}
-                                  className="px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white text-xs font-medium rounded-lg flex items-center gap-1.5"
+                                  className="rs-btn-primary flex items-center gap-1.5 text-xs px-3 py-1.5 disabled:opacity-60"
+                                  style={{ background: "rgba(34,197,94,0.85)" }}
                                 >
                                   {processingId === order._id ? (
                                     <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -390,11 +391,9 @@ export default function AdminPayoutsPage() {
                                   )}
                                   Mark Paid
                                 </button>
-                                {statusFilter === "approved" && (
-                                  <p className="text-gray-500 text-xs">
-                                    8–10 business days
-                                  </p>
-                                )}
+                                <p className="text-xs" style={{ color: "var(--rs-text-secondary)" }}>
+                                  8–10 business days
+                                </p>
                               </div>
                             )}
                           </div>
@@ -414,80 +413,76 @@ export default function AdminPayoutsPage() {
         <>
           {/* Summary Strip */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rs-card p-6" style={{ borderColor: 'var(--rs-warning)', borderWidth: 1 }}>
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-[var(--rs-warning)]/10">
-                  <Clock className="w-6 h-6 text-[var(--rs-warning)]" />
-                </div>
-                <div>
-                  <p className="text-gray-400 text-sm">Pending Payout Requests</p>
-                  <p className="text-2xl font-semibold text-white">{formatCurrency(totalPendingPayouts)}</p>
-                  <p className="text-gray-500 text-xs">{pendingPayouts.length} requests</p>
-                </div>
+            <div className="rs-card p-6 flex items-center gap-3" style={{ borderColor: "var(--rs-warning)" }}>
+              <div className="rs-icon-tile rs-icon-tile--warning">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-medium tracking-wide uppercase" style={{ color: "var(--rs-text-secondary)" }}>Pending Payout Requests</p>
+                <p className="rs-stat text-2xl text-white mt-1">{formatCurrency(totalPendingPayouts)}</p>
+                <p className="text-xs mt-0.5" style={{ color: "var(--rs-text-muted)" }}>{pendingPayouts.length} requests</p>
               </div>
             </div>
-            <div className="rs-card p-6" style={{ borderColor: 'var(--rs-success)', borderWidth: 1 }}>
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-[var(--rs-success)]/10">
-                  <DollarSign className="w-6 h-6 text-[var(--rs-success)]" />
-                </div>
-                <div>
-                  <p className="text-gray-400 text-sm">Total Paid Out</p>
-                  <p className="text-2xl font-semibold text-white">{formatCurrency(totalPaidPayouts)}</p>
-                  <p className="text-gray-500 text-xs">{paidPayouts.length} payouts</p>
-                </div>
+            <div className="rs-card p-6 flex items-center gap-3" style={{ borderColor: "var(--rs-success)" }}>
+              <div className="rs-icon-tile rs-icon-tile--success">
+                <DollarSign className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-medium tracking-wide uppercase" style={{ color: "var(--rs-text-secondary)" }}>Total Paid Out</p>
+                <p className="rs-stat text-2xl text-white mt-1">{formatCurrency(totalPaidPayouts)}</p>
+                <p className="text-xs mt-0.5" style={{ color: "var(--rs-text-muted)" }}>{paidPayouts.length} payouts</p>
               </div>
             </div>
           </div>
 
           {/* Payout Requests Table */}
-          <div className="rs-card p-6">
+          <div className="rs-card overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="rs-table w-full">
                 <thead>
-                  <tr className="border-b border-white/5">
-                    <th className="text-left p-4 text-gray-400 font-medium">Date</th>
-                    <th className="text-left p-4 text-gray-400 font-medium">Affiliate</th>
-                    <th className="text-left p-4 text-gray-400 font-medium">Amount</th>
-                    <th className="text-left p-4 text-gray-400 font-medium">Bank Details</th>
-                    <th className="text-left p-4 text-gray-400 font-medium">Status</th>
-                    <th className="text-left p-4 text-gray-400 font-medium">Reference</th>
-                    <th className="text-left p-4 text-gray-400 font-medium">Actions</th>
+                  <tr>
+                    <th>Date</th>
+                    <th>Affiliate</th>
+                    <th>Amount</th>
+                    <th>Bank Details</th>
+                    <th>Status</th>
+                    <th>Reference</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {allPayoutRequests.map((payout: any) => (
-                    <tr key={payout._id} className="border-b border-white/5 hover:bg-white/5">
-                      <td className="p-4">
+                    <tr key={payout._id}>
+                      <td>
                         <p className="text-white">{formatDate(payout.requestedAt)}</p>
                       </td>
-                      <td className="p-4">
+                      <td>
                         <div>
                           <p className="text-white">{payout.affiliate?.firstName} {payout.affiliate?.lastName}</p>
-                          <p className="text-gray-500 text-xs">{payout.affiliate?.email}</p>
+                          <p className="text-xs" style={{ color: "var(--rs-text-secondary)" }}>{payout.affiliate?.email}</p>
                         </div>
                       </td>
-                      <td className="p-4">
+                      <td>
                         <p className="text-white font-semibold">{formatCurrency(payout.amount)}</p>
                       </td>
-                      <td className="p-4">
-                        <p className="text-gray-400 text-sm">{payout.bankName}</p>
-                        <p className="text-gray-500 text-xs">Account: ****{payout.accountNumber?.slice(-4)}</p>
-                        <p className="text-gray-500 text-xs capitalize">{payout.accountType}</p>
+                      <td>
+                        <p className="text-sm" style={{ color: "var(--rs-text-secondary)" }}>{payout.bankName}</p>
+                        <p className="text-xs" style={{ color: "var(--rs-text-muted)" }}>Account: ****{payout.accountNumber?.slice(-4)}</p>
+                        <p className="text-xs capitalize" style={{ color: "var(--rs-text-muted)" }}>{payout.accountType}</p>
                       </td>
-                      <td className="p-4">
+                      <td>
                         <StatusBadge tone={payout.status === "paid" ? "paid" : payout.status === "requested" || payout.status === "processing" ? "pending" : payout.status === "rejected" ? "rejected" : "neutral"}>
                           {payout.status}
                         </StatusBadge>
                       </td>
-                      <td className="p-4">
-                        <p className="text-gray-500 font-mono text-sm">{payout.referenceNumber || "-"}</p>
+                      <td>
+                        <p className="font-mono text-sm" style={{ color: "var(--rs-text-secondary)" }}>{payout.referenceNumber || "-"}</p>
                       </td>
-                      <td className="p-4">
+                      <td>
                         <div className="flex flex-col gap-2">
                           <button
                             onClick={() => setSelectedPayout(payout)}
-                            className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-medium rounded-lg flex items-center gap-1.5"
+                            className="rs-btn-ghost flex items-center gap-1.5 text-xs px-3 py-1.5"
                           >
                             <Eye className="w-3.5 h-3.5" />
                             View
@@ -496,13 +491,14 @@ export default function AdminPayoutsPage() {
                             <>
                               <button
                                 onClick={() => handlePayoutStatusChange(payout._id, "processing")}
-                                className="px-3 py-1.5 rs-btn-primary text-xs font-medium rounded-lg"
+                                className="rs-btn-primary text-xs font-medium rounded-lg px-3 py-1.5"
                               >
                                 Process
                               </button>
                               <button
                                 onClick={() => handlePayoutStatusChange(payout._id, "rejected")}
-                                className="px-3 py-1.5 bg-red-600/20 hover:bg-red-600/30 text-red-400 text-xs font-medium rounded-lg"
+                                className="rs-btn-ghost text-xs font-medium rounded-lg px-3 py-1.5"
+                                style={{ color: "rgb(248,113,113)", background: "rgba(239,68,68,0.10)", borderColor: "rgba(239,68,68,0.20)" }}
                               >
                                 Reject
                               </button>
@@ -511,13 +507,14 @@ export default function AdminPayoutsPage() {
                           {payout.status === "processing" && (
                             <button
                               onClick={() => handlePayoutStatusChange(payout._id, "paid")}
-                              className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg"
+                              className="rs-btn-primary text-xs font-medium rounded-lg px-3 py-1.5"
+                              style={{ background: "rgba(34,197,94,0.85)" }}
                             >
                               Mark Paid
                             </button>
                           )}
                           {payout.status === "paid" && (
-                            <p className="text-gray-500 text-xs">Paid on {formatDate(payout.processedAt)}</p>
+                            <p className="text-xs" style={{ color: "var(--rs-text-muted)" }}>Paid on {formatDate(payout.processedAt)}</p>
                           )}
                         </div>
                       </td>
@@ -525,8 +522,10 @@ export default function AdminPayoutsPage() {
                   ))}
                   {allPayoutRequests.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="p-12 text-center text-gray-500">
-                        No payout requests yet
+                      <td colSpan={7}>
+                        <div className="rs-empty-state">
+                          <p className="rs-empty-state-title">No payout requests yet</p>
+                        </div>
                       </td>
                     </tr>
                   )}
@@ -544,46 +543,49 @@ export default function AdminPayoutsPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="rs-modal-backdrop"
             onClick={() => setSelectedPayout(null)}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-[#141417] rounded-[14px] border border-white/10 max-w-lg w-full max-h-[90vh] overflow-y-auto"
+              className="rs-modal max-w-lg w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between p-6 border-b border-white/5">
+              <div className="rs-modal-header">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center">
-                    <User className="w-6 h-6 text-blue-400" />
+                  <div className="rs-icon-tile rs-icon-tile--info w-12 h-12">
+                    <User className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-semibold text-white">
+                    <h2 className="text-lg font-semibold text-white">
                       {selectedPayout.affiliate?.firstName} {selectedPayout.affiliate?.lastName}
                     </h2>
-                    <p className="text-gray-500 text-sm">{selectedPayout.affiliate?.email}</p>
+                    <p className="text-xs" style={{ color: "var(--rs-text-secondary)" }}>{selectedPayout.affiliate?.email}</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setSelectedPayout(null)}
-                  className="p-2 text-gray-400 hover:text-white transition-colors"
+                  className="rs-btn-ghost p-2"
+                  aria-label="Close"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <div className="p-6 space-y-6">
+              <div className="rs-modal-body space-y-6">
                 {/* Payout Summary */}
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-400">Requested Amount</span>
-                    <span className="text-2xl font-bold text-white">{formatCurrency(selectedPayout.amount)}</span>
-                  </div>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-gray-500 text-sm">Reference</span>
-                    <span className="text-white font-mono text-sm">{selectedPayout.referenceNumber}</span>
+                <div className="rs-callout rs-callout--info">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs uppercase tracking-wide" style={{ color: "var(--rs-text-secondary)" }}>Requested Amount</span>
+                      <span className="rs-stat text-2xl text-white">{formatCurrency(selectedPayout.amount)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs" style={{ color: "var(--rs-text-muted)" }}>Reference</span>
+                      <span className="font-mono text-sm text-white">{selectedPayout.referenceNumber}</span>
+                    </div>
                   </div>
                 </div>
 
@@ -593,17 +595,17 @@ export default function AdminPayoutsPage() {
                     <Banknote className="w-4 h-4" />
                     Bank Details
                   </h3>
-                  <div className="bg-[#0a0a0b] rounded-xl p-4 space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Bank Name</span>
+                  <div className="rs-card p-4 space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span style={{ color: "var(--rs-text-secondary)" }}>Bank Name</span>
                       <span className="text-white">{selectedPayout.bankName || "Not provided"}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Account Number</span>
+                    <div className="flex justify-between text-sm">
+                      <span style={{ color: "var(--rs-text-secondary)" }}>Account Number</span>
                       <span className="text-white font-mono">{selectedPayout.accountNumber || "Not provided"}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Account Type</span>
+                    <div className="flex justify-between text-sm">
+                      <span style={{ color: "var(--rs-text-secondary)" }}>Account Type</span>
                       <span className="text-white capitalize">{selectedPayout.accountType || "Not provided"}</span>
                     </div>
                   </div>
@@ -615,35 +617,35 @@ export default function AdminPayoutsPage() {
                     <DollarSign className="w-4 h-4" />
                     Affiliate Stats
                   </h3>
-                  <div className="bg-[#0a0a0b] rounded-xl p-4 space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Tier</span>
+                  <div className="rs-card p-4 space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span style={{ color: "var(--rs-text-secondary)" }}>Tier</span>
                       <span className="text-white capitalize">{selectedPayout.affiliate?.tier || "bronze"}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Total Sales</span>
+                    <div className="flex justify-between text-sm">
+                      <span style={{ color: "var(--rs-text-secondary)" }}>Total Sales</span>
                       <span className="text-white">{formatCurrency(selectedPayout.affiliate?.totalSales || 0)}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Total Commission Earned</span>
+                    <div className="flex justify-between text-sm">
+                      <span style={{ color: "var(--rs-text-secondary)" }}>Total Commission Earned</span>
                       <span className="text-white">{formatCurrency(selectedPayout.affiliate?.totalCommissionEarned || 0)}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Pending Balance</span>
-                      <span className="text-[var(--rs-warning)]">{formatCurrency(selectedPayout.affiliate?.pendingCommission || 0)}</span>
+                    <div className="flex justify-between text-sm">
+                      <span style={{ color: "var(--rs-text-secondary)" }}>Pending Balance</span>
+                      <span style={{ color: "rgb(251,191,36)" }}>{formatCurrency(selectedPayout.affiliate?.pendingCommission || 0)}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Total Paid</span>
-                      <span className="text-[var(--rs-success)]">{formatCurrency(selectedPayout.affiliate?.totalCommissionPaid || 0)}</span>
+                    <div className="flex justify-between text-sm">
+                      <span style={{ color: "var(--rs-text-secondary)" }}>Total Paid</span>
+                      <span style={{ color: "rgb(74,222,128)" }}>{formatCurrency(selectedPayout.affiliate?.totalCommissionPaid || 0)}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-3 pt-4 border-t border-white/10">
+                <div className="flex gap-3 pt-4" style={{ borderTop: "1px solid var(--rs-border)" }}>
                   <button
                     onClick={() => setSelectedPayout(null)}
-                    className="flex-1 py-3 border border-white/10 text-gray-300 rounded-xl hover:bg-white/5 transition-colors"
+                    className="rs-btn-ghost flex-1 py-3"
                   >
                     Close
                   </button>
@@ -653,7 +655,7 @@ export default function AdminPayoutsPage() {
                         handlePayoutStatusChange(selectedPayout._id, "processing");
                         setSelectedPayout(null);
                       }}
-                      className="flex-1 py-3 rs-btn-primary"
+                      className="rs-btn-primary flex-1 py-3"
                     >
                       Process Payment
                     </button>
@@ -664,7 +666,8 @@ export default function AdminPayoutsPage() {
                         handlePayoutStatusChange(selectedPayout._id, "paid");
                         setSelectedPayout(null);
                       }}
-                      className="flex-1 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors"
+                      className="rs-btn-primary flex-1 py-3"
+                      style={{ background: "rgba(34,197,94,0.85)" }}
                     >
                       Mark as Paid
                     </button>
