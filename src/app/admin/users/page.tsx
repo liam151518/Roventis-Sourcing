@@ -2,19 +2,21 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Users as UsersIcon, Shield, ShieldOff, UserX } from "lucide-react";
+import { Search, Users as UsersIcon, ShieldOff, UserX, Pause, Play } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { formatDate, formatCurrency } from "@/lib/utils";
 
-type Access = "active" | "suspended" | "deactivated";
+type Access = "active" | "paused" | "suspended" | "deactivated";
 
-const ACCESS_OPTIONS: Access[] = ["active", "suspended", "deactivated"];
+const ACCESS_OPTIONS: Access[] = ["active", "paused", "suspended", "deactivated"];
 
 function accessStyles(access: string | undefined) {
   switch (access) {
     case "active":
       return "bg-green-500/20 text-green-400 border-green-500/20";
+    case "paused":
+      return "bg-amber-500/20 text-amber-400 border-amber-500/20";
     case "suspended":
       return "bg-orange-500/20 text-orange-400 border-orange-500/20";
     case "deactivated":
@@ -26,6 +28,7 @@ function accessStyles(access: string | undefined) {
 
 function accessLabel(access: string | undefined): string {
   if (access === "active") return "Active";
+  if (access === "paused") return "Paused";
   if (access === "suspended") return "Suspended";
   if (access === "deactivated") return "Deactivated";
   return "Unknown";
@@ -90,6 +93,7 @@ export default function AdminUsersPage() {
         >
           <option value="all">All Access</option>
           <option value="active">Active</option>
+          <option value="paused">Paused</option>
           <option value="suspended">Suspended</option>
           <option value="deactivated">Deactivated</option>
         </select>
@@ -150,50 +154,54 @@ export default function AdminUsersPage() {
                   <td className="p-4 text-white">{formatCurrency(affiliate.totalCommissionEarned)}</td>
                   <td className="p-4 text-gray-400">{formatDate(affiliate.createdAt)}</td>
                   <td className="p-4">
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
+                      {/* Return to active - always available except from active */}
                       {affiliate.access !== "active" && (
                         <button
                           onClick={() => handleAccessChange(affiliate._id, "active")}
                           className="flex items-center gap-1 px-3 py-1 rounded-lg bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20 transition-colors text-xs font-medium"
-                          title="Reactivate this user"
+                          title="Restore full access"
                         >
-                          <Shield className="w-3 h-3" />
+                          <Play className="w-3 h-3" />
                           Activate
                         </button>
                       )}
-                      {affiliate.access === "active" && (
+                      {/* Pause - investigation hold, available from active / suspended */}
+                      {affiliate.access !== "paused" && affiliate.access !== "deactivated" && (
+                        <button
+                          onClick={() => handleAccessChange(affiliate._id, "paused")}
+                          className="flex items-center gap-1 px-3 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors text-xs font-medium"
+                          title="Soft hold while investigating. User cannot claim leads but can still view their dashboard."
+                        >
+                          <Pause className="w-3 h-3" />
+                          Pause
+                        </button>
+                      )}
+                      {/* Suspend - disciplinary, available from active / paused */}
+                      {affiliate.access !== "suspended" && affiliate.access !== "deactivated" && (
                         <button
                           onClick={() => handleAccessChange(affiliate._id, "suspended")}
                           className="flex items-center gap-1 px-3 py-1 rounded-lg bg-orange-500/10 text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 transition-colors text-xs font-medium"
-                          title="Temporarily block access (reversible)"
+                          title="Temporary disciplinary block. Reversible."
                         >
                           <ShieldOff className="w-3 h-3" />
                           Suspend
                         </button>
                       )}
+                      {/* Deactivate - permanent, available from any non-deactivated state */}
                       {affiliate.access !== "deactivated" && (
                         <button
                           onClick={() => {
-                            if (confirm(`Permanently deactivate ${affiliate.firstName} ${affiliate.lastName}? They will not be able to recover this account.`)) {
+                            if (confirm(`Permanently deactivate ${affiliate.firstName} ${affiliate.lastName}? Use only for ToS violations or fraud. This should not be reversed casually.`)) {
                               handleAccessChange(affiliate._id, "deactivated");
                             }
                           }}
                           className="flex items-center gap-1 px-3 py-1 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors text-xs font-medium"
-                          title="Permanent block (irreversible - use only for ToS violations or fraud)"
+                          title="Permanent block. Use only for ToS violations or fraud."
                         >
                           <UserX className="w-3 h-3" />
                           Deactivate
                         </button>
-                      )}
-                      {affiliate.access === "suspended" && (
-                        <span className="text-xs text-orange-400/70 italic self-center">
-                          Suspended
-                        </span>
-                      )}
-                      {affiliate.access === "deactivated" && (
-                        <span className="text-xs text-red-400/70 italic self-center">
-                          Deactivated
-                        </span>
                       )}
                     </div>
                   </td>

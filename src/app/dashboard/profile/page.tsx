@@ -198,11 +198,13 @@ export default function ProfilePage() {
             <div className="flex items-center gap-4 mt-3">
               <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                 currentAffiliate.access === "active" ? "bg-[var(--rs-success)]/10 text-[var(--rs-success)]" :
+                currentAffiliate.access === "paused" ? "bg-amber-500/10 text-amber-400" :
                 currentAffiliate.access === "suspended" ? "bg-[var(--rs-warning)]/10 text-[var(--rs-warning)]" :
                 currentAffiliate.access === "deactivated" ? "bg-[var(--rs-danger)]/10 text-[var(--rs-danger)]" :
                 "bg-[var(--rs-warning)]/10 text-[var(--rs-warning)]"
               }`}>
                 {currentAffiliate.access === "active" ? "Active" :
+                 currentAffiliate.access === "paused" ? "Paused - your account is under review" :
                  currentAffiliate.access === "suspended" ? "Suspended - contact support" :
                  currentAffiliate.access === "deactivated" ? "Deactivated" :
                  "Pending setup"}

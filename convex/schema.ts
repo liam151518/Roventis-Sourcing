@@ -15,10 +15,12 @@ export default defineSchema({
     affiliateCode: v.string(),
     referralLink: v.string(),
     // Access control. All new users created in Clerk (post-vetting) are
-    // provisioned as "active". Use "suspended" for temporary holds and
+    // provisioned as "active". Use "paused" for soft holds during an
+    // investigation, "suspended" for temporary disciplinary blocks, and
     // "deactivated" for permanent blocks (e.g. ToS violations, fraud).
     access: v.optional(v.union(
       v.literal("active"),
+      v.literal("paused"),
       v.literal("suspended"),
       v.literal("deactivated")
     )),

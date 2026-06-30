@@ -135,6 +135,7 @@ export const getAdminDashboardStats = query({
     // Access breakdown
     const affiliateAccess = {
       active: affiliates.filter((a) => a.access === "active").length,
+      paused: affiliates.filter((a) => a.access === "paused").length,
       suspended: affiliates.filter((a) => a.access === "suspended").length,
       deactivated: affiliates.filter((a) => a.access === "deactivated").length,
     };
@@ -390,7 +391,7 @@ export const updateAffiliateAdmin = mutation({
     email: v.optional(v.string()),
     phone: v.optional(v.string()),
     city: v.optional(v.string()),
-    access: v.optional(v.union(v.literal("active"), v.literal("suspended"), v.literal("deactivated"))),
+    access: v.optional(v.union(v.literal("active"), v.literal("paused"), v.literal("suspended"), v.literal("deactivated"))),
     tier: v.optional(v.union(v.literal("bronze"), v.literal("silver"), v.literal("gold"), v.literal("platinum"))),
     trainingCompleted: v.optional(v.boolean()),
     isApprovedToSell: v.optional(v.boolean()),
