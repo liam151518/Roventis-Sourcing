@@ -626,6 +626,166 @@ body {
   margin: 1.25rem 0;
 }
 
+/* Status pill - small inline status indicator */
+.rs-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+}
+.rs-status-pill::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: currentColor;
+  flex-shrink: 0;
+}
+.rs-status-pill--neutral {
+  background: rgba(255,255,255,0.04);
+  color: var(--rs-text-secondary);
+  border-color: var(--rs-border);
+}
+.rs-status-pill--progress {
+  background: rgba(124,58,237,0.10);
+  color: var(--rs-text-accent);
+  border-color: rgba(124,58,237,0.25);
+}
+.rs-status-pill--success {
+  background: rgba(16,185,129,0.10);
+  color: var(--rs-success);
+  border-color: rgba(16,185,129,0.25);
+}
+.rs-status-pill--warning {
+  background: rgba(245,158,11,0.10);
+  color: var(--rs-warning);
+  border-color: rgba(245,158,11,0.25);
+}
+.rs-status-pill--danger {
+  background: rgba(239,68,68,0.10);
+  color: var(--rs-danger);
+  border-color: rgba(239,68,68,0.25);
+}
+
+/* Gradient border wrapper for the "Physical Test Program" hero card.
+   Uses a 1px-tall pseudo-element to paint a violet gradient ring
+   without affecting the card's box model. */
+.rs-gradient-border {
+  position: relative;
+  border-radius: 1rem;
+  background:
+    linear-gradient(var(--rs-bg-overlay), var(--rs-bg-overlay)) padding-box,
+    linear-gradient(135deg, rgba(124,58,237,0.6), rgba(167,139,250,0.25) 50%, rgba(124,58,237,0.05)) border-box;
+  border: 1px solid transparent;
+}
+.rs-gradient-border::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(124,58,237,0.10), transparent 60%);
+  z-index: -1;
+  filter: blur(20px);
+  opacity: 0.6;
+}
+
+/* Subtle violet glow background for the hero card */
+.rs-violet-glow {
+  position: relative;
+  overflow: hidden;
+}
+.rs-violet-glow::before {
+  content: "";
+  position: absolute;
+  top: -30%;
+  right: -10%;
+  width: 60%;
+  height: 200%;
+  background: radial-gradient(ellipse at center, rgba(124,58,237,0.18) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+.rs-violet-glow > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Stepper - horizontal step indicator */
+.rs-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.rs-stepper-dot {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  border: 1px solid var(--rs-border);
+  background: var(--rs-bg-base);
+  color: var(--rs-text-secondary);
+  transition: all 0.2s ease;
+}
+.rs-stepper-dot--active {
+  border-color: rgba(124,58,237,0.5);
+  background: rgba(124,58,237,0.15);
+  color: var(--rs-text-accent);
+  box-shadow: 0 0 0 4px rgba(124,58,237,0.08);
+}
+.rs-stepper-dot--done {
+  border-color: rgba(16,185,129,0.4);
+  background: rgba(16,185,129,0.15);
+  color: var(--rs-success);
+}
+.rs-stepper-line {
+  flex: 1;
+  height: 1px;
+  background: var(--rs-border);
+  min-width: 1rem;
+}
+.rs-stepper-line--done {
+  background: linear-gradient(90deg, rgba(16,185,129,0.4), var(--rs-border));
+}
+
+/* Stat tile - small metric card used in the stat row */
+.rs-stat-tile {
+  background: var(--rs-bg-overlay);
+  border: 1px solid var(--rs-border);
+  border-radius: 0.875rem;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Skeleton loader */
+.rs-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--rs-bg-overlay) 0%,
+    rgba(255,255,255,0.04) 50%,
+    var(--rs-bg-overlay) 100%
+  );
+  background-size: 200% 100%;
+  border-radius: 0.5rem;
+  animation: rs-skeleton-shimmer 1.5s ease-in-out infinite;
+}
+@keyframes rs-skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
