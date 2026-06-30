@@ -99,44 +99,7 @@ export const updateTicketStatus = mutation({
   },
 });
 
-// Seed demo tickets
-export const seedDemoTickets = mutation({
-  args: { affiliateId: v.string() },
-  handler: async (ctx, args) => {
-    const existingTickets = await ctx.db.query("supportTickets").take(1);
-    if (existingTickets.length > 0) {
-      return { success: true, message: "Tickets already exist" };
-    }
-
-    await ctx.db.insert("supportTickets", {
-      affiliateId: args.affiliateId,
-      subject: "Question about commission calculation",
-      description: "Hi, I'd like to understand how my commission is calculated for solar products.",
-      category: "commission",
-      priority: "medium",
-      status: "resolved",
-      messages: [
-        { sender: "affiliate", content: "Hi, I'd like to understand how my commission is calculated for solar products.", createdAt: Date.now() - 5 * 24 * 60 * 60 * 1000 },
-        { sender: "admin", content: "Great question! Platinum affiliates get 12-15% commission on products, with higher rates on select categories.", createdAt: Date.now() - 4 * 24 * 60 * 60 * 1000 },
-      ],
-      createdAt: Date.now() - 5 * 24 * 60 * 60 * 1000,
-      updatedAt: Date.now() - 4 * 24 * 60 * 60 * 1000,
-    });
-
-    await ctx.db.insert("supportTickets", {
-      affiliateId: args.affiliateId,
-      subject: "Need help with a client proposal",
-      description: "I'm preparing a proposal for a new client and need some technical specifications.",
-      category: "deal",
-      priority: "high",
-      status: "open",
-      messages: [
-        { sender: "affiliate", content: "I'm preparing a proposal for a new client and need some technical specifications.", createdAt: Date.now() - 1 * 24 * 60 * 60 * 1000 },
-      ],
-      createdAt: Date.now() - 1 * 24 * 60 * 60 * 1000,
-      updatedAt: Date.now() - 1 * 24 * 60 * 60 * 1000,
-    });
-
-    return { success: true, message: "Demo tickets created" };
-  },
-});
+// Demo seed mutations are intentionally absent in production. The build is
+// production-only; all tickets are created by real affiliates via the
+// support flow. To generate test fixtures for local development, add them
+// via the dashboard's Support page or write a one-off `internalMutation`.

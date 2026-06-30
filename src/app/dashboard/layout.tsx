@@ -52,8 +52,6 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const { userId, isLoaded } = useAuth();
   const { user } = useUser();
   const registerAffiliate = useMutation(api.affiliates.registerAffiliate);
-  const seedDemoData = useMutation(api.affiliates.seedDemoData);
-  const seedAllData = useMutation(api.affiliates.seedAllData);
   
   // Get user email - using useMemo to ensure stability
   // Also log full user object to debug
@@ -99,21 +97,23 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     }
   }, [isLoaded, userId, isAdminUser, router]);
 
-  // Skip seeding for admin users
+  // First-login provisioning: if a signed-in user has no affiliate row yet,
+  // create a clean pending record. No demo data, no takeover of existing rows.
   useEffect(() => {
     if (isAdminUser || !userEmail || !userId) return;
+    if (!isLoaded) return;
+    if (currentAffiliate === undefined) return; // still loading
+    if (currentAffiliate !== null) return; // already provisioned
 
-    if (isLoaded && currentAffiliate === null) {
-      seedDemoData({
-        clerkUserId: userId,
-        firstName: user?.firstName || "Demo",
-        lastName: user?.lastName || "User",
-        email: userEmail
-      }).then(() => {
-        seedAllData();
-      });
-    }
-  }, [isLoaded, userId, currentAffiliate, user, isAdminUser, userEmail]);
+    registerAffiliate({
+      clerkUserId: userId,
+      firstName: user?.firstName || user?.username || "New",
+      lastName: user?.lastName || "Affiliate",
+      email: userEmail,
+    }).catch((err) => {
+      console.error("Failed to provision affiliate on first login:", err);
+    });
+  }, [isLoaded, userId, currentAffiliate, user, isAdminUser, userEmail, registerAffiliate]);
 
   return (
     <div className="min-h-screen bg-black flex">

@@ -79,7 +79,6 @@ export default function AdminLeadsPage() {
   const adminRetireLead = useMutation(api.leads.adminRetireLead);
   const adminDeleteLead = useMutation(api.leads.adminDeleteLead);
   const adminReassignLead = useMutation(api.leads.adminReassignLead);
-  const seedDemoLeads = useMutation(api.leads.seedDemoLeads);
 
   // Get user ID on mount
   useMemo(() => {
@@ -177,12 +176,6 @@ export default function AdminLeadsPage() {
     a.click();
   };
 
-  const handleSeedDemo = async () => {
-    if (confirm("Seed demo leads? This will fail if leads already exist.")) {
-      await seedDemoLeads({ adminClerkUserId: currentUserId });
-    }
-  };
-
   const filteredLeads = allLeads?.filter((lead) => {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -210,12 +203,6 @@ export default function AdminLeadsPage() {
           <h1 className="rs-page-title">Lead Management</h1>
           <p className="text-[var(--rs-text-secondary)] text-sm mt-1">Manage leads, bulk upload, and track activity</p>
         </div>
-        <button
-          onClick={handleSeedDemo}
-          className="rs-btn-primary text-sm"
-        >
-          Seed Demo Leads
-        </button>
       </div>
 
       {/* Tabs */}

@@ -2,7 +2,7 @@ import { query, mutation, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { TIER_CONFIG, getNextMondayMidnightSAST, CLAIM_TTL_MS, MAX_RELEASES_DEFAULT, getAllowedPools, getWeeklyLimit, type PoolTier } from "./lib/tierConfig";
-import { requireAdmin, isAdminCtx } from "./lib/auth";
+import { requireAdmin } from "./lib/auth";
 import { internal } from "./_generated/api";
 
 // ========== UTILITIES ==========
@@ -758,82 +758,9 @@ export const resetWeeklyCounters = internalMutation({
 });
 
 // ========== SEED DATA ==========
-
-// Seed demo leads
-export const seedDemoLeads = mutation({
-  args: { adminClerkUserId: v.optional(v.string()) },
-  handler: async (ctx, args) => {
-    // Check if leads exist
-    const existing = await ctx.db.query("leads").take(1);
-    if (existing.length > 0) {
-      return { success: false, message: "Leads already exist" };
-    }
-
-    const now = Date.now();
-
-    // Check for admin auth if provided
-    if (args.adminClerkUserId) {
-      await requireAdmin(ctx);
-    }
-
-    const demoLeads = [
-      // Standard tier - various industries
-      { companyName: "Kruger Bush Lodge", contactName: "Jan van der Merwe", contactEmail: "jan@krugerbuslodge.co.za", contactPhone: "+27 82 111 2222", city: "Nelspruit", province: "Mpumalanga", industry: "Lodge", productInterest: ["workwear", "merchandise"], estimatedBudget: 75000, poolTier: "standard" as PoolTier },
-      { companyName: "Highveld Mining Co", contactName: "Pieter Smit", contactEmail: "pieter@highveldmining.com", contactPhone: "+27 83 222 3333", city: "Secunda", province: "Mpumalanga", industry: "Mining", productInterest: ["workwear", "safety"], estimatedBudget: 150000, poolTier: "standard" as PoolTier },
-      { companyName: "Sandton Corporate Gifts", contactName: "Sarah Jones", contactEmail: "sarah@sandtongifts.co.za", contactPhone: "+27 84 333 4444", city: "Sandton", province: "Gauteng", industry: "Corporate", productInterest: ["merchandise"], estimatedBudget: 50000, poolTier: "standard" as PoolTier },
-      { companyName: "Cape Town Construction", contactName: "David Smith", contactEmail: "david@ctconstruction.co.za", contactPhone: "+27 85 444 5555", city: "Cape Town", province: "Western Cape", industry: "Construction", productInterest: ["workwear"], estimatedBudget: 100000, poolTier: "standard" as PoolTier },
-      { companyName: "Durban Logistics", contactName: "Tom Anderson", contactEmail: "tom@durbanlogistics.co.za", contactPhone: "+27 86 555 6666", city: "Durban", province: "KZN", industry: "Logistics", productInterest: ["workwear", "merchandise"], estimatedBudget: 80000, poolTier: "standard" as PoolTier },
-      { companyName: "Johannesburg Office Solutions", contactName: "Maria Botha", contactEmail: "maria@joburgoffice.co.za", contactPhone: "+27 87 666 7777", city: "Johannesburg", province: "Gauteng", industry: "Corporate", productInterest: ["merchandise", "sourcing"], estimatedBudget: 60000, poolTier: "standard" as PoolTier },
-      { companyName: "Pretoria Tech Hub", contactName: "John Meyer", contactEmail: "john@prettiatech.co.za", contactPhone: "+27 88 777 8888", city: "Pretoria", province: "Gauteng", industry: "Tech", productInterest: ["merchandise"], estimatedBudget: 45000, poolTier: "standard" as PoolTier },
-      { companyName: "Port Elizabeth Auto", contactName: "Lisa Williams", contactEmail: "lisa@peauto.co.za", contactPhone: "+27 89 888 9999", city: "Port Elizabeth", province: "Eastern Cape", industry: "Automotive", productInterest: ["workwear"], estimatedBudget: 90000, poolTier: "standard" as PoolTier },
-      { companyName: "Bloemfontein Medical", contactName: "Robert Brown", contactEmail: "robert@bloemmed.co.za", contactPhone: "+27 82 999 1111", city: "Bloemfontein", province: "Free State", industry: "Medical", productInterest: ["workwear", "merchandise"], estimatedBudget: 120000, poolTier: "standard" as PoolTier },
-      { companyName: "East London Retail", contactName: "Anna Clarke", contactEmail: "anna@elretail.co.za", contactPhone: "+27 83 111 2222", city: "East London", province: "Eastern Cape", industry: "Retail", productInterest: ["merchandise"], estimatedBudget: 55000, poolTier: "standard" as PoolTier },
-      // Priority tier - larger companies
-      { companyName: "Sun International Hotels", contactName: "James Wilson", contactEmail: "james@sunintl.co.za", contactPhone: "+27 84 222 3333", city: "Johannesburg", province: "Gauteng", industry: "Hospitality", productInterest: ["workwear", "merchandise"], estimatedBudget: 250000, poolTier: "priority" as PoolTier },
-      { companyName: "Anglo American Mining", contactName: "Michael Thompson", contactEmail: "michael@anglo.co.za", contactPhone: "+27 85 333 4444", city: "Johannesburg", province: "Gauteng", industry: "Mining", productInterest: ["workwear", "safety"], estimatedBudget: 500000, poolTier: "priority" as PoolTier },
-      { companyName: "Standard Bank Corporate", contactName: "Patricia Davis", contactEmail: "patricia@standardbank.co.za", contactPhone: "+27 86 444 5555", city: "Johannesburg", province: "Gauteng", industry: "Finance", productInterest: ["merchandise"], estimatedBudget: 350000, poolTier: "priority" as PoolTier },
-      { companyName: "Pick n Pay HQ", contactName: "Richard Taylor", contactEmail: "richard@picknpay.co.za", contactPhone: "+27 87 555 6666", city: "Durban", province: "KZN", industry: "Retail", productInterest: ["workwear", "merchandise"], estimatedBudget: 400000, poolTier: "priority" as PoolTier },
-      { companyName: "Woolworths SA", contactName: "Jennifer White", contactEmail: "jennifer@woolworths.co.za", contactPhone: "+27 88 666 7777", city: "Cape Town", province: "Western Cape", industry: "Retail", productInterest: ["merchandise", "sourcing"], estimatedBudget: 450000, poolTier: "priority" as PoolTier },
-      // Premium tier - enterprise
-      { companyName: "SABMiller", contactName: "Daniel Johnson", contactEmail: "daniel@sabmiller.co.za", contactPhone: "+27 89 777 8888", city: "Johannesburg", province: "Gauteng", industry: "Manufacturing", productInterest: ["workwear", "merchandise", "sourcing"], estimatedBudget: 800000, poolTier: "premium" as PoolTier },
-      { companyName: "Tiger Brands", contactName: "Michelle Lee", contactEmail: "michelle@tigerbrands.co.za", contactPhone: "+27 82 888 9999", city: "Johannesburg", province: "Gauteng", industry: "Manufacturing", productInterest: ["workwear", "merchandise"], estimatedBudget: 750000, poolTier: "premium" as PoolTier },
-      { companyName: "MTN South Africa", contactName: "Kevin Martin", contactEmail: "kevin@mtn.co.za", contactPhone: "+27 83 999 1111", city: "Johannesburg", province: "Gauteng", industry: "Telecom", productInterest: ["merchandise", "sourcing"], estimatedBudget: 900000, poolTier: "premium" as PoolTier },
-      { companyName: "Vodacom", contactName: "Sandra Garcia", contactEmail: "sandra@vodacom.co.za", contactPhone: "+27 84 111 2222", city: "Midrand", province: "Gauteng", industry: "Telecom", productInterest: ["merchandise"], estimatedBudget: 850000, poolTier: "premium" as PoolTier },
-      { companyName: "Discovery Health", contactName: "Andrew Nel", contactEmail: "andrew@discovery.co.za", contactPhone: "+27 85 222 3333", city: "Sandton", province: "Gauteng", industry: "Healthcare", productInterest: ["merchandise", "workwear"], estimatedBudget: 600000, poolTier: "premium" as PoolTier },
-    ];
-
-    for (const leadData of demoLeads) {
-      const dedupeKey = createDedupeKey(leadData);
-
-      const leadId = await ctx.db.insert("leads", {
-        companyName: leadData.companyName,
-        contactName: leadData.contactName,
-        contactEmail: leadData.contactEmail,
-        contactPhone: leadData.contactPhone,
-        city: leadData.city,
-        province: leadData.province,
-        industry: leadData.industry,
-        productInterest: leadData.productInterest,
-        estimatedBudget: leadData.estimatedBudget,
-        notes: undefined,
-        source: "seed",
-        dedupeKey,
-        poolTier: leadData.poolTier,
-        status: "available",
-        timesReleased: 0,
-        maxReleases: MAX_RELEASES_DEFAULT,
-        createdAt: now,
-      });
-
-      await ctx.db.insert("leadActivity", {
-        leadId: leadId,
-        affiliateId: undefined,
-        action: "uploaded",
-        meta: JSON.stringify({ seed: true }),
-        createdAt: now,
-      });
-    }
-
-    return { success: true, count: demoLeads.length };
-  },
-});
+//
+// Demo data is intentionally not present in production. Leads are added via
+// the Admin Leads page (CSV/XLSX import through `bulkUploadLeads`) or a
+// future ingestion pipeline. To seed leads manually, call
+// `bulkUploadLeads` with a curated list — do not reintroduce hardcoded
+// demo rows.

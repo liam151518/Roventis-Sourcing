@@ -635,10 +635,295 @@ export const recalculateAffiliateCommissions = mutation({
         pendingCommission: pendingBalance,
         totalSales,
       });
-      
+
       updated++;
     }
-    
+
     return { success: true, affiliatesUpdated: updated };
+  },
+});
+
+// ============================================
+// PRODUCTION RESET (admin only)
+// ============================================
+//
+// Two surgical wipes for the cutover from dev/demo to real production.
+// Both require admin auth (Clerk publicMetadata.role === "admin").
+//
+// - `wipeDemoData`: removes only demo-era rows (Demo User, Sarah Johnson
+//   / TechCorp, sarah@techcorp.co.za, mike@buildright.co.za, fake
+//   marketing short codes "MAIN-001", the canned leads uploaded with
+//   `source: "seed"` or matching known demo company names).
+//
+// - `wipeAllAffiliateData`: full reset. Drops every affiliate and every
+//   downstream record (deals, orders, payout requests, support tickets,
+//   activity logs, marketing links, lead claims). Global reference tables
+//   (invoiceSettings, products, resources, trainingModules) are kept.
+//
+// Run `wipeDemoData` once now to clean the demo-era residue from the live
+// DB. Run `wipeAllAffiliateData` only if you also want to drop any real
+// affiliates you created during testing — use with care.
+
+const DEMO_EMAIL_PATTERNS = [
+  "demo@roventis.co.za",
+  "sarah@techcorp.co.za",
+  "mike@buildright.co.za",
+];
+
+const DEMO_COMPANY_NAMES = [
+  "TechCorp Solutions",
+  "BuildRight Construction",
+];
+
+const DEMO_LEAD_SOURCES = ["seed"];
+
+const DEMO_MARKETING_SHORT_CODES = ["MAIN-001"];
+
+const DEMO_LEAD_COMPANY_NAMES = [
+  "SolarTech SA",
+  "EcoBuild Contractors",
+  "TechStart Incubator",
+  "Kruger Bush Lodge",
+  "Highveld Mining Co",
+  "Sandton Corporate Gifts",
+  "Cape Town Construction",
+  "Durban Logistics",
+  "Johannesburg Office Solutions",
+  "Pretoria Tech Hub",
+  "Port Elizabeth Auto",
+  "Bloemfontein Medical",
+  "East London Retail",
+  "Sun International Hotels",
+  "Anglo American Mining",
+  "Standard Bank Corporate",
+  "Pick n Pay HQ",
+  "Woolworths SA",
+  "SABMiller",
+  "Tiger Brands",
+  "MTN South Africa",
+  "Vodacom",
+  "Discovery Health",
+];
+
+function isDemoAffiliate(a: any): boolean {
+  if (a.firstName === "Demo" && a.lastName === "User") return true;
+  if (a.email && DEMO_EMAIL_PATTERNS.includes(a.email.toLowerCase())) return true;
+  if (a.affiliateCode === "ROV-DEMO-001") return true;
+  return false;
+}
+
+function isDemoOrder(o: any): boolean {
+  if (o.clientEmail && DEMO_EMAIL_PATTERNS.includes(o.clientEmail.toLowerCase())) return true;
+  if (o.clientCompany && DEMO_COMPANY_NAMES.includes(o.clientCompany)) return true;
+  if (o.trackingNumber && o.trackingNumber.startsWith("ROV-2024-")) return true;
+  return false;
+}
+
+function isDemoDeal(d: any): boolean {
+  if (d.clientEmail && DEMO_EMAIL_PATTERNS.includes(d.clientEmail.toLowerCase())) return true;
+  if (d.clientCompany && DEMO_COMPANY_NAMES.includes(d.clientCompany)) return true;
+  return false;
+}
+
+function isDemoLead(l: any): boolean {
+  if (l.source && DEMO_LEAD_SOURCES.includes(l.source)) return true;
+  if (l.companyName && DEMO_LEAD_COMPANY_NAMES.includes(l.companyName)) return true;
+  return false;
+}
+
+function isDemoMarketingLink(m: any): boolean {
+  if (m.shortCode && DEMO_MARKETING_SHORT_CODES.includes(m.shortCode)) return true;
+  return false;
+}
+
+function isDemoTicket(t: any): boolean {
+  if (
+    t.subject &&
+    (t.subject.includes("Question about commission calculation") ||
+      t.subject.includes("Need help with a client proposal"))
+  ) {
+    return true;
+  }
+  return false;
+}
+
+export const wipeDemoData = mutation({
+  args: {},
+  handler: async (ctx) => {
+    await requireAdmin(ctx);
+
+    const counts = {
+      affiliates: 0,
+      deals: 0,
+      orders: 0,
+      payoutRequests: 0,
+      marketingLinks: 0,
+      supportTickets: 0,
+      activityLogs: 0,
+      leads: 0,
+      leadActivity: 0,
+    };
+
+    // 1. Identify demo affiliate IDs first so we can cascade
+    const allAffiliates = await ctx.db.query("affiliates").collect();
+    const demoAffiliateIds = new Set<string>();
+    const demoAffiliatesToDelete: any[] = [];
+    for (const a of allAffiliates) {
+      if (isDemoAffiliate(a)) {
+        demoAffiliateIds.add(String(a._id));
+        demoAffiliatesToDelete.push(a);
+      }
+    }
+
+    // 2. Delete downstream per-affiliate records where they match demo signatures
+    const allDeals = await ctx.db.query("deals").collect();
+    for (const d of allDeals) {
+      if (demoAffiliateIds.has(String(d.affiliateId)) || isDemoDeal(d)) {
+        await ctx.db.delete(d._id);
+        counts.deals++;
+      }
+    }
+
+    const allOrders = await ctx.db.query("orders").collect();
+    for (const o of allOrders) {
+      if (demoAffiliateIds.has(String(o.affiliateId)) || isDemoOrder(o)) {
+        await ctx.db.delete(o._id);
+        counts.orders++;
+      }
+    }
+
+    const allPayouts = await ctx.db.query("payoutRequests").collect();
+    for (const p of allPayouts) {
+      if (demoAffiliateIds.has(String(p.affiliateId))) {
+        await ctx.db.delete(p._id);
+        counts.payoutRequests++;
+      }
+    }
+
+    const allMarketing = await ctx.db.query("marketingLinks").collect();
+    for (const m of allMarketing) {
+      if (demoAffiliateIds.has(String(m.affiliateId)) || isDemoMarketingLink(m)) {
+        await ctx.db.delete(m._id);
+        counts.marketingLinks++;
+      }
+    }
+
+    const allTickets = await ctx.db.query("supportTickets").collect();
+    for (const t of allTickets) {
+      if (demoAffiliateIds.has(String(t.affiliateId)) || isDemoTicket(t)) {
+        await ctx.db.delete(t._id);
+        counts.supportTickets++;
+      }
+    }
+
+    const allActivity = await ctx.db.query("activityLogs").collect();
+    for (const log of allActivity) {
+      if (demoAffiliateIds.has(String(log.affiliateId))) {
+        await ctx.db.delete(log._id);
+        counts.activityLogs++;
+      }
+    }
+
+    // 3. Delete demo leads + their leadActivity audit trail
+    const allLeads = await ctx.db.query("leads").collect();
+    const demoLeadIds: string[] = [];
+    for (const l of allLeads) {
+      if (isDemoLead(l)) {
+        demoLeadIds.push(String(l._id));
+        await ctx.db.delete(l._id);
+        counts.leads++;
+      }
+    }
+    if (demoLeadIds.length > 0) {
+      const allLeadActivity = await ctx.db.query("leadActivity").collect();
+      for (const la of allLeadActivity) {
+        if (demoLeadIds.includes(String(la.leadId))) {
+          await ctx.db.delete(la._id);
+          counts.leadActivity++;
+        }
+      }
+    }
+
+    // 4. Finally, delete the demo affiliate rows themselves
+    for (const a of demoAffiliatesToDelete) {
+      await ctx.db.delete(a._id);
+      counts.affiliates++;
+    }
+
+    console.log("[wipeDemoData] admin wipe complete:", counts);
+    return { success: true, counts };
+  },
+});
+
+export const wipeAllAffiliateData = mutation({
+  args: {
+    confirm: v.literal("WIPE_ALL"),
+  },
+  handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+
+    if (args.confirm !== "WIPE_ALL") {
+      throw new Error("Refusing to wipe without confirmation token");
+    }
+
+    const counts = {
+      affiliates: 0,
+      deals: 0,
+      orders: 0,
+      payoutRequests: 0,
+      marketingLinks: 0,
+      supportTickets: 0,
+      activityLogs: 0,
+      commissionPayouts: 0,
+      leads: 0,
+      leadActivity: 0,
+    };
+
+    // Collect all affiliate IDs to cascade properly
+    const allAffiliates = await ctx.db.query("affiliates").collect();
+    const affiliateIds = new Set<string>(allAffiliates.map((a) => String(a._id)));
+
+    // Downstream tables (filter by affiliate)
+    const cascadeByAffiliate = async (
+      table: "deals" | "orders" | "payoutRequests" | "marketingLinks" | "supportTickets" | "activityLogs" | "commissionPayouts",
+      counterKey: keyof typeof counts,
+    ) => {
+      const rows = await ctx.db.query(table).collect();
+      for (const row of rows) {
+        if (row.affiliateId && affiliateIds.has(String(row.affiliateId))) {
+          await ctx.db.delete(row._id);
+          (counts as any)[counterKey]++;
+        }
+      }
+    };
+
+    await cascadeByAffiliate("deals", "deals");
+    await cascadeByAffiliate("orders", "orders");
+    await cascadeByAffiliate("payoutRequests", "payoutRequests");
+    await cascadeByAffiliate("marketingLinks", "marketingLinks");
+    await cascadeByAffiliate("supportTickets", "supportTickets");
+    await cascadeByAffiliate("activityLogs", "activityLogs");
+    await cascadeByAffiliate("commissionPayouts", "commissionPayouts");
+
+    // Delete all leads + their activity trail (entire lead pool wiped)
+    const allLeads = await ctx.db.query("leads").collect();
+    for (const l of allLeads) {
+      await ctx.db.delete(l._id);
+      counts.leads++;
+    }
+    const allLeadActivity = await ctx.db.query("leadActivity").collect();
+    for (const la of allLeadActivity) {
+      await ctx.db.delete(la._id);
+      counts.leadActivity++;
+    }
+
+    // Delete all affiliate rows last
+    for (const a of allAffiliates) {
+      await ctx.db.delete(a._id);
+      counts.affiliates++;
+    }
+
+    console.log("[wipeAllAffiliateData] admin full reset complete:", counts);
+    return { success: true, counts };
   },
 });
