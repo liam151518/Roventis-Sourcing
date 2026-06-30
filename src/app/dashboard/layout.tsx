@@ -158,11 +158,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Navigation */}
-          <nav
-            className={`flex-1 px-2.5 ${
-              collapsed ? "py-6 flex flex-col justify-center" : "py-3 overflow-y-auto"
-            }`}
-          >
+          <nav className="flex-1 px-2.5 py-3 overflow-y-auto space-y-0.5">
             {navItems.map((item: any, index) => {
               const isActive = pathname === item.href;
               const tierRequired = item.tier;
@@ -186,10 +182,12 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
               return (
                 <Fragment key={item.href}>
-                  {showSectionTitle && sectionLabel && !collapsed && (
+                  {showSectionTitle && sectionLabel && (
                     <div className="pt-3 pb-1.5 px-2.5 first:pt-0">
                       <span
-                        className="text-[10px] font-semibold uppercase tracking-[0.12em]"
+                        className={`text-[10px] font-semibold uppercase tracking-[0.12em] ${
+                          collapsed ? "hidden" : ""
+                        }`}
                         style={{ color: "var(--rs-text-muted)" }}
                       >
                         {sectionLabel}
@@ -201,9 +199,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                     title={collapsed ? item.label : undefined}
                     className={`rs-sidebar-item ${
                       isActive ? "rs-sidebar-item--active" : ""
-                    } ${collapsed ? "justify-center px-1" : ""} ${
-                      collapsed ? "my-1" : ""
-                    }`}
+                    } ${collapsed ? "justify-center px-1" : ""}`}
                     onClick={() => setSidebarOpen(false)}
                   >
                     {isActive && (
