@@ -691,6 +691,39 @@ export const adminDeleteLead = mutation({
   },
 });
 
+// Bulk delete leads (admin only). Used for clearing the pool before
+// a fresh weekly upload. Caller must pass confirm: "DELETE" literal
+// to prevent accidental invocation.
+export const adminBulkDeleteLeads = mutation({
+  args: {
+    leadIds: v.array(v.string()),
+    confirm: v.literal("DELETE"),
+  },
+  handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+
+    if (args.leadIds.length === 0) {
+      return { success: true, deleted: 0, skipped: 0 };
+    }
+
+    let deleted = 0;
+    let skipped = 0;
+
+    for (const leadId of args.leadIds) {
+      const lead = await ctx.db.get(leadId as Id<"leads">);
+      if (!lead) {
+        skipped++;
+        continue;
+      }
+      await ctx.db.delete(leadId as Id<"leads">);
+      deleted++;
+    }
+
+    console.log("[adminBulkDeleteLeads] deleted:", deleted, "skipped:", skipped);
+    return { success: true, deleted, skipped };
+  },
+});
+
 // ========== INTERNAL MUTATIONS (called by cron) ==========
 
 // Expire stale claims - called every 30 minutes

@@ -27,6 +27,8 @@ import {
   Lock,
   Search,
   Filter,
+  Square,
+  CheckSquare,
 } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -63,6 +65,9 @@ export default function AdminLeadsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [poolFilter, setPoolFilter] = useState<string>("");
   const [currentUserId, setCurrentUserId] = useState<string>("");
+  const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState<{ open: boolean; count: number }>({ open: false, count: 0 });
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   // Queries
   const allLeads = useQuery(
@@ -78,6 +83,7 @@ export default function AdminLeadsPage() {
   const adminReleaseLead = useMutation(api.leads.adminReleaseLead);
   const adminRetireLead = useMutation(api.leads.adminRetireLead);
   const adminDeleteLead = useMutation(api.leads.adminDeleteLead);
+  const adminBulkDeleteLeads = useMutation(api.leads.adminBulkDeleteLeads);
   const adminReassignLead = useMutation(api.leads.adminReassignLead);
 
   // Get user ID on mount
@@ -176,6 +182,68 @@ export default function AdminLeadsPage() {
     a.click();
   };
 
+  const toggleLeadSelection = (leadId: string) => {
+    setSelectedLeadIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(leadId)) {
+        next.delete(leadId);
+      } else {
+        next.add(leadId);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAllVisible = () => {
+    setSelectedLeadIds((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        visibleLeadIds.forEach((id) => next.delete(id));
+      } else {
+        visibleLeadIds.forEach((id) => next.add(id));
+      }
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedLeadIds(new Set());
+
+  const handleBulkDeleteClick = () => {
+    if (selectedLeadIds.size === 0) return;
+    setBulkDeleteConfirm({ open: true, count: selectedLeadIds.size });
+  };
+
+  const handleBulkDeleteConfirm = async () => {
+    if (selectedLeadIds.size === 0) return;
+    setBulkDeleting(true);
+    try {
+      const ids = Array.from(selectedLeadIds);
+      // Chunk to avoid the 16k-arg Convex limit and to keep responses snappy
+      const CHUNK = 100;
+      let totalDeleted = 0;
+      let totalSkipped = 0;
+      for (let i = 0; i < ids.length; i += CHUNK) {
+        const batch = ids.slice(i, i + CHUNK);
+        const result = await adminBulkDeleteLeads({
+          leadIds: batch,
+          confirm: "DELETE" as const,
+        });
+        totalDeleted += result.deleted;
+        totalSkipped += result.skipped;
+      }
+      console.log(
+        `[bulk delete] removed ${totalDeleted} leads (${totalSkipped} skipped)`,
+      );
+      setSelectedLeadIds(new Set());
+      setBulkDeleteConfirm({ open: false, count: 0 });
+    } catch (error) {
+      console.error("Bulk delete failed:", error);
+      alert(`Bulk delete failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
   const filteredLeads = allLeads?.filter((lead) => {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -187,6 +255,12 @@ export default function AdminLeadsPage() {
     }
     return true;
   }) || [];
+
+  const visibleLeadIds = filteredLeads.slice(0, 50).map((l) => l._id);
+  const allVisibleSelected =
+    visibleLeadIds.length > 0 && visibleLeadIds.every((id) => selectedLeadIds.has(id));
+  const someVisibleSelected =
+    visibleLeadIds.some((id) => selectedLeadIds.has(id)) && !allVisibleSelected;
 
   const tabs = [
     { id: "upload", label: "Upload", icon: Upload },
@@ -473,6 +547,21 @@ export default function AdminLeadsPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-white/5">
+                      <th className="text-left p-4 text-gray-400 text-sm font-medium w-10">
+                        <button
+                          onClick={toggleSelectAllVisible}
+                          className="flex items-center justify-center text-gray-400 hover:text-white transition-colors"
+                          title={allVisibleSelected ? "Deselect all" : "Select all visible"}
+                        >
+                          {allVisibleSelected ? (
+                            <CheckSquare className="w-4 h-4 text-[var(--rs-accent)]" />
+                          ) : someVisibleSelected ? (
+                            <CheckSquare className="w-4 h-4 text-[var(--rs-accent)]/60" />
+                          ) : (
+                            <Square className="w-4 h-4" />
+                          )}
+                        </button>
+                      </th>
                       <th className="text-left p-4 text-gray-400 text-sm font-medium">Company</th>
                       <th className="text-left p-4 text-gray-400 text-sm font-medium">Location</th>
                       <th className="text-left p-4 text-gray-400 text-sm font-medium">Industry</th>
@@ -484,7 +573,25 @@ export default function AdminLeadsPage() {
                   </thead>
                   <tbody>
                     {filteredLeads.slice(0, 50).map((lead) => (
-                      <tr key={lead._id} className="border-b border-white/5 hover:bg-white/5">
+                      <tr
+                        key={lead._id}
+                        className={`border-b border-white/5 transition-colors ${
+                          selectedLeadIds.has(lead._id) ? "bg-[var(--rs-accent)]/10" : "hover:bg-white/5"
+                        }`}
+                      >
+                        <td className="p-4 w-10">
+                          <button
+                            onClick={() => toggleLeadSelection(lead._id)}
+                            className="flex items-center justify-center text-gray-400 hover:text-white transition-colors"
+                            title={selectedLeadIds.has(lead._id) ? "Deselect" : "Select"}
+                          >
+                            {selectedLeadIds.has(lead._id) ? (
+                              <CheckSquare className="w-4 h-4 text-[var(--rs-accent)]" />
+                            ) : (
+                              <Square className="w-4 h-4" />
+                            )}
+                          </button>
+                        </td>
                         <td className="p-4">
                           <p className="text-white font-medium">{lead.companyName}</p>
                           <p className="text-gray-400 text-sm">{lead.contactName}</p>
@@ -580,6 +687,99 @@ export default function AdminLeadsPage() {
                 </div>
               )}
             </div>
+
+            {/* Floating action bar - shows when 1+ leads selected */}
+            <AnimatePresence>
+              {selectedLeadIds.size > 0 && (
+                <motion.div
+                  initial={{ y: 80, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: 80, opacity: 0 }}
+                  transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                  className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+                >
+                  <div className="flex items-center gap-3 px-4 py-3 bg-[#1a1a1f] border border-white/10 rounded-2xl shadow-2xl">
+                    <span className="text-white text-sm font-medium">
+                      {selectedLeadIds.size} lead{selectedLeadIds.size === 1 ? "" : "s"} selected
+                    </span>
+                    <div className="h-5 w-px bg-white/10" />
+                    <button
+                      onClick={clearSelection}
+                      className="text-gray-400 hover:text-white text-sm font-medium transition-colors"
+                    >
+                      Clear
+                    </button>
+                    <button
+                      onClick={handleBulkDeleteClick}
+                      className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-sm font-medium transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete selected
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Bulk delete confirmation modal */}
+            <AnimatePresence>
+              {bulkDeleteConfirm.open && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+                  onClick={() => !bulkDeleting && setBulkDeleteConfirm({ open: false, count: 0 })}
+                >
+                  <motion.div
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.95, opacity: 0 }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="bg-[#1a1a1f] border border-white/10 rounded-2xl p-6 max-w-md w-full shadow-2xl"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <AlertCircle className="w-5 h-5 text-red-400" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-white font-semibold text-lg">Delete {bulkDeleteConfirm.count} lead{bulkDeleteConfirm.count === 1 ? "" : "s"}?</h3>
+                        <p className="text-gray-400 text-sm mt-2">
+                          This action cannot be undone. Any deals previously created from these leads
+                          will keep their data, but lose the link back to the lead.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-3 mt-6">
+                      <button
+                        onClick={() => setBulkDeleteConfirm({ open: false, count: 0 })}
+                        disabled={bulkDeleting}
+                        className="px-4 py-2 text-gray-400 hover:text-white text-sm font-medium transition-colors disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleBulkDeleteConfirm}
+                        disabled={bulkDeleting}
+                        className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 disabled:bg-gray-600 text-white rounded-xl text-sm font-medium transition-colors"
+                      >
+                        {bulkDeleting ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            Deleting...
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="w-4 h-4" />
+                            Delete {bulkDeleteConfirm.count} lead{bulkDeleteConfirm.count === 1 ? "" : "s"}
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
 
