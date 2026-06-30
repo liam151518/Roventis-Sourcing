@@ -6,13 +6,13 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Toaster } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  LayoutDashboard, 
-  TrendingUp, 
-  GraduationCap, 
-  FileText, 
-  DollarSign, 
-  User, 
+import {
+  LayoutDashboard,
+  TrendingUp,
+  GraduationCap,
+  FileText,
+  DollarSign,
+  User,
   Bell,
   Target,
   Megaphone,
@@ -20,6 +20,9 @@ import {
   Zap,
   Receipt,
   ChevronLeft,
+  Search,
+  Command,
+  Check,
 } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { useAuth, useUser, UserButton } from "@clerk/nextjs";
@@ -44,55 +47,72 @@ const navItems = [
   { href: "/dashboard/support", label: "Support", icon: HelpCircle, section: "settings" },
 ];
 
+const sectionLabels: Record<string, string> = {
+  dashboard: "Dashboard",
+  pipeline: "Pipeline",
+  finance: "Finance",
+  growth: "Growth",
+  settings: "Settings",
+};
+
+// Map pathname -> human breadcrumb label
+const pathLabels: Record<string, string> = {
+  "/dashboard": "Overview",
+  "/dashboard/deals": "Deals",
+  "/dashboard/leads": "Leads",
+  "/dashboard/leads/claimed": "Claimed Leads",
+  "/dashboard/commissions": "Commissions",
+  "/dashboard/invoice": "Invoice Generator",
+  "/dashboard/invoice/history": "Invoice History",
+  "/dashboard/marketing": "Marketing",
+  "/dashboard/resources": "Resources",
+  "/dashboard/profile": "Profile",
+  "/dashboard/training": "Training",
+  "/dashboard/support": "Support",
+  "/dashboard/orders": "Orders",
+  "/dashboard/tier": "Tier",
+};
+
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [mac, setMac] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const { userId, isLoaded } = useAuth();
   const { user } = useUser();
   const registerAffiliate = useMutation(api.affiliates.registerAffiliate);
-  
-  // Get user email - using useMemo to ensure stability
-  // Also log full user object to debug
-  const userEmail = useMemo(() => {
-    if (!user) {
-      console.log("No user object");
-      return "";
+
+  // Detect Mac so the top-bar command hint reads "⌘K" on Mac, "Ctrl K" elsewhere
+  useEffect(() => {
+    if (typeof navigator !== "undefined") {
+      setMac(/Mac|iPhone|iPad/.test(navigator.platform));
     }
-    console.log("User object:", JSON.stringify(user));
-    
-    // Try different ways Clerk provides email
-    const email = user.emailAddresses?.[0]?.emailAddress || 
-           (user as any).primaryEmailAddress?.emailAddress ||
-           "";
-    console.log("Extracted email:", email);
-    return email;
+  }, []);
+
+  // Get user email - using useMemo to ensure stability
+  const userEmail = useMemo(() => {
+    if (!user) return "";
+    return (
+      user.emailAddresses?.[0]?.emailAddress ||
+      (user as any).primaryEmailAddress?.emailAddress ||
+      ""
+    );
   }, [user]);
 
-  // Check admin via Clerk publicMetadata.role (with email fallback for cutover)
   const isAdminUser = useMemo(() => {
     if (!userId) return false;
-    const result = isAdmin(user, userEmail);
-    console.log("Admin check:", { userId, userEmail, isAdmin: result });
-    return result;
+    return isAdmin(user, userEmail);
   }, [userId, user, userEmail]);
 
-  // Always pass a consistent argument to keep hooks stable
   const currentAffiliate = useQuery(
     api.affiliates.getCurrentAffiliate,
     { clerkUserId: userId || undefined }
   );
 
-  // Debug
-  useEffect(() => {
-    console.log("Dashboard:", { isLoaded, userId, userEmail, isAdmin: isAdminUser, hasAffiliate: !!currentAffiliate });
-  }, [isLoaded, userId, userEmail, isAdminUser, currentAffiliate]);
-
   // Redirect admins to admin dashboard - only when fully loaded and confirmed admin
   useEffect(() => {
     if (isLoaded && userId && isAdminUser) {
-      console.log("Redirecting admin to admin dashboard");
       router.push("/admin");
     }
   }, [isLoaded, userId, isAdminUser, router]);
@@ -102,8 +122,8 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isAdminUser || !userEmail || !userId) return;
     if (!isLoaded) return;
-    if (currentAffiliate === undefined) return; // still loading
-    if (currentAffiliate !== null) return; // already provisioned
+    if (currentAffiliate === undefined) return;
+    if (currentAffiliate !== null) return;
 
     registerAffiliate({
       clerkUserId: userId,
@@ -115,8 +135,11 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     });
   }, [isLoaded, userId, currentAffiliate, user, isAdminUser, userEmail, registerAffiliate]);
 
+  const breadcrumb = pathLabels[pathname] ?? "Dashboard";
+  const firstName = user?.firstName || currentAffiliate?.firstName || "there";
+
   return (
-    <div className="min-h-screen bg-black flex">
+    <div className="min-h-screen flex" style={{ background: "var(--rs-bg-base)" }}>
       {/* Mobile sidebar backdrop */}
       <AnimatePresence>
         {sidebarOpen && (
@@ -133,21 +156,29 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <motion.aside
         initial={false}
-        animate={{ width: collapsed ? 80 : 230 }}
+        animate={{ width: collapsed ? 80 : 240 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
         className={`fixed top-0 left-0 z-50 h-full lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
-        style={{ background: 'var(--rs-bg-raised)', borderRight: '1px solid var(--rs-border)' }}
+        style={{
+          background: "var(--rs-bg-raised)",
+          borderRight: "1px solid var(--rs-border)",
+        }}
       >
         <div className="flex flex-col h-full">
           {/* Header with logo - click to toggle collapse */}
-          <div className="p-4 flex items-center justify-center border-b" style={{ borderColor: 'var(--rs-border)' }}>
+          <div
+            className="h-14 flex items-center justify-center border-b"
+            style={{ borderColor: "var(--rs-border)" }}
+          >
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="flex items-center gap-2 hover:bg-white/5 rounded-xl p-2 transition-colors"
+              className="flex items-center gap-2 hover:bg-white/5 rounded-lg p-1.5 transition-colors"
             >
-              <div className={`relative h-12 ${collapsed ? 'w-12' : 'w-[160px]'} flex-shrink-0 transition-all`}>
+              <div
+                className={`relative h-9 ${collapsed ? "w-9" : "w-[150px]"} flex-shrink-0 transition-all`}
+              >
                 <Image
                   src="/roventis-logo.png"
                   alt="Roventis"
@@ -160,82 +191,106 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-3 pb-3 space-y-1 overflow-y-auto">
+          <nav className="flex-1 px-2.5 py-3 space-y-0.5 overflow-y-auto">
             {navItems.map((item: any, index) => {
               const isActive = pathname === item.href;
               const tierRequired = item.tier;
-              const tierMet = !tierRequired || (currentAffiliate && (
-                tierRequired === "platinum" ? currentAffiliate.tier === "platinum" :
-                tierRequired === "gold" ? ["gold", "platinum"].includes(currentAffiliate.tier) :
-                tierRequired === "silver" ? ["silver", "gold", "platinum"].includes(currentAffiliate.tier) :
-                true
-              ));
+              const tierMet =
+                !tierRequired ||
+                (currentAffiliate &&
+                  (tierRequired === "platinum"
+                    ? currentAffiliate.tier === "platinum"
+                    : tierRequired === "gold"
+                      ? ["gold", "platinum"].includes(currentAffiliate.tier)
+                      : tierRequired === "silver"
+                        ? ["silver", "gold", "platinum"].includes(currentAffiliate.tier)
+                        : true));
 
               if (!tierMet) return null;
 
-              // Show section title when section changes
-              const showSectionTitle = item.section && navItems.slice(0, index).every(i => i.section !== item.section);
-              const sectionLabel = item.section === "dashboard" ? "Dashboard" : item.section === "pipeline" ? "Pipeline" : item.section === "finance" ? "Finance" : item.section === "growth" ? "Growth" : item.section === "settings" ? "Settings" : null;
+              const showSectionTitle =
+                item.section &&
+                navItems.slice(0, index).every((i) => i.section !== item.section);
+              const sectionLabel = item.section ? sectionLabels[item.section] : null;
 
               return (
                 <Fragment key={item.href}>
                   {showSectionTitle && sectionLabel && !collapsed && (
-                    <div className="pt-4 pb-2 px-3">
-                      <span className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--rs-text-muted)' }}>
+                    <div className="pt-3 pb-1.5 px-2.5 first:pt-0">
+                      <span
+                        className="text-[10px] font-semibold uppercase tracking-[0.12em]"
+                        style={{ color: "var(--rs-text-muted)" }}
+                      >
                         {sectionLabel}
                       </span>
                     </div>
                   )}
-                <Link
-                  href={item.href}
-                  title={collapsed ? item.label : undefined}
-                  className={`group flex items-center gap-2 px-3 py-2 rounded-xl font-medium transition-all relative ${
-                    collapsed ? "justify-center px-1" : ""
-                  } ${
-                    isActive ? "text-white" : "text-gray-400 hover:text-white hover:bg-white/5"
-                  }`}
-                  style={isActive ? { background: 'var(--rs-accent-soft)' } : undefined}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeNav"
-                      className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-7 bg-gradient-to-b from-violet-400 to-violet-600 rounded-r-full"
-                      style={{ boxShadow: '0 0 12px rgba(124,58,237,0.5)' }}
+                  <Link
+                    href={item.href}
+                    title={collapsed ? item.label : undefined}
+                    className={`rs-sidebar-item ${
+                      isActive ? "rs-sidebar-item--active" : ""
+                    } ${collapsed ? "justify-center px-1" : ""}`}
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    {isActive && (
+                      <span
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-4 rounded-r-full"
+                        style={{ background: "var(--rs-text-accent)" }}
+                      />
+                    )}
+                    <item.icon
+                      className={`w-4 h-4 flex-shrink-0 ${
+                        isActive ? "text-violet-400" : ""
+                      }`}
+                      style={isActive ? undefined : { color: "var(--rs-text-muted)" }}
                     />
-                  )}
-                  <item.icon className={`w-5 h-5 flex-shrink-0 transition-colors ${
-                    isActive ? "text-violet-400" : "text-gray-500 group-hover:text-gray-300"
-                  }`} />
-                  <span className={`transition-all duration-200 ${collapsed ? 'w-0 opacity-0 hidden' : 'opacity-100'}`}>
-                    {item.label}
-                  </span>
-                  {item.tier && !collapsed && (
-                    <span className="ml-auto px-2 py-0.5 bg-violet-500/20 text-violet-400 text-xs rounded-full">
-                      <Zap className="w-3 h-3 inline" />
+                    <span
+                      className={`flex-1 transition-all duration-200 ${
+                        collapsed ? "w-0 opacity-0 hidden" : "opacity-100"
+                      }`}
+                    >
+                      {item.label}
                     </span>
-                  )}
-                </Link>
+                    {item.tier && !collapsed && (
+                      <Zap className="w-3 h-3 text-violet-400 flex-shrink-0" />
+                    )}
+                  </Link>
                 </Fragment>
               );
             })}
           </nav>
 
           {/* Footer */}
-          <div className={`p-3 ${collapsed ? 'px-2' : ''}`}>
-            <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
+          <div className={`p-2.5 border-t`} style={{ borderColor: "var(--rs-border)" }}>
+            <div
+              className={`flex items-center ${
+                collapsed ? "justify-center" : "justify-between"
+              }`}
+            >
               {!collapsed && (
                 <>
-                  <button className="relative p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
-                    <Bell className="w-5 h-5" />
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" />
+                  <button
+                    className="relative p-1.5 rounded-md transition-colors"
+                    style={{ color: "var(--rs-text-secondary)" }}
+                  >
+                    <Bell className="w-4 h-4" />
+                    <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-violet-500 rounded-full" />
                   </button>
-                  <UserButton />
+                  <UserButton
+                    appearance={{
+                      elements: { avatarBox: "w-7 h-7" },
+                    }}
+                  />
                 </>
               )}
               {collapsed && (
-                <div className="w-8 h-8">
-                  <UserButton />
+                <div className="w-7 h-7">
+                  <UserButton
+                    appearance={{
+                      elements: { avatarBox: "w-7 h-7" },
+                    }}
+                  />
                 </div>
               )}
             </div>
@@ -243,14 +298,65 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         </div>
       </motion.aside>
 
-      {/* Main Content */}
+      {/* Main column */}
       <motion.div
         initial={false}
-        animate={{ marginLeft: collapsed ? 100 : 230 }}
+        animate={{ marginLeft: collapsed ? 80 : 240 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
-        className="flex-1 min-w-0"
+        className="flex-1 min-w-0 flex flex-col"
       >
-        <main className="p-6 lg:p-8" style={{ background: 'var(--rs-bg-base)', minHeight: '100vh' }}>
+        {/* ===== TOP BAR ===== */}
+        <header className="rs-topbar">
+          {/* Breadcrumb context (server-rendered label, client just looks it up) */}
+          <div className="flex items-center gap-2 min-w-0">
+            <span
+              className="text-xs"
+              style={{ color: "var(--rs-text-muted)" }}
+            >
+              Workspace
+            </span>
+            <span style={{ color: "var(--rs-border-hover)" }}>/</span>
+            <span className="text-sm font-medium text-white truncate">{breadcrumb}</span>
+          </div>
+
+          {/* Centered search */}
+          <div className="flex-1 max-w-md mx-4">
+            <div className="rs-input-search">
+              <Search className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "var(--rs-text-muted)" }} />
+              <input
+                type="text"
+                placeholder="Search leads, deals, resources..."
+                className="bg-transparent border-0 outline-none text-sm flex-1 placeholder:text-[var(--rs-text-muted)] text-white"
+              />
+              <kbd
+                className="hidden md:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium"
+                style={{
+                  background: "var(--rs-bg-overlay)",
+                  color: "var(--rs-text-muted)",
+                  border: "1px solid var(--rs-border)",
+                }}
+              >
+                {mac ? <Command className="w-2.5 h-2.5" /> : "Ctrl"}K
+              </kbd>
+            </div>
+          </div>
+
+          {/* Right side: greeting + user button */}
+          <div className="flex items-center gap-3">
+            <span className="hidden md:inline text-xs" style={{ color: "var(--rs-text-secondary)" }}>
+              Hi, <span className="text-white font-medium">{firstName}</span>
+            </span>
+            <UserButton
+              appearance={{
+                elements: { avatarBox: "w-7 h-7 ring-1 ring-[var(--rs-border)]" },
+              }}
+              showName={false}
+            />
+          </div>
+        </header>
+
+        {/* Main content */}
+        <main className="flex-1 px-6 lg:px-10 py-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}
@@ -267,11 +373,13 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             position="bottom-right"
             toastOptions={{
               style: {
-                background: "#141417",
-                border: "1px solid rgba(255,255,255,0.06)",
-                color: "#f5f5f7",
-                borderRadius: "12px",
-                boxShadow: "0 12px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)",
+                background: "var(--rs-bg-raised)",
+                border: "1px solid var(--rs-border)",
+                color: "var(--rs-text-primary)",
+                borderRadius: "10px",
+                boxShadow:
+                  "0 12px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)",
+                fontSize: "0.8125rem",
               },
             }}
           />
