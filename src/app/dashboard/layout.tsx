@@ -19,10 +19,6 @@ import {
   HelpCircle,
   Zap,
   Receipt,
-  ChevronLeft,
-  Search,
-  Command,
-  Check,
 } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { useAuth, useUser, UserButton } from "@clerk/nextjs";
@@ -55,40 +51,14 @@ const sectionLabels: Record<string, string> = {
   settings: "Settings",
 };
 
-// Map pathname -> human breadcrumb label
-const pathLabels: Record<string, string> = {
-  "/dashboard": "Overview",
-  "/dashboard/deals": "Deals",
-  "/dashboard/leads": "Leads",
-  "/dashboard/leads/claimed": "Claimed Leads",
-  "/dashboard/commissions": "Commissions",
-  "/dashboard/invoice": "Invoice Generator",
-  "/dashboard/invoice/history": "Invoice History",
-  "/dashboard/marketing": "Marketing",
-  "/dashboard/resources": "Resources",
-  "/dashboard/profile": "Profile",
-  "/dashboard/training": "Training",
-  "/dashboard/support": "Support",
-  "/dashboard/orders": "Orders",
-  "/dashboard/tier": "Tier",
-};
-
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const [mac, setMac] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const { userId, isLoaded } = useAuth();
   const { user } = useUser();
   const registerAffiliate = useMutation(api.affiliates.registerAffiliate);
-
-  // Detect Mac so the top-bar command hint reads "⌘K" on Mac, "Ctrl K" elsewhere
-  useEffect(() => {
-    if (typeof navigator !== "undefined") {
-      setMac(/Mac|iPhone|iPad/.test(navigator.platform));
-    }
-  }, []);
 
   // Get user email - using useMemo to ensure stability
   const userEmail = useMemo(() => {
@@ -134,9 +104,6 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       console.error("Failed to provision affiliate on first login:", err);
     });
   }, [isLoaded, userId, currentAffiliate, user, isAdminUser, userEmail, registerAffiliate]);
-
-  const breadcrumb = pathLabels[pathname] ?? "Dashboard";
-  const firstName = user?.firstName || currentAffiliate?.firstName || "there";
 
   return (
     <div className="min-h-screen flex" style={{ background: "var(--rs-bg-base)" }}>
@@ -298,65 +265,14 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         </div>
       </motion.aside>
 
-      {/* Main column */}
+      {/* Main content - sidebar is the only persistent chrome */}
       <motion.div
         initial={false}
         animate={{ marginLeft: collapsed ? 80 : 240 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
-        className="flex-1 min-w-0 flex flex-col"
+        className="flex-1 min-w-0"
       >
-        {/* ===== TOP BAR ===== */}
-        <header className="rs-topbar">
-          {/* Breadcrumb context (server-rendered label, client just looks it up) */}
-          <div className="flex items-center gap-2 min-w-0">
-            <span
-              className="text-xs"
-              style={{ color: "var(--rs-text-muted)" }}
-            >
-              Workspace
-            </span>
-            <span style={{ color: "var(--rs-border-hover)" }}>/</span>
-            <span className="text-sm font-medium text-white truncate">{breadcrumb}</span>
-          </div>
-
-          {/* Centered search */}
-          <div className="flex-1 max-w-md mx-4">
-            <div className="rs-input-search">
-              <Search className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "var(--rs-text-muted)" }} />
-              <input
-                type="text"
-                placeholder="Search leads, deals, resources..."
-                className="bg-transparent border-0 outline-none text-sm flex-1 placeholder:text-[var(--rs-text-muted)] text-white"
-              />
-              <kbd
-                className="hidden md:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium"
-                style={{
-                  background: "var(--rs-bg-overlay)",
-                  color: "var(--rs-text-muted)",
-                  border: "1px solid var(--rs-border)",
-                }}
-              >
-                {mac ? <Command className="w-2.5 h-2.5" /> : "Ctrl"}K
-              </kbd>
-            </div>
-          </div>
-
-          {/* Right side: greeting + user button */}
-          <div className="flex items-center gap-3">
-            <span className="hidden md:inline text-xs" style={{ color: "var(--rs-text-secondary)" }}>
-              Hi, <span className="text-white font-medium">{firstName}</span>
-            </span>
-            <UserButton
-              appearance={{
-                elements: { avatarBox: "w-7 h-7 ring-1 ring-[var(--rs-border)]" },
-              }}
-              showName={false}
-            />
-          </div>
-        </header>
-
-        {/* Main content */}
-        <main className="flex-1 px-6 lg:px-10 py-8">
+        <main className="p-6 lg:p-8 min-h-screen">
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}

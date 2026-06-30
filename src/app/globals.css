@@ -791,41 +791,6 @@ body {
 
 /* Note: .rs-skeleton + @keyframes rs-skeleton-shimmer are defined earlier in this file (kept in one place). */
 
-/* Top bar - persistent chrome above page content */
-.rs-topbar {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  height: 56px;
-  padding: 0 1.25rem;
-  background: var(--rs-bg-raised);
-  border-bottom: 1px solid var(--rs-border);
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  backdrop-filter: blur(8px);
-}
-
-/* Search input in the top bar (Linear-style centered placeholder) */
-.rs-input-search {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  height: 32px;
-  padding: 0 0.625rem;
-  background: var(--rs-bg-base);
-  border: 1px solid var(--rs-border);
-  border-radius: 8px;
-  font-size: 0.8125rem;
-  color: var(--rs-text-secondary);
-  transition: border-color 150ms ease, background 150ms ease;
-  min-width: 0;
-}
-.rs-input-search:focus-within {
-  border-color: var(--rs-border-focus);
-  background: var(--rs-bg-overlay);
-}
-
 /* Icon tile - canonical small square icon container.
    Replaces the ad-hoc w-12 h-12 / w-14 h-14 / w-8 h-8 mix. */
 .rs-icon-tile {
