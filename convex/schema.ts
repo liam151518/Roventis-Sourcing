@@ -14,7 +14,14 @@ export default defineSchema({
     experienceLevel: v.optional(v.union(v.literal("none"), v.literal("some"), v.literal("extensive"))),
     affiliateCode: v.string(),
     referralLink: v.string(),
-    status: v.union(v.literal("pending"), v.literal("approved"), v.literal("rejected"), v.literal("suspended"), v.literal("inactive")),
+    // Access control. All new users created in Clerk (post-vetting) are
+    // provisioned as "active". Use "suspended" for temporary holds and
+    // "deactivated" for permanent blocks (e.g. ToS violations, fraud).
+    access: v.optional(v.union(
+      v.literal("active"),
+      v.literal("suspended"),
+      v.literal("deactivated")
+    )),
     tier: v.union(v.literal("bronze"), v.literal("silver"), v.literal("gold"), v.literal("platinum")),
     trainingCompleted: v.boolean(),
     trainingScore: v.optional(v.number()),
@@ -34,7 +41,7 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_email", ["email"])
     .index("by_clerk_id", ["clerkUserId"])
-    .index("by_status", ["status"])
+    .index("by_access", ["access"])
     .index("by_tier", ["tier"]),
 
   // Deals

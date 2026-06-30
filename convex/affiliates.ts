@@ -77,7 +77,9 @@ export const registerAffiliate = mutation({
       experienceLevel: args.experienceLevel,
       affiliateCode,
       referralLink,
-      status: "pending",
+      // Vetting is done pre-Clerk-add. New users start active. Use suspended
+      // or deactivated to revoke access later.
+      access: "active",
       tier: "bronze",
       trainingCompleted: false,
       isApprovedToSell: false,
@@ -87,7 +89,7 @@ export const registerAffiliate = mutation({
       pendingCommission: 0,
       createdAt: Date.now(),
     });
-    
+
     return { success: true, affiliateId, isNew: true };
   },
 });
@@ -104,7 +106,7 @@ export const createAffiliate = mutation({
     experienceLevel: v.optional(v.union(v.literal("none"), v.literal("some"), v.literal("extensive"))),
     affiliateCode: v.string(),
     referralLink: v.string(),
-    status: v.union(v.literal("pending"), v.literal("approved"), v.literal("rejected"), v.literal("suspended"), v.literal("inactive")),
+    access: v.optional(v.union(v.literal("active"), v.literal("suspended"), v.literal("deactivated"))),
     tier: v.union(v.literal("bronze"), v.literal("silver"), v.literal("gold"), v.literal("platinum")),
     trainingCompleted: v.boolean(),
     trainingScore: v.optional(v.number()),
@@ -133,7 +135,7 @@ export const updateAffiliate = mutation({
     city: v.optional(v.string()),
     linkedinUrl: v.optional(v.string()),
     experienceLevel: v.optional(v.union(v.literal("none"), v.literal("some"), v.literal("extensive"))),
-    status: v.optional(v.union(v.literal("pending"), v.literal("approved"), v.literal("rejected"), v.literal("suspended"), v.literal("inactive"))),
+    access: v.optional(v.union(v.literal("active"), v.literal("suspended"), v.literal("deactivated"))),
     tier: v.optional(v.union(v.literal("bronze"), v.literal("silver"), v.literal("gold"), v.literal("platinum"))),
     trainingCompleted: v.optional(v.boolean()),
     trainingScore: v.optional(v.number()),

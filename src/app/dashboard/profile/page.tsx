@@ -196,12 +196,16 @@ export default function ProfilePage() {
             </div>
             <p className="text-gray-500 mt-1">{currentAffiliate.email}</p>
             <div className="flex items-center gap-4 mt-3">
-              <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${
-                currentAffiliate.status === "approved" ? "bg-[var(--rs-success)]/10 text-[var(--rs-success)]" :
-                currentAffiliate.status === "pending" ? "bg-[var(--rs-warning)]/10 text-[var(--rs-warning)]" :
-                "bg-[var(--rs-danger)]/10 text-[var(--rs-danger)]"
+              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                currentAffiliate.access === "active" ? "bg-[var(--rs-success)]/10 text-[var(--rs-success)]" :
+                currentAffiliate.access === "suspended" ? "bg-[var(--rs-warning)]/10 text-[var(--rs-warning)]" :
+                currentAffiliate.access === "deactivated" ? "bg-[var(--rs-danger)]/10 text-[var(--rs-danger)]" :
+                "bg-[var(--rs-warning)]/10 text-[var(--rs-warning)]"
               }`}>
-                {currentAffiliate.status}
+                {currentAffiliate.access === "active" ? "Active" :
+                 currentAffiliate.access === "suspended" ? "Suspended - contact support" :
+                 currentAffiliate.access === "deactivated" ? "Deactivated" :
+                 "Pending setup"}
               </span>
               <span className="text-sm text-gray-500">
                 Member since {new Date(currentAffiliate.createdAt).toLocaleDateString()}

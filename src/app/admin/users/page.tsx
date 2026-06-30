@@ -2,30 +2,54 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Users as UsersIcon } from "lucide-react";
+import { Search, Users as UsersIcon, Shield, ShieldOff, UserX } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { formatDate, formatCurrency } from "@/lib/utils";
+
+type Access = "active" | "suspended" | "deactivated";
+
+const ACCESS_OPTIONS: Access[] = ["active", "suspended", "deactivated"];
+
+function accessStyles(access: string | undefined) {
+  switch (access) {
+    case "active":
+      return "bg-green-500/20 text-green-400 border-green-500/20";
+    case "suspended":
+      return "bg-orange-500/20 text-orange-400 border-orange-500/20";
+    case "deactivated":
+      return "bg-red-500/20 text-red-400 border-red-500/20";
+    default:
+      return "bg-gray-500/20 text-gray-400 border-gray-500/20";
+  }
+}
+
+function accessLabel(access: string | undefined): string {
+  if (access === "active") return "Active";
+  if (access === "suspended") return "Suspended";
+  if (access === "deactivated") return "Deactivated";
+  return "Unknown";
+}
 
 export default function AdminUsersPage() {
   const affiliates = useQuery(api.admin.getAllAffiliatesAdmin);
   const updateAffiliate = useMutation(api.admin.updateAffiliateAdmin);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [accessFilter, setAccessFilter] = useState<string>("all");
   const [tierFilter, setTierFilter] = useState("all");
 
   const filteredAffiliates = (affiliates || []).filter((affiliate: any) => {
-    const matchesSearch = 
+    const matchesSearch =
       affiliate.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       affiliate.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       affiliate.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "all" || affiliate.status === statusFilter;
+    const matchesAccess = accessFilter === "all" || affiliate.access === accessFilter;
     const matchesTier = tierFilter === "all" || affiliate.tier === tierFilter;
-    return matchesSearch && matchesStatus && matchesTier;
+    return matchesSearch && matchesAccess && matchesTier;
   });
 
-  const handleStatusChange = async (id: string, status: string) => {
-    await updateAffiliate({ id, status: status as any });
+  const handleAccessChange = async (id: string, access: Access) => {
+    await updateAffiliate({ id, access });
   };
 
   const handleTierChange = async (id: string, tier: string) => {
@@ -43,8 +67,9 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-white">Users</h1>
-        <p className="text-gray-500 mt-1">Manage affiliate accounts</p>
+        <p className="rs-overline">Admin</p>
+        <h1 className="rs-page-title">Users</h1>
+        <p className="rs-page-subtitle">Manage affiliate access and tier</p>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4">
@@ -59,16 +84,14 @@ export default function AdminUsersPage() {
           />
         </div>
         <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          value={accessFilter}
+          onChange={(e) => setAccessFilter(e.target.value)}
           className="px-4 py-3 bg-[#141417] border border-white/5 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
         >
-          <option value="all">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="rejected">Rejected</option>
+          <option value="all">All Access</option>
+          <option value="active">Active</option>
           <option value="suspended">Suspended</option>
-          <option value="inactive">Inactive</option>
+          <option value="deactivated">Deactivated</option>
         </select>
         <select
           value={tierFilter}
@@ -89,7 +112,7 @@ export default function AdminUsersPage() {
             <thead>
               <tr className="border-b border-white/5">
                 <th className="text-left p-4 text-gray-400 font-medium">User</th>
-                <th className="text-left p-4 text-gray-400 font-medium">Status</th>
+                <th className="text-left p-4 text-gray-400 font-medium">Access</th>
                 <th className="text-left p-4 text-gray-400 font-medium">Tier</th>
                 <th className="text-left p-4 text-gray-400 font-medium">Total Sales</th>
                 <th className="text-left p-4 text-gray-400 font-medium">Commission</th>
@@ -107,14 +130,8 @@ export default function AdminUsersPage() {
                     </div>
                   </td>
                   <td className="p-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      affiliate.status === "approved" ? "bg-green-500/20 text-green-400" :
-                      affiliate.status === "pending" ? "bg-yellow-500/20 text-yellow-400" :
-                      affiliate.status === "rejected" ? "bg-red-500/20 text-red-400" :
-                      affiliate.status === "suspended" ? "bg-orange-500/20 text-orange-400" :
-                      "bg-gray-500/20 text-gray-400"
-                    }`}>
-                      {affiliate.status}
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${accessStyles(affiliate.access)}`}>
+                      {accessLabel(affiliate.access)}
                     </span>
                   </td>
                   <td className="p-4">
@@ -133,17 +150,52 @@ export default function AdminUsersPage() {
                   <td className="p-4 text-white">{formatCurrency(affiliate.totalCommissionEarned)}</td>
                   <td className="p-4 text-gray-400">{formatDate(affiliate.createdAt)}</td>
                   <td className="p-4">
-                    <select
-                      value={affiliate.status}
-                      onChange={(e) => handleStatusChange(affiliate._id, e.target.value)}
-                      className="bg-transparent border border-white/10 rounded-lg px-2 py-1 text-white text-sm"
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="approved">Approve</option>
-                      <option value="rejected">Reject</option>
-                      <option value="suspended">Suspend</option>
-                      <option value="inactive">Deactivate</option>
-                    </select>
+                    <div className="flex gap-2">
+                      {affiliate.access !== "active" && (
+                        <button
+                          onClick={() => handleAccessChange(affiliate._id, "active")}
+                          className="flex items-center gap-1 px-3 py-1 rounded-lg bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20 transition-colors text-xs font-medium"
+                          title="Reactivate this user"
+                        >
+                          <Shield className="w-3 h-3" />
+                          Activate
+                        </button>
+                      )}
+                      {affiliate.access === "active" && (
+                        <button
+                          onClick={() => handleAccessChange(affiliate._id, "suspended")}
+                          className="flex items-center gap-1 px-3 py-1 rounded-lg bg-orange-500/10 text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 transition-colors text-xs font-medium"
+                          title="Temporarily block access (reversible)"
+                        >
+                          <ShieldOff className="w-3 h-3" />
+                          Suspend
+                        </button>
+                      )}
+                      {affiliate.access !== "deactivated" && (
+                        <button
+                          onClick={() => {
+                            if (confirm(`Permanently deactivate ${affiliate.firstName} ${affiliate.lastName}? They will not be able to recover this account.`)) {
+                              handleAccessChange(affiliate._id, "deactivated");
+                            }
+                          }}
+                          className="flex items-center gap-1 px-3 py-1 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors text-xs font-medium"
+                          title="Permanent block (irreversible - use only for ToS violations or fraud)"
+                        >
+                          <UserX className="w-3 h-3" />
+                          Deactivate
+                        </button>
+                      )}
+                      {affiliate.access === "suspended" && (
+                        <span className="text-xs text-orange-400/70 italic self-center">
+                          Suspended
+                        </span>
+                      )}
+                      {affiliate.access === "deactivated" && (
+                        <span className="text-xs text-red-400/70 italic self-center">
+                          Deactivated
+                        </span>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

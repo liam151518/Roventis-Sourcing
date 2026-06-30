@@ -132,13 +132,11 @@ export const getAdminDashboardStats = query({
       platinum: affiliates.filter((a) => a.tier === "platinum").length,
     };
     
-    // Status breakdown
-    const affiliateStatus = {
-      pending: affiliates.filter((a) => a.status === "pending").length,
-      approved: affiliates.filter((a) => a.status === "approved").length,
-      rejected: affiliates.filter((a) => a.status === "rejected").length,
-      suspended: affiliates.filter((a) => a.status === "suspended").length,
-      inactive: affiliates.filter((a) => a.status === "inactive").length,
+    // Access breakdown
+    const affiliateAccess = {
+      active: affiliates.filter((a) => a.access === "active").length,
+      suspended: affiliates.filter((a) => a.access === "suspended").length,
+      deactivated: affiliates.filter((a) => a.access === "deactivated").length,
     };
     
     return {
@@ -154,7 +152,7 @@ export const getAdminDashboardStats = query({
       openTickets,
       activeOrders,
       tierBreakdown,
-      affiliateStatus,
+      affiliateAccess,
     };
   },
 });
@@ -392,7 +390,7 @@ export const updateAffiliateAdmin = mutation({
     email: v.optional(v.string()),
     phone: v.optional(v.string()),
     city: v.optional(v.string()),
-    status: v.optional(v.union(v.literal("pending"), v.literal("approved"), v.literal("rejected"), v.literal("suspended"), v.literal("inactive"))),
+    access: v.optional(v.union(v.literal("active"), v.literal("suspended"), v.literal("deactivated"))),
     tier: v.optional(v.union(v.literal("bronze"), v.literal("silver"), v.literal("gold"), v.literal("platinum"))),
     trainingCompleted: v.optional(v.boolean()),
     isApprovedToSell: v.optional(v.boolean()),

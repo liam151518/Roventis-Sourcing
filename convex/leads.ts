@@ -223,16 +223,16 @@ export const claimLead = mutation({
     const { affiliateId, leadId } = args;
     const now = Date.now();
 
-    // a) Load affiliate and verify status
+    // a) Load affiliate and verify access
     const affiliate = await ctx.db.get(affiliateId as Id<"affiliates">);
     if (!affiliate) {
       throw new Error("Affiliate not found");
     }
-    if (affiliate.status !== "approved") {
-      throw new Error("Your account must be approved before claiming leads.");
+    if (affiliate.access !== "active") {
+      throw new Error("Your account is not active. Contact support to restore access.");
     }
     if (affiliate.isApprovedToSell !== true) {
-      throw new Error("You must complete training and be approved before claiming leads.");
+      throw new Error("You must complete training before claiming leads.");
     }
 
     const tier = affiliate.tier;
