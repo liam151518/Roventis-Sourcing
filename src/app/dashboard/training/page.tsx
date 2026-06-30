@@ -11,14 +11,11 @@ import {
   BookOpen,
   Award,
   Video,
-  FileText,
   Brain,
   X,
   ArrowRight,
-  Lock,
   Sparkles,
   LifeBuoy,
-  Circle,
   CheckCircle2,
   Trophy,
 } from "lucide-react";
@@ -26,8 +23,6 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@clerk/nextjs";
 import CoachingCourse from "@/components/coaching/CoachingCourse";
-
-type ModuleStatus = "completed" | "in-progress" | "not-started" | "locked";
 
 const getModuleIcon = (content: string) => {
   if (content?.includes("video") || content?.includes("Watch")) return Video;
@@ -104,23 +99,15 @@ export default function TrainingPage() {
   // Stepper state for the "Approved to claim leads" journey
   type Step = { key: string; label: string };
   const STEPS: Step[] = [
-    { key: "coaching", label: "Physical Test Program" },
     { key: "modules", label: "Core Modules" },
+    { key: "coaching", label: "Physical Test Program" },
     { key: "approved", label: "Approved to Sell" },
   ];
-  const currentStepIndex = isCoachingDone
-    ? isAnyTrainingDone
+  const currentStepIndex = isAnyTrainingDone
+    ? isCoachingDone
       ? 2
       : 1
     : 0;
-
-  // ---- HANDLERS ----
-  const getModuleStatus = (module: any): ModuleStatus => {
-    if (completedModuleIds.has(module._id)) return "completed";
-    if (!module.isRequired && isAnyTrainingDone) return "not-started";
-    if (module.isRequired && !isCoachingDone) return "locked";
-    return "not-started";
-  };
 
   // ---- RENDER ----
   return (
@@ -142,8 +129,8 @@ export default function TrainingPage() {
           Become approved to claim leads
         </h1>
         <p className="text-[var(--rs-text-secondary)] max-w-2xl text-[15px] leading-relaxed">
-          Complete the program below to unlock the lead pool. The Physical Test
-          Program is required first, then any outstanding core training modules.
+          Complete the program below to unlock the lead pool. Start with the
+          core training modules, then finish with the Physical Test Program.
         </p>
       </motion.div>
 
@@ -243,11 +230,94 @@ export default function TrainingPage() {
         </div>
       </motion.div>
 
-      {/* ===== PHYSICAL TEST PROGRAM (hero card) ===== */}
+      {/* ===== CORE TRAINING MODULES SECTION (step 1) ===== */}
+      {trainingModules.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.15 }}
+        >
+          <div className="flex items-end justify-between mb-4">
+            <div>
+              <span className="rs-overline">Step 1 of 3</span>
+              <h2 className="text-xl font-semibold text-white mt-1">
+                Product & process training
+              </h2>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {trainingModules.map((module: any, index: number) => {
+              const Icon = getModuleIcon(module.content);
+              const isCompleted = completedModuleIds.has(module._id);
+
+              return (
+                <motion.button
+                  key={module._id}
+                  type="button"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 * index, duration: 0.3 }}
+                  onClick={() => setSelectedModule(module)}
+                  className={`group relative rs-card p-5 text-left cursor-pointer hover:-translate-y-0.5 transition-all hover:shadow-xl hover:shadow-black/30 ${
+                    isCompleted ? "ring-1 ring-[rgba(16,185,129,0.20)]" : ""
+                  }`}
+                >
+                  {/* Status pill */}
+                  <div
+                    className={`absolute top-4 right-4 ${
+                      isCompleted
+                        ? "rs-status-pill rs-status-pill--success"
+                        : "rs-status-pill rs-status-pill--neutral"
+                    }`}
+                    style={{ padding: "0.125rem 0.5rem", fontSize: "0.625rem" }}
+                  >
+                    {isCompleted ? "Completed" : "Not started"}
+                  </div>
+
+                  <div
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
+                      isCompleted
+                        ? "bg-[rgba(16,185,129,0.10)] border border-[rgba(16,185,129,0.25)]"
+                        : "bg-[rgba(124,58,237,0.10)] border border-[rgba(124,58,237,0.25)]"
+                    }`}
+                  >
+                    {isCompleted ? (
+                      <CheckCircle className="w-6 h-6 text-[var(--rs-success)]" />
+                    ) : (
+                      <Icon className="w-6 h-6 text-[var(--rs-text-accent)]" />
+                    )}
+                  </div>
+
+                  <h3 className="text-base font-semibold text-white group-hover:text-[var(--rs-text-accent)] transition-colors pr-16">
+                    {module.title}
+                  </h3>
+                  <p className="text-sm text-[var(--rs-text-secondary)] mt-1.5 line-clamp-2 leading-relaxed">
+                    {module.description}
+                  </p>
+
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-[var(--rs-border)]">
+                    <div className="flex items-center gap-1.5 text-xs text-[var(--rs-text-secondary)]">
+                      <Clock className="w-3.5 h-3.5" />
+                      {formatTime(module.estimatedMinutes ?? 0)}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-[var(--rs-text-accent)]">
+                      {isCompleted ? "Review" : "Start"}
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+                </motion.button>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
+
+      {/* ===== PHYSICAL TEST PROGRAM (step 2, the hero card) ===== */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.15 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
         onClick={() => setShowCoaching(true)}
         className="rs-gradient-border rs-violet-glow cursor-pointer transition-transform hover:scale-[1.005] hover:-translate-y-0.5"
       >
@@ -270,7 +340,7 @@ export default function TrainingPage() {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-[10px] font-semibold tracking-[0.15em] uppercase text-[var(--rs-text-accent)]">
-                    Physical Test Program
+                    Step 2 of 3 · Physical Test Program
                   </span>
                   <span className="rs-status-pill rs-status-pill--danger" style={{ padding: "0.125rem 0.5rem", fontSize: "0.625rem" }}>
                     Required
@@ -361,135 +431,24 @@ export default function TrainingPage() {
         </div>
       </motion.div>
 
-      {/* ===== CORE TRAINING MODULES SECTION ===== */}
-      {trainingModules.length > 0 && (
+      {/* ===== EMPTY STATE (no modules at all) ===== */}
+      {trainingModules.length === 0 && (
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-        >
-          <div className="flex items-end justify-between mb-4">
-            <div>
-              <span className="rs-overline">Core Modules</span>
-              <h2 className="text-xl font-semibold text-white mt-1">
-                Product & process training
-              </h2>
-            </div>
-            {requiredModules.length > 0 && !isCoachingDone && (
-              <div className="flex items-center gap-2 text-xs text-[var(--rs-warning)]">
-                <Lock className="w-3.5 h-3.5" />
-                Complete the Physical Test Program first
-              </div>
-            )}
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {trainingModules.map((module: any, index: number) => {
-              const Icon = getModuleIcon(module.content);
-              const status = getModuleStatus(module);
-              const isLocked = status === "locked";
-              const isCompleted = status === "completed";
-              const isInProgress = status === "in-progress";
-
-              return (
-                <motion.button
-                  key={module._id}
-                  type="button"
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.05 * index, duration: 0.3 }}
-                  onClick={() => !isLocked && setSelectedModule(module)}
-                  disabled={isLocked}
-                  className={`group relative rs-card p-5 text-left transition-all ${
-                    isLocked
-                      ? "opacity-60 cursor-not-allowed"
-                      : "cursor-pointer hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/30"
-                  } ${isCompleted ? "ring-1 ring-[rgba(16,185,129,0.20)]" : ""}`}
-                >
-                  {/* Status bar on the left */}
-                  <div
-                    className={`absolute top-4 right-4 ${
-                      isCompleted
-                        ? "rs-status-pill rs-status-pill--success"
-                        : isInProgress
-                          ? "rs-status-pill rs-status-pill--progress"
-                          : isLocked
-                            ? "rs-status-pill rs-status-pill--warning"
-                            : "rs-status-pill rs-status-pill--neutral"
-                    }`}
-                    style={{ padding: "0.125rem 0.5rem", fontSize: "0.625rem" }}
-                  >
-                    {isCompleted
-                      ? "Completed"
-                      : isInProgress
-                        ? "In progress"
-                        : isLocked
-                          ? "Locked"
-                          : "Not started"}
-                  </div>
-
-                  <div
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
-                      isCompleted
-                        ? "bg-[rgba(16,185,129,0.10)] border border-[rgba(16,185,129,0.25)]"
-                        : "bg-[rgba(124,58,237,0.10)] border border-[rgba(124,58,237,0.25)]"
-                    }`}
-                  >
-                    {isCompleted ? (
-                      <CheckCircle className="w-6 h-6 text-[var(--rs-success)]" />
-                    ) : isLocked ? (
-                      <Lock className="w-6 h-6 text-[var(--rs-warning)]" />
-                    ) : (
-                      <Icon className="w-6 h-6 text-[var(--rs-text-accent)]" />
-                    )}
-                  </div>
-
-                  <h3 className="text-base font-semibold text-white group-hover:text-[var(--rs-text-accent)] transition-colors pr-16">
-                    {module.title}
-                  </h3>
-                  <p className="text-sm text-[var(--rs-text-secondary)] mt-1.5 line-clamp-2 leading-relaxed">
-                    {module.description}
-                  </p>
-
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-[var(--rs-border)]">
-                    <div className="flex items-center gap-1.5 text-xs text-[var(--rs-text-secondary)]">
-                      <Clock className="w-3.5 h-3.5" />
-                      {formatTime(module.estimatedMinutes ?? 0)}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-xs font-medium text-[var(--rs-text-accent)]">
-                      {isCompleted
-                        ? "Review"
-                        : isInProgress
-                          ? "Resume"
-                          : isLocked
-                            ? "Locked"
-                            : "Start"}
-                      {!isLocked && <ChevronRight className="w-3.5 h-3.5" />}
-                    </div>
-                  </div>
-                </motion.button>
-              );
-            })}
-          </div>
-        </motion.div>
-      )}
-
-      {/* ===== EMPTY STATE ===== */}
-      {trainingModules.length === 0 && isCoachingDone && (
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
+          transition={{ duration: 0.4, delay: 0.15 }}
           className="rs-card p-12 text-center"
         >
-          <div className="w-14 h-14 rounded-2xl bg-[rgba(16,185,129,0.10)] border border-[rgba(16,185,129,0.25)] flex items-center justify-center mx-auto mb-4">
-            <Trophy className="w-7 h-7 text-[var(--rs-success)]" />
+          <div className="w-14 h-14 rounded-2xl bg-white/5 border border-[var(--rs-border)] flex items-center justify-center mx-auto mb-4">
+            <BookOpen className="w-7 h-7 text-[var(--rs-text-secondary)]" />
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">All caught up</h3>
+          <h3 className="text-lg font-semibold text-white mb-2">
+            No core modules yet
+          </h3>
           <p className="text-[var(--rs-text-secondary)] max-w-md mx-auto">
-            You&apos;ve completed the Physical Test Program. There are no
-            additional core modules right now — you can claim leads from the
-            Leads page whenever you&apos;re ready.
+            There are no core training modules configured at the moment. You can
+            still complete the Physical Test Program below to unlock lead
+            claiming.
           </p>
         </motion.div>
       )}
