@@ -1051,6 +1051,9 @@ body {
   height: auto;
   padding: 0.625rem 0.75rem;
 }
+.rs-input--search {
+  padding-left: 2.5rem;
+}
 
 /* Pill - simple badge (active filter, count, etc.) */
 .rs-pill {

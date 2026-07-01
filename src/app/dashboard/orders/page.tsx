@@ -327,7 +327,7 @@ export default function OrdersPage() {
       <div className="flex flex-col md:flex-row gap-3">
         <div className="relative flex-1">
           <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
             style={{ color: "var(--rs-text-muted)" }}
           />
           <input
@@ -335,7 +335,7 @@ export default function OrdersPage() {
             placeholder="Search orders..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="rs-input pl-9"
+            className="rs-input rs-input--search"
             style={{ height: 42 }}
           />
         </div>

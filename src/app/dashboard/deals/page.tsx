@@ -630,13 +630,13 @@ export default function DealsPage() {
         <div className="flex flex-col sm:flex-row gap-2">
           {/* Search Input */}
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--rs-text-muted)" }} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: "var(--rs-text-muted)" }} />
             <input
               type="text"
               placeholder="Search by client name or company..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="rs-input pl-9 pr-10"
+              className="rs-input rs-input--search pr-10"
               style={{ height: 38 }}
             />
             {searchQuery && (

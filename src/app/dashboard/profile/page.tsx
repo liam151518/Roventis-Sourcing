@@ -311,72 +311,72 @@ export default function ProfilePage() {
             <div>
               <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>First Name</label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--rs-text-muted)" }} />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: "var(--rs-text-muted)" }} />
                 <input
                   type="text"
                   defaultValue={currentAffiliate.firstName}
                   disabled={!isEditing}
-                  className="rs-input pl-9 disabled:opacity-50"
+                  className="rs-input rs-input--search disabled:opacity-50"
                 />
               </div>
             </div>
             <div>
               <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Last Name</label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--rs-text-muted)" }} />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: "var(--rs-text-muted)" }} />
                 <input
                   type="text"
                   defaultValue={currentAffiliate.lastName}
                   disabled={!isEditing}
-                  className="rs-input pl-9 disabled:opacity-50"
+                  className="rs-input rs-input--search disabled:opacity-50"
                 />
               </div>
             </div>
             <div>
               <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Email</label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--rs-text-muted)" }} />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: "var(--rs-text-muted)" }} />
                 <input
                   type="email"
                   defaultValue={currentAffiliate.email}
                   disabled={!isEditing}
-                  className="rs-input pl-9 disabled:opacity-50"
+                  className="rs-input rs-input--search disabled:opacity-50"
                 />
               </div>
             </div>
             <div>
               <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>Phone</label>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--rs-text-muted)" }} />
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: "var(--rs-text-muted)" }} />
                 <input
                   type="tel"
                   defaultValue={currentAffiliate.phone || ""}
                   disabled={!isEditing}
-                  className="rs-input pl-9 disabled:opacity-50"
+                  className="rs-input rs-input--search disabled:opacity-50"
                 />
               </div>
             </div>
             <div>
               <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>City</label>
               <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--rs-text-muted)" }} />
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: "var(--rs-text-muted)" }} />
                 <input
                   type="text"
                   defaultValue={currentAffiliate.city || ""}
                   disabled={!isEditing}
-                  className="rs-input pl-9 disabled:opacity-50"
+                  className="rs-input rs-input--search disabled:opacity-50"
                 />
               </div>
             </div>
             <div>
               <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--rs-text-secondary)" }}>LinkedIn URL</label>
               <div className="relative">
-                <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--rs-text-muted)" }} />
+                <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: "var(--rs-text-muted)" }} />
                 <input
                   type="url"
                   defaultValue={currentAffiliate.linkedinUrl || ""}
                   disabled={!isEditing}
-                  className="rs-input pl-9 disabled:opacity-50"
+                  className="rs-input rs-input--search disabled:opacity-50"
                 />
               </div>
             </div>
