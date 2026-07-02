@@ -5,23 +5,23 @@
 // includes publicMetadata in its claims (the default Clerk Convex
 // template does this).
 //
-// The `domain` here is the Clerk Frontend API URL (the same value
-// shown on the Clerk dashboard API keys page). For development
-// Clerk projects it's `https://<verb>-<noun>-<NN>.<clerk.accounts.dev|clerk.com>`.
-// For our Clerk project the publishable key is
-// pk_test_c3VwcmVtZS1mZXJyZXQtOTMuY2xlcmsuYWNjb3VudHMuZGV2JA
-// which decodes to host `supreme-ferret-93.clerk.accounts.dev`,
-// so the Frontend API URL is
-// https://supreme-ferret-93.clerk.accounts.dev
-// (NO `clerk.` prefix - that prefix is only used for Clerk's
-// production custom domains, not the default accounts.dev hosts).
+// The `domain` here is the Clerk Frontend API URL. We use a
+// production Clerk custom domain (clerk.roventissourcing.com), so
+// the issuer is `https://clerk.roventissourcing.com`. The
+// `clerk.` prefix IS required for production custom Clerk domains
+// (e.g. clerk.yourcompany.com), unlike the default
+// `<verb>-<noun>-NN.clerk.accounts.dev` dev hosts.
+//
+// You can verify the issuer by opening
+//   https://<your-clerk-domain>/.well-known/jwks.json
+// - if it loads with `{"keys":[...]}`, you're on the right domain.
 
 export default {
   providers: [
     {
       domain:
         process.env.CLERK_JWT_ISSUER_DOMAIN ??
-        "https://supreme-ferret-93.clerk.accounts.dev",
+        "https://clerk.roventissourcing.com",
       applicationID: "convex",
     },
   ],
