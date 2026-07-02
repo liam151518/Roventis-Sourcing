@@ -5,29 +5,23 @@
 // includes publicMetadata in its claims (the default Clerk Convex
 // template does this).
 //
-// The `domain` here is the issuer from the Clerk JWT - it's
-// `clerk.<your-clerk-frontend-api-host>` minus the protocol.
-//
-// Example: if your Clerk publishable key starts with
+// The `domain` here is the Clerk Frontend API URL (the same value
+// shown on the Clerk dashboard API keys page). For development
+// Clerk projects it's `https://<verb>-<noun>-<NN>.<clerk.accounts.dev|clerk.com>`.
+// For our Clerk project the publishable key is
 // pk_test_c3VwcmVtZS1mZXJyZXQtOTMuY2xlcmsuYWNjb3VudHMuZGV2JA
-// the decoded host is `supreme-ferret-93.clerk.accounts.dev`,
-// so the issuer domain is `clerk.supreme-ferret-93.clerk.accounts.dev`.
+// which decodes to host `supreme-ferret-93.clerk.accounts.dev`,
+// so the Frontend API URL is
+// https://supreme-ferret-93.clerk.accounts.dev
+// (NO `clerk.` prefix - that prefix is only used for Clerk's
+// production custom domains, not the default accounts.dev hosts).
 
 export default {
   providers: [
     {
-      // Issuer domain from the Clerk JWT. Must match the Clerk
-      // project's frontend API host prefixed with `clerk.`.
-      // For our Clerk project (pk_test_c3VwcmVtZS1mZXJyZXQtOTMu
-      // Y2xlcmsuYWNjb3VudHMuZGV2JA) the decoded host is
-      // `supreme-ferret-93.clerk.accounts.dev`, so the issuer is
-      // `clerk.supreme-ferret-93.clerk.accounts.dev`.
-      //
-      // For prod, override via the CLERK_JWT_ISSUER_DOMAIN env var
-      // (Convex env, not Next.js env).
       domain:
         process.env.CLERK_JWT_ISSUER_DOMAIN ??
-        "clerk.supreme-ferret-93.clerk.accounts.dev",
+        "https://supreme-ferret-93.clerk.accounts.dev",
       applicationID: "convex",
     },
   ],
