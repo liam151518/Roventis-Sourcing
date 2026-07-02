@@ -1,180 +1,68 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Copy,
+  KeyRound,
+  ShieldCheck,
+  Sparkles,
+  ArrowRight,
   Check,
-  Instagram,
-  Linkedin,
-  Mail,
-  MessageCircle,
-  RotateCcw,
-  Edit3,
-  Save,
-  X,
-  Plus,
-  ChevronDown,
-  ChevronRight,
-  Trash2,
-  Megaphone,
+  Loader2,
+  Eye,
+  Lightbulb,
+  MessageSquare,
+  ClipboardList,
+  TrendingUp,
+  Lock,
 } from "lucide-react";
+import { useQuery } from "convex/react";
+import { toast } from "sonner";
+import { api } from "@/convex/_generated/api";
 
-const defaultTemplates = [
-  {
-    id: "instagram",
-    name: "Instagram",
-    icon: Instagram,
-    accent: { bg: "rgba(236,72,153,0.10)", border: "rgba(236,72,153,0.25)", color: "#f472b6" },
-    template:
-      "I've partnered with Roventis Sourcing to bring you premium workwear, corporate merch, and solar solutions!\n\nQuality products at competitive prices\nFast delivery across South Africa\nProfessional service\n\nUse my affiliate link below for special deals!",
-  },
-  {
-    id: "linkedin",
-    name: "LinkedIn",
-    icon: Linkedin,
-    accent: { bg: "rgba(59,130,246,0.10)", border: "rgba(59,130,246,0.25)", color: "var(--rs-info)" },
-    template:
-      "Professional Collaboration Opportunity\n\nI'm excited to share that I'm now an affiliate partner with Roventis Sourcing:\n\n- Premium workwear and uniforms\n- Corporate merchandise\n- Solar solutions\n- Quality industrial supplies\n\nBased in South Africa. Drop me a message!",
-  },
-  {
-    id: "whatsapp",
-    name: "WhatsApp",
-    icon: MessageCircle,
-    accent: { bg: "rgba(16,185,129,0.10)", border: "rgba(16,185,129,0.25)", color: "var(--rs-success)" },
-    template:
-      "Hi!\n\nI came across Roventis Sourcing and thought of you! They offer:\n\n- Workwear & uniforms\n- Corporate merchandise\n- Solar solutions\n- Great prices in SA\n\nI can share more details if you're interested!",
-  },
-  {
-    id: "email",
-    name: "Email",
-    icon: Mail,
-    accent: { bg: "var(--rs-bg-overlay)", border: "var(--rs-border)", color: "var(--rs-text-secondary)" },
-    template:
-      "Subject: Premium Workwear & Corporate Solutions in SA\n\nHi,\n\nI wanted to share a great resource for workwear, corporate merchandise, and solar solutions in South Africa.\n\nRoventis Sourcing offers:\n- Quality workwear and uniforms\n- Corporate branded merchandise\n- Solar panel solutions\n- Competitive pricing\n- Nationwide delivery\n\nAs an affiliate partner, I can help connect you with them.\n\nBest regards",
-  },
-];
+export default function AdvisorPage() {
+  const [code, setCode] = useState("");
+  const [pendingCheck, setPendingCheck] = useState<string | null>(null);
+  // Once we've checked a code at least once, it stays unlocked for
+  // the rest of this page-load (per the user's "per-load" choice).
+  const [unlocked, setUnlocked] = useState(false);
+  const [invalidCode, setInvalidCode] = useState(false);
+  const [validating, setValidating] = useState(false);
 
-interface CustomTemplate {
-  id: string;
-  name: string;
-  content: string;
-}
-
-export default function MarketingPage() {
-  const [templates, setTemplates] = useState(defaultTemplates);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editContent, setEditContent] = useState("");
-  const [saving, setSaving] = useState<string | null>(null);
-  const [collapsedIds, setCollapsedIds] = useState<Set<string>>(
-    new Set(["instagram", "linkedin", "whatsapp", "email"])
+  // useQuery only fires when pendingCheck is non-empty (skip pattern).
+  const validation = useQuery(
+    api.advisor.validateAdvisorAccessCode,
+    pendingCheck ? { code: pendingCheck } : "skip"
   );
-  const [customTemplates, setCustomTemplates] = useState<CustomTemplate[]>([]);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [newTemplate, setNewTemplate] = useState({ name: "", content: "" });
-  const [customCollapsed, setCustomCollapsed] = useState(true);
 
+  // React to the query result.
   useEffect(() => {
-    const saved = localStorage.getItem("marketingTemplates");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        const merged = defaultTemplates.map((def) => ({
-          ...def,
-          template: parsed[def.id] || def.template,
-        }));
-        setTemplates(merged);
-      } catch (e) {
-        console.error("Failed to parse saved templates");
-      }
+    if (!pendingCheck || !validation) return;
+    if (validation.valid) {
+      setUnlocked(true);
+      toast.success("Advisor unlocked for this session");
+    } else {
+      setInvalidCode(true);
+      toast.error("Invalid or inactive access code");
     }
+    setValidating(false);
+    setPendingCheck(null);
+  }, [validation, pendingCheck]);
 
-    const savedCustom = localStorage.getItem("customMarketingTemplates");
-    if (savedCustom) {
-      try {
-        setCustomTemplates(JSON.parse(savedCustom));
-      } catch (e) {
-        console.error("Failed to parse custom templates");
-      }
-    }
-  }, []);
+  const handleUnlock = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = code.trim();
+    if (!trimmed || validating) return;
 
-  const toggleCollapse = (id: string) => {
-    setCollapsedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
+    setValidating(true);
+    setInvalidCode(false);
+    setUnlocked(false);
+    setPendingCheck(trimmed);
   };
 
-  const handleCopy = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
-  };
-
-  const startEditing = (template: (typeof defaultTemplates)[0]) => {
-    setEditingId(template.id);
-    setEditContent(template.template);
-  };
-
-  const saveEdit = (id: string) => {
-    setSaving(id);
-    const updated = templates.map((t) =>
-      t.id === id ? { ...t, template: editContent } : t
-    );
-    setTemplates(updated);
-    const toSave: Record<string, string> = {};
-    updated.forEach((t) => {
-      toSave[t.id] = t.template;
-    });
-    localStorage.setItem("marketingTemplates", JSON.stringify(toSave));
-    setTimeout(() => {
-      setSaving(null);
-      setEditingId(null);
-    }, 500);
-  };
-
-  const resetToDefault = (id: string) => {
-    if (!confirm("Reset this template to default?")) return;
-    const defaultTemplate = defaultTemplates.find((t) => t.id === id);
-    if (!defaultTemplate) return;
-    const updated = templates.map((t) =>
-      t.id === id ? { ...t, template: defaultTemplate.template } : t
-    );
-    setTemplates(updated);
-    const toSave: Record<string, string> = {};
-    updated.forEach((t) => {
-      toSave[t.id] = t.template;
-    });
-    localStorage.setItem("marketingTemplates", JSON.stringify(toSave));
-  };
-
-  const addCustomTemplate = () => {
-    if (!newTemplate.name.trim() || !newTemplate.content.trim()) return;
-    const template: CustomTemplate = {
-      id: `custom-${Date.now()}`,
-      name: newTemplate.name,
-      content: newTemplate.content,
-    };
-    const updated = [...customTemplates, template];
-    setCustomTemplates(updated);
-    localStorage.setItem("customMarketingTemplates", JSON.stringify(updated));
-    setNewTemplate({ name: "", content: "" });
-    setShowAddModal(false);
-  };
-
-  const deleteCustomTemplate = (id: string) => {
-    if (!confirm("Delete this template?")) return;
-    const updated = customTemplates.filter((t) => t.id !== id);
-    setCustomTemplates(updated);
-    localStorage.setItem("customMarketingTemplates", JSON.stringify(updated));
-  };
+  if (unlocked) {
+    return <AdvisorShell />;
+  }
 
   return (
     <div className="space-y-8">
@@ -182,365 +70,323 @@ export default function MarketingPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <span className="rs-overline">Marketing</span>
+        <span className="rs-overline">Advisor</span>
         <h1 className="rs-page-title text-2xl md:text-[28px] mt-1">
-          Marketing Templates
+          Advisor
         </h1>
         <p className="rs-page-subtitle">
-          Customize and share promotional content across your channels.
+          Early access. An advisor reviews what you're doing and helps you
+          make better calls.
         </p>
       </motion.div>
 
-      <div className="grid lg:grid-cols-2 gap-4">
-        {/* Left Column - Default Templates */}
-        <div className="space-y-3">
-          {templates.map((template) => {
-            const Icon = template.icon;
-            const isEditing = editingId === template.id;
-            const isCopied = copiedId === template.id;
-            const isSaving = saving === template.id;
-            const isCollapsed = collapsedIds.has(template.id);
-
-            return (
-              <div
-                key={template.id}
-                className="rs-card overflow-hidden"
-              >
-                <div
-                  onClick={() => toggleCollapse(template.id)}
-                  className="w-full flex items-center justify-between px-4 py-3 transition-colors cursor-pointer hover:bg-[var(--rs-bg-overlay)]"
-                  style={{ borderBottom: isCollapsed ? "0" : "1px solid var(--rs-border)" }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-7 h-7 rounded-lg flex items-center justify-center"
-                      style={{
-                        background: template.accent.bg,
-                        border: `1px solid ${template.accent.border}`,
-                      }}
-                    >
-                      <Icon className="w-3.5 h-3.5" style={{ color: template.accent.color }} />
-                    </div>
-                    <span className="text-sm font-medium text-white">
-                      {template.name}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    {!isEditing && (
-                      <div className="flex items-center gap-0.5 mr-1">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            startEditing(template);
-                          }}
-                          className="p-1.5 rounded-md transition-colors hover:bg-[var(--rs-bg-overlay)]"
-                          style={{ color: "var(--rs-text-muted)" }}
-                          aria-label="Edit"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            resetToDefault(template.id);
-                          }}
-                          className="p-1.5 rounded-md transition-colors hover:bg-[var(--rs-bg-overlay)]"
-                          style={{ color: "var(--rs-text-muted)" }}
-                          aria-label="Reset"
-                        >
-                          <RotateCcw className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    )}
-                    {isCollapsed ? (
-                      <ChevronRight className="w-3.5 h-3.5" style={{ color: "var(--rs-text-muted)" }} />
-                    ) : (
-                      <ChevronDown className="w-3.5 h-3.5" style={{ color: "var(--rs-text-muted)" }} />
-                    )}
-                  </div>
-                </div>
-
-                <AnimatePresence mode="wait">
-                  {!isCollapsed && (
-                    <motion.div
-                      key={template.id}
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="px-4 py-4 space-y-3">
-                        {isEditing ? (
-                          <>
-                            <textarea
-                              value={editContent}
-                              onChange={(e) => setEditContent(e.target.value)}
-                              className="rs-input rs-input--textarea"
-                              style={{ minHeight: 160 }}
-                            />
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => {
-                                  setEditingId(null);
-                                  setEditContent("");
-                                }}
-                                className="rs-btn-ghost flex-1 justify-center"
-                              >
-                                Cancel
-                              </button>
-                              <button
-                                onClick={() => saveEdit(template.id)}
-                                disabled={isSaving}
-                                className="rs-btn-primary flex-1 justify-center disabled:opacity-50"
-                              >
-                                <Save className="w-3.5 h-3.5" />
-                                {isSaving ? "Saving..." : "Save"}
-                              </button>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <div
-                              className="rounded-lg p-3 min-h-[8rem]"
-                              style={{
-                                background: "var(--rs-bg-base)",
-                                border: "1px solid var(--rs-border)",
-                              }}
-                            >
-                              <p
-                                className="text-sm whitespace-pre-wrap"
-                                style={{ color: "var(--rs-text-secondary)" }}
-                              >
-                                {template.template}
-                              </p>
-                            </div>
-                            <button
-                              onClick={() => handleCopy(template.template, template.id)}
-                              className="rs-btn-primary w-full justify-center"
-                            >
-                              {isCopied ? (
-                                <>
-                                  <Check className="w-3.5 h-3.5" /> Copied
-                                </>
-                              ) : (
-                                <>
-                                  <Copy className="w-3.5 h-3.5" /> Copy Template
-                                </>
-                              )}
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Right Column - Custom Templates */}
-        <div className="rs-card overflow-hidden h-fit">
+      {/* Lock card */}
+      <div className="rs-card p-8 md:p-12">
+        <div className="grid md:grid-cols-[auto_1fr] gap-8 items-center">
+          {/* Icon */}
           <div
-            onClick={() => setCustomCollapsed(!customCollapsed)}
-            className="w-full flex items-center justify-between px-4 py-3 transition-colors cursor-pointer hover:bg-[var(--rs-bg-overlay)]"
+            className="w-16 h-16 rounded-2xl flex items-center justify-center"
             style={{
-              borderBottom: customCollapsed
-                ? "0"
-                : "1px solid var(--rs-border)",
+              background: "var(--rs-accent-soft)",
+              border: "1px solid rgba(167,139,250,0.25)",
             }}
           >
-            <div className="flex items-center gap-3">
-              <div className="rs-icon-tile rs-icon-tile--accent w-7 h-7">
-                <Megaphone className="w-3.5 h-3.5" />
-              </div>
-              <span className="text-sm font-medium text-white">Custom Templates</span>
-              <span
-                className="text-xs rs-pill"
-                style={{ padding: "0.05rem 0.5rem" }}
-              >
-                {customTemplates.length}
-              </span>
-            </div>
-            {customCollapsed ? (
-              <ChevronRight className="w-3.5 h-3.5" style={{ color: "var(--rs-text-muted)" }} />
-            ) : (
-              <ChevronDown className="w-3.5 h-3.5" style={{ color: "var(--rs-text-muted)" }} />
-            )}
+            <ShieldCheck className="w-7 h-7" style={{ color: "var(--rs-accent)" }} />
           </div>
 
-          <AnimatePresence>
-            {!customCollapsed && (
-              <motion.div
-                key="custom-templates"
-                initial={{ height: 0 }}
-                animate={{ height: "auto" }}
-                exit={{ height: 0 }}
-                className="overflow-hidden"
+          {/* Copy + form */}
+          <div className="space-y-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span
+                  className="rs-pill"
+                  style={{
+                    background: "rgba(167,139,250,0.10)",
+                    color: "var(--rs-accent)",
+                    borderColor: "rgba(167,139,250,0.25)",
+                  }}
+                >
+                  <Lock className="w-3 h-3" />
+                  Early access
+                </span>
+              </div>
+              <h2 className="text-lg font-semibold text-white">
+                Enter your advisor access code
+              </h2>
+              <p
+                className="text-sm mt-1"
+                style={{ color: "var(--rs-text-secondary)" }}
               >
-                <div className="px-4 py-4 space-y-2">
-                  <button
-                    onClick={() => setShowAddModal(true)}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed rounded-lg text-xs transition-colors"
-                    style={{
-                      borderColor: "var(--rs-border)",
-                      color: "var(--rs-text-muted)",
-                    }}
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    Add Custom Template
-                  </button>
+                Codes are issued in small cohorts. If you don't have one yet,
+                reach out to Roventis to get on the list.
+              </p>
+            </div>
 
-                  {customTemplates.map((template) => {
-                    const isCopied = copiedId === template.id;
-                    return (
-                      <div
-                        key={template.id}
-                        className="rounded-lg p-3"
-                        style={{
-                          background: "var(--rs-bg-base)",
-                          border: "1px solid var(--rs-border)",
-                        }}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium text-white">
-                            {template.name}
-                          </span>
-                          <button
-                            onClick={() => deleteCustomTemplate(template.id)}
-                            className="p-1 rounded-md hover:bg-[var(--rs-bg-overlay)]"
-                            style={{ color: "var(--rs-text-muted)" }}
-                            aria-label="Delete"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                        <div
-                          className="text-xs whitespace-pre-wrap mb-2 max-h-24 overflow-y-auto"
-                          style={{ color: "var(--rs-text-secondary)" }}
-                        >
-                          {template.content}
-                        </div>
-                        <button
-                          onClick={() => handleCopy(template.content, template.id)}
-                          className="rs-btn-ghost w-full justify-center"
-                          style={{ height: 32 }}
-                        >
-                          {isCopied ? (
-                            <>
-                              <Check className="w-3 h-3" /> Copied
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3 h-3" /> Copy
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    );
-                  })}
+            <form onSubmit={handleUnlock} className="flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1">
+                <KeyRound
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+                  style={{ color: invalidCode ? "rgb(248,113,113)" : "var(--rs-text-muted)" }}
+                />
+                <input
+                  type="text"
+                  inputMode="text"
+                  autoComplete="off"
+                  spellCheck={false}
+                  value={code}
+                  onChange={(e) => {
+                    setCode(e.target.value);
+                    if (invalidCode) setInvalidCode(false);
+                  }}
+                  placeholder="e.g. ROV-ADV-2026"
+                  className="rs-input rs-input--search w-full"
+                  style={{
+                    height: 42,
+                    ...(invalidCode
+                      ? {
+                          borderColor: "rgba(239,68,68,0.55)",
+                          background: "rgba(239,68,68,0.05)",
+                        }
+                      : {}),
+                  }}
+                  disabled={validating}
+                  aria-invalid={invalidCode}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={validating || !code.trim()}
+                className="rs-btn-primary flex items-center justify-center gap-2 disabled:opacity-50"
+                style={{ height: 42 }}
+              >
+                {validating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Checking...
+                  </>
+                ) : (
+                  <>
+                    Unlock
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </form>
 
-                  {customTemplates.length === 0 && (
-                    <div
-                      className="text-xs text-center py-6"
-                      style={{ color: "var(--rs-text-muted)" }}
-                    >
-                      No custom templates yet
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+            <p
+              className="text-xs"
+              style={{ color: invalidCode ? "rgb(248,113,113)" : "var(--rs-text-muted)" }}
+            >
+              {invalidCode
+                ? "That code didn't work. Double-check the spelling or ask Roventis for a fresh one."
+                : "Access is per-session. You'll be prompted again next visit."}
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Add Modal */}
-      <AnimatePresence>
-        {showAddModal && (
-          <motion.div
-            key="add-modal"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="rs-modal-backdrop"
-            onClick={() => setShowAddModal(false)}
+      {/* What's inside (teaser) */}
+      <div className="rs-card p-6 md:p-8">
+        <div className="flex items-center gap-2 mb-1">
+          <Sparkles className="w-4 h-4" style={{ color: "var(--rs-accent)" }} />
+          <span
+            className="text-xs font-semibold uppercase tracking-wider"
+            style={{ color: "var(--rs-text-muted)" }}
           >
-            <motion.div
-              key="add-modal-content"
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.95 }}
-              onClick={(e) => e.stopPropagation()}
-              className="rs-modal max-w-md w-full p-0"
+            What's inside
+          </span>
+        </div>
+        <h3 className="text-base font-semibold text-white mb-4">
+          Four things your advisor sees and helps with
+        </h3>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {[
+            {
+              icon: Eye,
+              title: "What you're doing",
+              desc: "Activity, where time goes, where deals sit.",
+            },
+            {
+              icon: ClipboardList,
+              title: "Where you are",
+              desc: "Pipeline state, training progress, weekly pace.",
+            },
+            {
+              icon: TrendingUp,
+              title: "Where to focus",
+              desc: "Highest-leverage moves for the next 7 days.",
+            },
+            {
+              icon: Lightbulb,
+              title: "Advice, not commentary",
+              desc: "Specific next actions you can take this week.",
+            },
+          ].map((item) => (
+            <div
+              key={item.title}
+              className="rounded-xl p-4"
+              style={{
+                background: "var(--rs-bg-base)",
+                border: "1px solid var(--rs-border)",
+              }}
             >
-              <div className="rs-modal-header">
-                <h3 className="text-base font-semibold text-white">
-                  Add Custom Template
-                </h3>
-                <button
-                  onClick={() => setShowAddModal(false)}
-                  className="p-1 rounded-md hover:bg-white/5 transition-colors"
-                  style={{ color: "var(--rs-text-secondary)" }}
-                >
-                  <X className="w-4 h-4" />
-                </button>
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center mb-2"
+                style={{
+                  background: "var(--rs-accent-soft)",
+                  border: "1px solid rgba(167,139,250,0.20)",
+                }}
+              >
+                <item.icon
+                  className="w-4 h-4"
+                  style={{ color: "var(--rs-accent)" }}
+                />
               </div>
-              <div className="rs-modal-body space-y-3">
-                <div>
-                  <label
-                    className="block text-xs font-medium mb-1.5"
-                    style={{ color: "var(--rs-text-secondary)" }}
-                  >
-                    Template Name
-                  </label>
-                  <input
-                    type="text"
-                    value={newTemplate.name}
-                    onChange={(e) =>
-                      setNewTemplate({ ...newTemplate, name: e.target.value })
-                    }
-                    placeholder="e.g., Sales Call Script"
-                    className="rs-input"
-                  />
-                </div>
-                <div>
-                  <label
-                    className="block text-xs font-medium mb-1.5"
-                    style={{ color: "var(--rs-text-secondary)" }}
-                  >
-                    Content
-                  </label>
-                  <textarea
-                    value={newTemplate.content}
-                    onChange={(e) =>
-                      setNewTemplate({ ...newTemplate, content: e.target.value })
-                    }
-                    placeholder="Enter your template..."
-                    rows={6}
-                    className="rs-input rs-input--textarea"
-                  />
-                </div>
-                <div className="flex gap-2 pt-2">
-                  <button
-                    onClick={() => setShowAddModal(false)}
-                    className="rs-btn-ghost flex-1 justify-center"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={addCustomTemplate}
-                    className="rs-btn-primary flex-1 justify-center"
-                  >
-                    Add Template
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <p className="text-sm font-medium text-white">{item.title}</p>
+              <p
+                className="text-xs mt-1"
+                style={{ color: "var(--rs-text-secondary)" }}
+              >
+                {item.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Unlocked view - placeholder shell until the advisor side is built  */
+/* ------------------------------------------------------------------ */
+
+function AdvisorShell() {
+  return (
+    <div className="space-y-8">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <div className="flex items-center gap-2 mb-1">
+          <span
+            className="rs-pill"
+            style={{
+              background: "rgba(16,185,129,0.10)",
+              color: "rgb(74,222,128)",
+              borderColor: "rgba(16,185,129,0.25)",
+            }}
+          >
+            <Check className="w-3 h-3" />
+            Session unlocked
+          </span>
+        </div>
+        <span className="rs-overline">Advisor</span>
+        <h1 className="rs-page-title text-2xl md:text-[28px] mt-1">
+          Your advisor is on it
+        </h1>
+        <p className="rs-page-subtitle">
+          Your advisor can see your dashboard, training, and pipeline. They
+          use it to give you targeted, weekly advice.
+        </p>
+      </motion.div>
+
+      {/* Status banner */}
+      <div
+        className="rs-callout rs-callout--info flex items-start gap-3"
+      >
+        <div
+          className="rs-icon-tile rs-icon-tile--info flex-shrink-0"
+          style={{ width: 36, height: 36 }}
+        >
+          <MessageSquare className="w-4 h-4" />
+        </div>
+        <div>
+          <p className="text-sm font-medium text-white">
+            Advisor view is in early access
+          </p>
+          <p
+            className="text-sm mt-0.5"
+            style={{ color: "var(--rs-text-secondary)" }}
+          >
+            We've unlocked the page for you. The full advisor experience -
+            live read-only view, weekly notes, and direct call scheduling -
+            is being built out and will land here as we ship.
+          </p>
+        </div>
+      </div>
+
+      {/* Placeholder grid */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <PlaceholderCard
+          label="This week, focus on"
+          title="Pipeline moves"
+          description="Three actions picked for you based on where your deals actually sit right now."
+        />
+        <PlaceholderCard
+          label="Where time is going"
+          title="Activity breakdown"
+          description="A breakdown of where you've been spending time - and where you should be."
+        />
+        <PlaceholderCard
+          label="Calls booked"
+          title="Coaching calls"
+          description="Schedule or join a 1:1 call with your advisor from here."
+        />
+        <PlaceholderCard
+          label="Standing advice"
+          title="Advisor playbook"
+          description="The ongoing advice your advisor has flagged for your account."
+        />
+      </div>
+    </div>
+  );
+}
+
+function PlaceholderCard({
+  label,
+  title,
+  description,
+}: {
+  label: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="rs-card p-6 relative overflow-hidden">
+      {/* Coming-soon chip */}
+      <div className="flex items-center justify-between mb-3">
+        <span
+          className="text-[10px] font-semibold uppercase tracking-[0.12em]"
+          style={{ color: "var(--rs-text-muted)" }}
+        >
+          {label}
+        </span>
+        <span
+          className="rs-pill"
+          style={{
+            background: "rgba(255,255,255,0.04)",
+            color: "var(--rs-text-muted)",
+            borderColor: "var(--rs-border)",
+          }}
+        >
+          Coming soon
+        </span>
+      </div>
+      <p className="text-base font-semibold text-white">{title}</p>
+      <p
+        className="text-sm mt-1"
+        style={{ color: "var(--rs-text-secondary)" }}
+      >
+        {description}
+      </p>
+      <div
+        className="absolute inset-x-0 bottom-0 h-px"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent, rgba(167,139,250,0.40), transparent)",
+        }}
+      />
     </div>
   );
 }

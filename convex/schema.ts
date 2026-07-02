@@ -378,4 +378,18 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index("by_category", ["category"])
     .index("by_isActive", ["isActive"]),
+
+  // Advisor access codes - early-access gate for /dashboard/marketing
+  // (the Advisor page). Admin-managed. Each row is a single code that
+  // unlocks the page for any affiliate who enters it. Codes can be
+  // marked active/inactive without deleting them so usage can be audited.
+  advisorAccessCodes: defineTable({
+    code: v.string(),            // the secret code affiliates type in
+    label: v.optional(v.string()), // human-readable note for admins ("Q3 advisor cohort")
+    isActive: v.boolean(),       // only active codes unlock the page
+    createdBy: v.optional(v.string()), // admin clerkUserId who issued it
+    createdAt: v.number(),
+    revokedAt: v.optional(v.number()),  // soft-revoke without losing history
+  }).index("by_code", ["code"])
+    .index("by_isActive", ["isActive"]),
 });

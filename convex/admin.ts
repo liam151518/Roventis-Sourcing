@@ -10,6 +10,90 @@ export const checkIsAdmin = query({
   },
 });
 
+// =====================================================================
+// Advisor access codes - admin-managed early-access codes for the
+// Advisor page (/dashboard/marketing). Affiliates type a code to unlock
+// the page; codes live in `advisorAccessCodes` and can be issued or
+// revoked from here.
+// =====================================================================
+
+// List all advisor access codes (admin only)
+export const listAdvisorAccessCodes = query({
+  args: {},
+  handler: async (ctx) => {
+    await requireAdmin(ctx);
+    return await ctx.db.query("advisorAccessCodes").order("desc").collect();
+  },
+});
+
+// Issue a new advisor access code (admin only)
+export const issueAdvisorAccessCode = mutation({
+  args: {
+    code: v.string(),
+    label: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+
+    const trimmed = args.code.trim();
+    if (!trimmed) {
+      throw new Error("Code cannot be empty");
+    }
+
+    const existing = await ctx.db
+      .query("advisorAccessCodes")
+      .withIndex("by_code", (q) => q.eq("code", trimmed))
+      .first();
+    if (existing) {
+      throw new Error("That code already exists");
+    }
+
+    const identity = await ctx.auth.getUserIdentity();
+    const createdBy = identity?.subject ?? undefined;
+
+    return await ctx.db.insert("advisorAccessCodes", {
+      code: trimmed,
+      label: args.label?.trim() || undefined,
+      isActive: true,
+      createdBy,
+      createdAt: Date.now(),
+    });
+  },
+});
+
+// Toggle an advisor access code active/inactive (admin only)
+export const setAdvisorAccessCodeActive = mutation({
+  args: {
+    id: v.id("advisorAccessCodes"),
+    isActive: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+    const code = await ctx.db.get(args.id);
+    if (!code) throw new Error("Code not found");
+
+    const patch: Record<string, any> = { isActive: args.isActive };
+    if (!args.isActive && !code.revokedAt) {
+      patch.revokedAt = Date.now();
+    }
+    if (args.isActive) {
+      patch.revokedAt = undefined;
+    }
+    await ctx.db.patch(args.id, patch);
+    return { ok: true };
+  },
+});
+
+// Permanently delete an advisor access code (admin only)
+export const deleteAdvisorAccessCode = mutation({
+  args: { id: v.id("advisorAccessCodes") },
+  handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+    await ctx.db.delete(args.id);
+    return { ok: true };
+  },
+});
+
 // Get all affiliates (admin view)
 export const getAllAffiliatesAdmin = query({
   args: {},

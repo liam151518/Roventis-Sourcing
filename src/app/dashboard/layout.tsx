@@ -15,7 +15,7 @@ import {
   User,
   Bell,
   Target,
-  Megaphone,
+  Sparkles,
   HelpCircle,
   Zap,
   Receipt,
@@ -35,7 +35,7 @@ const navItems = [
   { href: "/dashboard/commissions", label: "Commissions", icon: DollarSign, section: "finance" },
   { href: "/dashboard/invoice", label: "Invoice Generator", icon: Receipt, section: "finance" },
   // Growth
-  { href: "/dashboard/marketing", label: "Marketing", icon: Megaphone, section: "growth" },
+  { href: "/dashboard/marketing", label: "Advisor", icon: Sparkles, section: "growth" },
   { href: "/dashboard/resources", label: "Resources", icon: FileText, section: "growth" },
   // Settings
   { href: "/dashboard/profile", label: "Profile", icon: User, section: "settings" },

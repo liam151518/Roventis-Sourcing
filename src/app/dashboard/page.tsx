@@ -19,6 +19,7 @@ import {
   Zap,
   MousePointer,
   CircleDollarSign,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { useQuery } from "convex/react";
@@ -1001,9 +1002,9 @@ export default function DashboardPage() {
               },
               {
                 href: "/dashboard/marketing",
-                label: "Marketing",
-                icon: MousePointer,
-                desc: "Get links",
+                label: "Advisor",
+                icon: Sparkles,
+                desc: "Early access",
               },
               {
                 href: "/dashboard/training",
