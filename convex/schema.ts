@@ -392,4 +392,71 @@ export default defineSchema({
     revokedAt: v.optional(v.number()),  // soft-revoke without losing history
   }).index("by_code", ["code"])
     .index("by_isActive", ["isActive"]),
+
+  // Per-affiliate advisor configuration. Holds the user's own AI
+  // provider API key, ENCRYPTED at rest with AES-256-GCM using a
+  // master key stored in Convex env vars. We never return the
+  // plaintext key to the client - only a masked preview.
+  advisorSettings: defineTable({
+    affiliateId: v.id("affiliates"),
+    provider: v.union(
+      v.literal("openai"),
+      v.literal("anthropic"),
+      v.literal("gemini")
+    ),
+    // AES-256-GCM ciphertext, base64-encoded
+    encryptedKey: v.string(),
+    iv: v.string(),                     // 12-byte IV, base64-encoded
+    authTag: v.string(),                // 16-byte GCM auth tag, base64-encoded
+    // Last 4 chars of the key, for UI display ("sk-...AbCd")
+    keyPreview: v.string(),
+    // Last successful validation ping (provider says key is valid)
+    lastValidatedAt: v.optional(v.number()),
+    isActive: v.boolean(),              // user can disable without deleting
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_affiliate", ["affiliateId"]),
+
+  // Cached advisor digests. We pre-generate daily + weekly summaries
+  // via cron so the page loads instantly without burning tokens on
+  // every visit. Cache is per-affiliate + digest type + day.
+  advisorDigestCache: defineTable({
+    affiliateId: v.string(),
+    digestType: v.union(
+      v.literal("daily"),
+      v.literal("weekly")
+    ),
+    // ISO date "YYYY-MM-DD" so we can dedupe per-day easily
+    cacheKey: v.string(),               // `${affiliateId}|${digestType}|${YYYY-MM-DD}`
+    generatedAt: v.number(),
+    expiresAt: v.number(),              // when to invalidate
+    // The actual generated content - structured so the UI can render
+    // different sections (summary, blockers, action items, etc.)
+    sections: v.array(v.object({
+      kind: v.union(
+        v.literal("headline"),
+        v.literal("summary"),
+        v.literal("blockers"),
+        v.literal("actionItems"),
+        v.literal("praise"),
+        v.literal("watchlist")
+      ),
+      title: v.string(),
+      body: v.string(),
+    })),
+    // Provider + model that generated this (for debugging/audit)
+    generatedBy: v.string(),
+    // Token usage for cost tracking
+    tokensUsed: v.optional(v.number()),
+  }).index("by_affiliate", ["affiliateId"])
+    .index("by_cacheKey", ["cacheKey"]),
+
+  // Per-user rate limiting on advisor generations. Hard cap of
+  // ADVISOR_DAILY_CAP per user per day (SAST calendar day).
+  advisorUsage: defineTable({
+    affiliateId: v.string(),
+    // ISO date "YYYY-MM-DD" in SAST - resets at midnight SAST
+    dayKey: v.string(),
+    count: v.number(),
+  }).index("by_affiliate_day", ["affiliateId", "dayKey"]),
 });

@@ -20,4 +20,16 @@ crons.cron(
   internal.leads.resetWeeklyCounters
 );
 
+// Advisor digest pre-generation.
+// Daily: 5:00 UTC = 7:00 SAST, every day (so the daily digest is
+// already cached when affiliates open the page in the morning).
+// Weekly: also 5:00 UTC on Mondays - the cron logic itself only
+// generates weekly when the current day is Monday, so we run it
+// daily and the action decides.
+crons.cron(
+  "advisor digest pre-generate",
+  "0 5 * * *", // 5:00 UTC = 7:00 SAST
+  internal.advisorV2.runAdvisorCron
+);
+
 export default crons;

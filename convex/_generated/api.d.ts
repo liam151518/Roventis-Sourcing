@@ -10,12 +10,18 @@
 
 import type * as admin from "../admin.js";
 import type * as advisor from "../advisor.js";
+import type * as advisorV2 from "../advisorV2.js";
+import type * as advisorV2Internal from "../advisorV2Internal.js";
+import type * as advisorV2Public from "../advisorV2Public.js";
 import type * as affiliates from "../affiliates.js";
 import type * as commissions from "../commissions.js";
 import type * as crons from "../crons.js";
 import type * as deals from "../deals.js";
 import type * as invoices from "../invoices.js";
 import type * as leads from "../leads.js";
+import type * as lib_advisorCrypto from "../lib/advisorCrypto.js";
+import type * as lib_advisorPii from "../lib/advisorPii.js";
+import type * as lib_advisorProviders from "../lib/advisorProviders.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_tierConfig from "../lib/tierConfig.js";
 import type * as marketing from "../marketing.js";
@@ -34,12 +40,18 @@ import type {
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
   advisor: typeof advisor;
+  advisorV2: typeof advisorV2;
+  advisorV2Internal: typeof advisorV2Internal;
+  advisorV2Public: typeof advisorV2Public;
   affiliates: typeof affiliates;
   commissions: typeof commissions;
   crons: typeof crons;
   deals: typeof deals;
   invoices: typeof invoices;
   leads: typeof leads;
+  "lib/advisorCrypto": typeof lib_advisorCrypto;
+  "lib/advisorPii": typeof lib_advisorPii;
+  "lib/advisorProviders": typeof lib_advisorProviders;
   "lib/auth": typeof lib_auth;
   "lib/tierConfig": typeof lib_tierConfig;
   marketing: typeof marketing;
