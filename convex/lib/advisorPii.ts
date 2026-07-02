@@ -76,12 +76,19 @@ export interface ScrubbedContext {
 /**
  * Strip PII from an affiliate row. We DO NOT pass firstName/lastName/
  * email/phone/linkedinUrl/city to the model. Bank info is also dropped.
+ *
+ * The caller can cap how much data is included; defaults are tuned so
+ * the resulting JSON payload comfortably fits inside ~50k tokens for
+ * chat messages and stays well below any model context window.
  */
 export function buildScrubbedContext(args: {
   affiliate: any;
   deals: any[];
   leads: any[];
   now: number;
+  maxDeals?: number;
+  maxLeads?: number;
+  descriptionCap?: number;
 }): ScrubbedContext {
   const { affiliate, deals, leads, now } = args;
 
@@ -103,9 +110,32 @@ export function buildScrubbedContext(args: {
     weeklyClaimsResetAt: affiliate.weeklyClaimsResetAt ?? null,
   };
 
-  const scrubbedDeals: ScrubbedDeal[] = deals.map((d: any) => {
+  const maxDeals = args.maxDeals ?? 25;
+  const maxLeads = args.maxLeads ?? 15;
+  const descCap = args.descriptionCap ?? 280;
+
+  // Newest deals first (by createdAt), then keep the most relevant.
+  const sortedDeals = [...deals].sort(
+    (a: any, b: any) =>
+      Number(b.createdAt ?? b._creationTime ?? 0) -
+      Number(a.createdAt ?? a._creationTime ?? 0)
+  );
+  const recentDeals = sortedDeals.slice(0, maxDeals);
+
+  const sortedLeads = [...leads].sort(
+    (a: any, b: any) =>
+      Number(b._creationTime ?? 0) - Number(a._creationTime ?? 0)
+  );
+  const recentLeads = sortedLeads.slice(0, maxLeads);
+
+  const scrubbedDeals: ScrubbedDeal[] = recentDeals.map((d: any) => {
     const createdAt = Number(d.createdAt ?? now);
     const updatedAt = Number(d._creationTime ?? createdAt);
+    const desc = d.description ?? null;
+    const description =
+      desc && desc.length > descCap
+        ? desc.slice(0, descCap) + "..."
+        : desc;
     return {
       id: String(d._id),
       clientName: d.clientName ?? "(unnamed)",
@@ -114,7 +144,7 @@ export function buildScrubbedContext(args: {
       clientPhone: d.clientPhone ?? null,
       dealValue: Number(d.dealValue ?? 0),
       productCategory: Array.isArray(d.productCategory) ? d.productCategory : [],
-      description: d.description ?? null,
+      description,
       status: d.status ?? "prospect",
       commissionRate: Number(d.commissionRate ?? 0),
       commissionAmount: Number(d.commissionAmount ?? 0),
@@ -127,7 +157,7 @@ export function buildScrubbedContext(args: {
     };
   });
 
-  const scrubbedLeads: ScrubbedLead[] = leads.map((l: any) => ({
+  const scrubbedLeads: ScrubbedLead[] = recentLeads.map((l: any) => ({
     id: String(l._id),
     companyName: l.companyName ?? "(unnamed)",
     contactName: l.contactName ?? null,

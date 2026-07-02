@@ -10,6 +10,11 @@
 
 import type * as admin from "../admin.js";
 import type * as advisor from "../advisor.js";
+import type * as advisorChat from "../advisorChat.js";
+import type * as advisorChatInternal from "../advisorChatInternal.js";
+import type * as advisorChatPublic from "../advisorChatPublic.js";
+import type * as advisorJournal from "../advisorJournal.js";
+import type * as advisorStats from "../advisorStats.js";
 import type * as advisorV2 from "../advisorV2.js";
 import type * as advisorV2Internal from "../advisorV2Internal.js";
 import type * as advisorV2Public from "../advisorV2Public.js";
@@ -23,6 +28,7 @@ import type * as lib_advisorCrypto from "../lib/advisorCrypto.js";
 import type * as lib_advisorPii from "../lib/advisorPii.js";
 import type * as lib_advisorProviders from "../lib/advisorProviders.js";
 import type * as lib_auth from "../lib/auth.js";
+import type * as lib_callMethodology from "../lib/callMethodology.js";
 import type * as lib_tierConfig from "../lib/tierConfig.js";
 import type * as marketing from "../marketing.js";
 import type * as orders from "../orders.js";
@@ -40,6 +46,11 @@ import type {
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
   advisor: typeof advisor;
+  advisorChat: typeof advisorChat;
+  advisorChatInternal: typeof advisorChatInternal;
+  advisorChatPublic: typeof advisorChatPublic;
+  advisorJournal: typeof advisorJournal;
+  advisorStats: typeof advisorStats;
   advisorV2: typeof advisorV2;
   advisorV2Internal: typeof advisorV2Internal;
   advisorV2Public: typeof advisorV2Public;
@@ -53,6 +64,7 @@ declare const fullApi: ApiFromModules<{
   "lib/advisorPii": typeof lib_advisorPii;
   "lib/advisorProviders": typeof lib_advisorProviders;
   "lib/auth": typeof lib_auth;
+  "lib/callMethodology": typeof lib_callMethodology;
   "lib/tierConfig": typeof lib_tierConfig;
   marketing: typeof marketing;
   orders: typeof orders;

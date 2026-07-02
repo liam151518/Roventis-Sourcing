@@ -246,7 +246,8 @@ async function generateSummaryForAffiliate(
     apiKey,
     systemPrompt,
     userPrompt,
-    1500
+    1500,
+    45000 // 45s timeout for digest generations (was 15s; weekly was timing out)
   );
 
   const sections = parseSectionsFromModelOutput(result.text, type);

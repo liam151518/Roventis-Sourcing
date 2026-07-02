@@ -460,4 +460,78 @@ export default defineSchema({
     dayKey: v.string(),
     count: v.number(),
   }).index("by_affiliate_day", ["affiliateId", "dayKey"]),
+
+  // Call journal - the user logs what happened on each sales call so
+  // they can audit their activity, generate follow-up todos, and feed
+  // history into the AI advisor.
+  advisorJournal: defineTable({
+    affiliateId: v.id("affiliates"),
+    dealId: v.optional(v.id("deals")),
+    leadId: v.optional(v.id("leads")),
+    title: v.string(),
+    outcome: v.union(
+      v.literal("won"),
+      v.literal("lost"),
+      v.literal("follow-up"),
+      v.literal("no-answer"),
+      v.literal("info-sent"),
+      v.literal("other")
+    ),
+    notes: v.string(),
+    nextStep: v.optional(v.string()),
+    nextStepDueAt: v.optional(v.number()),
+    calledAt: v.number(),
+    createdAt: v.number(),
+  }).index("by_affiliate", ["affiliateId"])
+    .index("by_affiliate_calledAt", ["affiliateId", "calledAt"])
+    .index("by_affiliate_outcome", ["affiliateId", "outcome"]),
+
+  // Todos - lightweight follow-up tasks. Can be standalone or linked
+  // back to a journal entry (so the user can see why the todo exists).
+  advisorTodos: defineTable({
+    affiliateId: v.id("affiliates"),
+    title: v.string(),
+    notes: v.optional(v.string()),
+    dueAt: v.optional(v.number()),
+    completed: v.boolean(),
+    completedAt: v.optional(v.number()),
+    sourceJournalId: v.optional(v.id("advisorJournal")),
+    priority: v.union(
+      v.literal("low"),
+      v.literal("med"),
+      v.literal("high")
+    ),
+    createdAt: v.number(),
+  }).index("by_affiliate", ["affiliateId"])
+    .index("by_affiliate_completed_due", ["affiliateId", "completed", "dueAt"]),
+
+  // Chat threads. Mode is set when the chat is created and never changes.
+  advisorChats: defineTable({
+    affiliateId: v.id("affiliates"),
+    mode: v.union(
+      v.literal("chat"),
+      v.literal("call"),
+      v.literal("strategic")
+    ),
+    title: v.string(),
+    pinned: v.optional(v.boolean()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    lastMessageAt: v.number(),
+  }).index("by_affiliate", ["affiliateId"])
+    .index("by_affiliate_mode_lastMessage", ["affiliateId", "mode", "lastMessageAt"]),
+
+  // Chat messages. Ordered client-side via createdAt.
+  advisorChatMessages: defineTable({
+    chatId: v.id("advisorChats"),
+    role: v.union(
+      v.literal("user"),
+      v.literal("assistant"),
+      v.literal("system")
+    ),
+    content: v.string(),
+    tokensUsed: v.optional(v.number()),
+    createdAt: v.number(),
+  }).index("by_chat", ["chatId"])
+    .index("by_chat_createdAt", ["chatId", "createdAt"]),
 });
