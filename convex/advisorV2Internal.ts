@@ -12,7 +12,8 @@ export const upsertSettings = internalMutation({
     provider: v.union(
       v.literal("openai"),
       v.literal("anthropic"),
-      v.literal("gemini")
+      v.literal("gemini"),
+      v.literal("minimax")
     ),
     encryptedKey: v.string(),
     iv: v.string(),

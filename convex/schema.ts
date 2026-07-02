@@ -402,7 +402,8 @@ export default defineSchema({
     provider: v.union(
       v.literal("openai"),
       v.literal("anthropic"),
-      v.literal("gemini")
+      v.literal("gemini"),
+      v.literal("minimax")
     ),
     // AES-256-GCM ciphertext, base64-encoded
     encryptedKey: v.string(),

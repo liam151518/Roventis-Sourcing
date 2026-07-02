@@ -53,6 +53,14 @@ const PROVIDERS = [
     placeholder: "AIza...",
     docs: "https://aistudio.google.com/apikey",
   },
+  {
+    id: "minimax" as const,
+    name: "MiniMax",
+    model: "MiniMax-M3",
+    desc: "1M context, frontier code/agent. Get a key at platform.minimax.io.",
+    placeholder: "eyJ...",
+    docs: "https://platform.minimax.io/user-center/basic-information/interface-key",
+  },
 ];
 
 export default function AdvisorPage() {
@@ -336,7 +344,7 @@ function SetupState() {
       {/* Provider picker */}
       <div>
         <h3 className="text-sm font-semibold text-white mb-3">Pick your provider</h3>
-        <div className="grid sm:grid-cols-3 gap-3">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {PROVIDERS.map((p) => {
             const isSelected = p.id === provider.id;
             return (

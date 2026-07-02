@@ -16,7 +16,15 @@
 
 import { scrubKeyFromString } from "./advisorCrypto";
 
-export type ProviderId = "openai" | "anthropic" | "gemini";
+export type ProviderId = "openai" | "anthropic" | "gemini" | "minimax";
+
+// MiniMax (https://platform.minimax.io) exposes a fully OpenAI-compatible
+// chat completions endpoint at https://api.minimax.io/v1. We use it via
+// the standard Bearer-token Authorization header - no special wiring
+// needed. Model "MiniMax-M3" is the current flagship; users can also
+// pick M2.7/M2.5 via the model field if they want, but v1 hardcodes M3.
+const MINIMAX_BASE = "https://api.minimax.io/v1";
+const MINIMAX_MODEL = "MiniMax-M3";
 
 export interface ProviderResult {
   text: string;
@@ -240,6 +248,68 @@ async function geminiSummarize(
 }
 
 /* --------------------------------------------------------------- */
+/* MiniMax (OpenAI-compatible at https://api.minimax.io/v1)        */
+/* --------------------------------------------------------------- */
+
+async function minimaxValidate(apiKey: string): Promise<boolean> {
+  const { signal, cancel } = withTimeout(DEFAULT_TIMEOUT_MS);
+  try {
+    // MiniMax exposes /v1/models on the same base URL.
+    const res = await fetch(`${MINIMAX_BASE}/models`, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+      signal,
+    });
+    return res.ok;
+  } catch (err) {
+    throw new Error(scrubKeyFromString(String(err)));
+  } finally {
+    cancel();
+  }
+}
+
+async function minimaxSummarize(
+  apiKey: string,
+  systemPrompt: string,
+  userPrompt: string,
+  maxTokens: number,
+): Promise<ProviderResult> {
+  const { signal, cancel } = withTimeout(DEFAULT_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${MINIMAX_BASE}/chat/completions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: MINIMAX_MODEL,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        max_completion_tokens: Math.min(maxTokens, DEFAULT_MAX_TOKENS),
+        temperature: 0.4,
+      }),
+      signal,
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`MiniMax error ${res.status}: ${scrubKeyFromString(errText)}`);
+    }
+    const json: any = await res.json();
+    const text: string =
+      json?.choices?.[0]?.message?.content?.toString() ?? "";
+    const tokensUsed: number =
+      (json?.usage?.total_tokens as number | undefined) ?? 0;
+    return { text, tokensUsed, model: MINIMAX_MODEL };
+  } catch (err) {
+    throw new Error(scrubKeyFromString(String(err)));
+  } finally {
+    cancel();
+  }
+}
+
+/* --------------------------------------------------------------- */
 /* Public dispatch                                                 */
 /* --------------------------------------------------------------- */
 
@@ -254,6 +324,8 @@ export async function validateProviderKey(
       return anthropicValidate(apiKey);
     case "gemini":
       return geminiValidate(apiKey);
+    case "minimax":
+      return minimaxValidate(apiKey);
   }
 }
 
@@ -271,5 +343,7 @@ export async function callProvider(
       return anthropicSummarize(apiKey, systemPrompt, userPrompt, maxTokens);
     case "gemini":
       return geminiSummarize(apiKey, systemPrompt, userPrompt, maxTokens);
+    case "minimax":
+      return minimaxSummarize(apiKey, systemPrompt, userPrompt, maxTokens);
   }
 }

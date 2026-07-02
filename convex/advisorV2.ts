@@ -66,7 +66,8 @@ export const saveApiKey = action({
     provider: v.union(
       v.literal("openai"),
       v.literal("anthropic"),
-      v.literal("gemini")
+      v.literal("gemini"),
+      v.literal("minimax")
     ),
     apiKey: v.string(),
   },
