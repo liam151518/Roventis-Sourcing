@@ -6,8 +6,8 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Toaster } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  LayoutDashboard, 
+import {
+  LayoutDashboard,
   Users,
   FileText,
   Ticket,
@@ -20,6 +20,7 @@ import {
   Target,
   Tag,
   Receipt,
+  KeyRound,
 } from "lucide-react";
 import { useAuth, useUser, UserButton, SignInButton, useClerk } from "@clerk/nextjs";
 import { isAdmin } from "@/lib/admin";
@@ -35,6 +36,7 @@ const adminNavItems = [
   { href: "/admin/leaderboard", label: "Leaderboard", icon: Trophy, section: "performance" },
   { href: "/admin/tickets", label: "Support Tickets", icon: Ticket, section: "support" },
   { href: "/admin/resources", label: "Resources", icon: FileText, section: "support" },
+  { href: "/admin/advisor-codes", label: "Advisor Codes", icon: KeyRound, section: "support" },
 ];
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
